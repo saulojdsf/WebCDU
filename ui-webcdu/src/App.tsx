@@ -1,4 +1,4 @@
-import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState, useNodesState, type Connection, addEdge } from 'reactflow'
+import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState, useNodesState, type Connection, addEdge, type Node } from 'reactflow'
 import 'reactflow/dist/style.css'
 
 import { Placeholder } from './components/nodes/PLACEHOLDER'
@@ -31,23 +31,33 @@ const INITIAL_NODES = [
 
 function App() {
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-const [nodes, setNodes, onNodesChange] = useNodesState([]);
+const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
+
 
 const onConnect = useCallback((connection : Connection) => {
   return setEdges(edges => addEdge(connection, edges))
 },[]);
+const onDragOver = useCallback((event : React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+}, []);
+
 
   return (
     <div className="w-screen h-screen">
       <ReactFlow 
       nodeTypes={NODE_TYPES} 
-      nodes={INITIAL_NODES} 
+      nodes={nodes} 
       edgeTypes={EDGE_TYPES} 
       edges={edges} 
       connectionMode={ConnectionMode.Strict}
       onConnect={onConnect}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onDragOver={onDragOver}
+      defaultEdgeOptions={{
+        type: 'default',
+      }}
       >
         <Background gap={12} size={2} color="#aaa"/>
         <Controls position="top-right"/>
