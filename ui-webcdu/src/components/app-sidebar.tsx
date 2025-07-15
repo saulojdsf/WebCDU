@@ -1,12 +1,22 @@
 import * as React from "react"
 import {
+  Activity,
+  AlarmClock,
+  Binary,
   BookOpen,
   Bot,
+  Calculator,
+  ChartSpline,
+  ChevronsLeftRightEllipsis,
   Command,
+  GitCompareArrows,
   LifeBuoy,
+  MonitorX,
+  Search,
   Send,
   Settings2,
-  SquareTerminal,
+  ToggleLeft,
+  Waypoints,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -33,7 +43,7 @@ const data = {
     {
       title: "Aritméticos",
             url: "#",
-            icon: SquareTerminal,
+            icon: Calculator,
             isActive: true,
             items: [
                 {
@@ -60,7 +70,7 @@ const data = {
         {
             title: "Dinâmicos e Limitadores",
             url: "#",
-            icon: Bot,
+            icon: Activity,
             items: [
                 {
                     title: "ORD(1)",
@@ -112,7 +122,7 @@ const data = {
         {
             title: "Inteface",
             url: "#",
-            icon: BookOpen,
+            icon: ChevronsLeftRightEllipsis,
             items: [
                 {
                     title: "EXPORT",
@@ -126,7 +136,7 @@ const data = {
         {
             title: "Terminadores",
             url: "#",
-            icon: BookOpen,
+            icon: MonitorX,
             items: [
                 {
                     title: "ENTRAD",
@@ -146,7 +156,7 @@ const data = {
         }, {
             title: "Comparadores",
             url: "#",
-            icon: Settings2,
+            icon: GitCompareArrows,
             items: [
                 {
                     title: ".LT.",
@@ -174,38 +184,208 @@ const data = {
         }, {
             title: "Lógicos",
             url: "#",
-            icon: Settings2,
+            icon: Binary,
             items: [
                 {
-                    title: "AND",
+                    title: ".AND.",
                     url: "#"
                 },
                 {
-                    title: "OR",
+                    title: ".OR.",
                     url: "#"
                 },
                 {
-                    title: "XOR",
+                    title: ".XOR.",
                     url: "#"
                 },
                 {
-                    title: "NOT",
+                    title: ".NOT.",
                     url: "#"
                 }, {
-                    title: "NAND",
+                    title: ".NAND.",
                     url: "#"
                 }, {
-                    title: "NOR",
+                    title: ".NOR.",
                     url: "#"
                 }, {
-                    title: "NXOR",
+                    title: ".NXOR.",
                     url: "#"
                 }, {
                     title: "FFLOP1",
                     url: "#"
                 },
             ]
-        },
+        },{
+            title: "Seletores",
+            url: "#",
+            icon: ToggleLeft,
+            items: [{
+                    title: "MAX",
+                    url: "#"
+                },{
+                    title: "MIN",
+                    url: "#"
+                },{
+                    title: "SELET2",
+                    url: "#"
+                },]
+          },
+          {
+            title: "Atraso",
+            url: "#",
+            icon: AlarmClock,
+            items: [{
+                    title: "DELAY",
+                    url: "#"
+                },{
+                    title: "ATRASO",
+                    url: "#"
+                },]
+          },{
+            title: "Amostragem e Temporização",
+            url: "#",
+            icon: Search,
+            items: [{
+                    title: "T/HOLD",
+                    url: "#"
+                },{
+                    title: "S/HOLD",
+                    url: "#"
+                },{
+                    title: "ACUM",
+                    url: "#"
+                },{
+                    title: "DISMAX",
+                    url: "#"
+                },{
+                    title: "DISMIN",
+                    url: "#"
+                },{
+                    title: "DLAYON",
+                    url: "#"
+                },{
+                    title: "DLAYOF",
+                    url: "#"
+                },{
+                    title: "MONEST",
+                    url: "#"
+                },]
+          },{
+            title: "Funções Matemáticas",
+            url: "#",
+            icon: ChartSpline,
+            items: [{
+                    title: "DEGREE",
+                    url: "#"
+                },{
+                    title: "RADIAN",
+                    url: "#"
+                },{
+                    title: "SIN",
+                    url: "#"
+                },{
+                    title: "COS",
+                    url: "#"
+                },{
+                    title: "TAN",
+                    url: "#"
+                },{
+                    title: "ACOS",
+                    url: "#"
+                },{
+                    title: "ASIN",
+                    url: "#"
+                },{
+                    title: "ATAN",
+                    url: "#"
+                },{
+                    title: "ATAN2",
+                    url: "#"
+                },{
+                    title: "SQRT",
+                    url: "#"
+                },{
+                    title: "X**2",
+                    url: "#"
+                },{
+                    title: "X**K",
+                    url: "#"
+                },{
+                    title: "EXP",
+                    url: "#"
+                },{
+                    title: "LOG",
+                    url: "#"
+                },{
+                    title: "LOG10",
+                    url: "#"
+                },{
+                    title: "INVRS",
+                    url: "#"
+                },{
+                    title: "OFFSET",
+                    url: "#"
+                },{
+                    title: "MENOS",
+                    url: "#"
+                },{
+                    title: "ABS",
+                    url: "#"
+                },{
+                    title: "SINAL",
+                    url: "#"
+                },{
+                    title: "TRUNC",
+                    url: "#"
+                },{
+                    title: "ROUND",
+                    url: "#"
+                },{
+                    title: "PULSO",
+                    url: "#"
+                },{
+                    title: "RAMPA",
+                    url: "#"
+                },{
+                    title: "RETA",
+                    url: "#"
+                },{
+                    title: "DEADB1",
+                    url: "#"
+                },{
+                    title: "DEADB2",
+                    url: "#"
+                },{
+                    title: "HISTE1",
+                    url: "#"
+                },{
+                    title: "SAT01",
+                    url: "#"
+                },{
+                    title: "PONTOS",
+                    url: "#"
+                },{
+                    title: "STEPS",
+                    url: "#"
+                },]
+          },{
+            title: "Não-lineares",
+            url: "#",
+            icon: Waypoints,
+            items: [{
+                    title: "FEX",
+                    url: "#"
+                },{
+                    title: "SUBIDA",
+                    url: "#"
+                },{
+                    title: "DESCID",
+                    url: "#"
+                },{
+                    title: "NOISE",
+                    url: "#"
+                },]
+          }
     ],
     navSecondary: [
         {
