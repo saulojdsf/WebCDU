@@ -5,6 +5,7 @@ import 'reactflow/dist/style.css'
 import { Placeholder } from './components/nodes/PLACEHOLDER'
 import DefaultEdge from './components/edges/DefaultEdge'
 import { useCallback, useRef, useState, useEffect } from 'react'
+import { Toaster } from './components/ui/sonner';
 
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -41,10 +42,27 @@ const INITIAL_NODES = [
 },
 ] satisfies Node[]
 
+function padId(num: number) {
+  return num.toString().padStart(4, '0');
+}
 
 function App() {
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-const [nodes, setNodes, onNodesChange] = useNodesState(INITIAL_NODES);
+const nextNodeId = useRef(1);
+const [nodes, setNodes, onNodesChange] = useNodesState([
+  {
+    id: padId(nextNodeId.current++),
+    type: 'placeholder',
+    position: { x: 500, y: 500 },
+    data: { id: padId(1) },
+  },
+  {
+    id: padId(nextNodeId.current++),
+    type: 'placeholder',
+    position: { x: 1000, y: 750 },
+    data: { id: padId(2) },
+  },
+]);
 const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 const reactFlowWrapper = useRef<HTMLDivElement>(null);
 const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
@@ -73,14 +91,21 @@ const onDrop = useCallback((event: React.DragEvent) => {
     x: event.clientX - (bounds?.left ?? 0),
     y: event.clientY - (bounds?.top ?? 0),
   });
+  // Find the lowest available ID from 0001 to 9999
+  const usedIds = new Set(nodes.map(n => parseInt(n.data?.id, 10)));
+  let nextId = 1;
+  while (usedIds.has(nextId) && nextId <= 9999) {
+    nextId++;
+  }
+  const id = padId(nextId);
   const newNode = {
-    id: crypto.randomUUID(),
+    id,
     type: 'placeholder', // For now, always use placeholder type
     position,
-    data: { label: nodeData.label },
+    data: { label: nodeData.label, id },
   };
   setNodes(nds => nds.concat(newNode));
-}, [reactFlowInstance, setNodes]);
+}, [reactFlowInstance, setNodes, nodes]);
 
 // Handle selection
 const onSelectionChange = useCallback(({ nodes, edges }: { nodes: Node[]; edges: any[] }) => {
@@ -91,7 +116,16 @@ const onSelectionChange = useCallback(({ nodes, edges }: { nodes: Node[]; edges:
 // Handle delete key
 useEffect(() => {
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Delete' || event.key === 'Backspace') {
+    const active = document.activeElement;
+    const isInput =
+      active &&
+      (
+        active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        (active as HTMLElement).isContentEditable
+      );
+
+    if ((event.key === 'Delete' || event.key === 'Backspace') && !isInput) {
       if (selectedNodes.length > 0) {
         setNodes(nds => nds.filter(n => !selectedNodes.includes(n.id)));
       }
@@ -106,6 +140,7 @@ useEffect(() => {
 
   return (
     <>
+      <Toaster />
 <div className="h-screen flex flex-col">
     <SidebarProvider className="flex flex-col h-full">
         <SiteHeader/>

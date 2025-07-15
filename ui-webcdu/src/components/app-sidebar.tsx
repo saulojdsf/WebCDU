@@ -6,7 +6,6 @@ import {
   Calculator,
   ChartSpline,
   ChevronsLeftRightEllipsis,
-  Command,
   GitCompareArrows,
   LifeBuoy,
   MonitorX,
