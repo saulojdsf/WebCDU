@@ -59,7 +59,14 @@ export function NavMain({
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <a
+                              href={subItem.url}
+                              draggable
+                              onDragStart={event => {
+                                event.dataTransfer.setData('application/reactflow', JSON.stringify({ type: subItem.title, label: subItem.title }));
+                                event.dataTransfer.effectAllowed = 'move';
+                              }}
+                            >
                               <span>{subItem.title}</span>
                             </a>
                           </SidebarMenuSubButton>

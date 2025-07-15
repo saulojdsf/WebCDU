@@ -3,8 +3,6 @@ import {
   Activity,
   AlarmClock,
   Binary,
-  BookOpen,
-  Bot,
   Calculator,
   ChartSpline,
   ChevronsLeftRightEllipsis,
@@ -14,9 +12,9 @@ import {
   MonitorX,
   Search,
   Send,
-  Settings2,
   ToggleLeft,
   Waypoints,
+  Bolt,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -402,6 +400,11 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const onDragStart = (event: React.DragEvent) => {
+    event.dataTransfer.setData('application/reactflow', 'placeholder');
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <Sidebar
       className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
@@ -413,7 +416,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
+                  <Bolt className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">WebCDU</span>
@@ -426,7 +429,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
