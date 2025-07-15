@@ -18,8 +18,21 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar"
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
+import { useState } from "react";
 
-export function SiteHeader() {
+export function SiteHeader({ onNew, onExport }: { onNew?: () => void, onExport?: () => void }) {
+  const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -34,19 +47,22 @@ export function SiteHeader() {
           <SidebarIcon />
         </Button>
         <Separator orientation="vertical" className="mr-2 h-4" />
+        <AlertDialog open={open} onOpenChange={setOpen}>
 <Menubar>
     <MenubarMenu>
         <MenubarTrigger>Arquivo</MenubarTrigger>
         <MenubarContent>
-            <MenubarItem>
+            <AlertDialogTrigger asChild>
+              <MenubarItem onSelect={e => e.preventDefault()}>
                 Novo
                 <MenubarShortcut>Ctrl+N</MenubarShortcut>
-            </MenubarItem>
+              </MenubarItem>
+            </AlertDialogTrigger>
             <MenubarItem>
                 Abrir
                 <MenubarShortcut>Ctrl+O</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem>
+            <MenubarItem onClick={onExport}>
                 Salvar
                 <MenubarShortcut>Ctrl+S</MenubarShortcut>
             </MenubarItem>
@@ -124,7 +140,19 @@ export function SiteHeader() {
         </MenubarContent>
     </MenubarMenu>
 </Menubar>
-
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar tudo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja limpar todos os blocos e conexões? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={onNew}>Limpar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
         <SearchForm className="w-full sm:ml-auto sm:w-auto" />
       </div>
     </header>

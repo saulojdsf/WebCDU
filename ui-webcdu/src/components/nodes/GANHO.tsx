@@ -13,14 +13,9 @@ const PARAMS = [
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
   { key: "P1", label: "P1" },
-  { key: "P2", label: "P2" },
-  { key: "P3", label: "P3" },
-  { key: "P4", label: "P4" },
-  { key: "Vmin", label: "Vmin" },
-  { key: "Vmax", label: "Vmax" },
 ];
 
-export function Placeholder(props : NodeProps) {
+export function GANHO(props : NodeProps) {
     const isSelected = props.selected;
     const selectionStyles = isSelected ? "ring-4 ring-blue-500 ring-opacity-50 shadow-lg" : "";
     const [open, setOpen] = useState(false);
@@ -104,29 +99,35 @@ export function Placeholder(props : NodeProps) {
     return (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
+            
             <div
               ref={nodeRef}
-              className={`bg-white rounded w-[180px] h-[110px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`bg-transparent rounded w-[150px] h-[75px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
               onDoubleClick={handleDoubleClick}
             >
-<Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black"/>
-<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black"/>
-<div className="text-center w-full">
-    <div className="text-sm mb-1">{props.data?.label || "PLACEHOLDER"}</div>
-    <div className="text-xs font-normal">
-        {PARAMS.filter(p => p.key !== 'id').map(param => (
-        <span key={param.key} className="inline-block mr-1">
-            {param.label}:{" "}{props.data?.[param.key] ?? "-"}
-        </span>
-        ))}
-    </div>
-</div>
+            <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-10 border-0 bg-black"/>
+            <Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black"/>
+<svg
+    className="w-[150px] h-[75px]" >
+    <polygon
+    points="20,2 20,70 130,36" fill="#fff" stroke="#000" stroke-width="2"/>
+    <line
+    x1="0" y1="36" x2="20" y2="36" stroke="#000" stroke-width="2"/>
+    <line
+    x1="130" y1="36" x2="180" y2="36" stroke="#000" stroke-width="2"/>
+    <text x="25" y="45" font-family="Arial" font-size="20" fill="#000">{props.data?.P1 || "K"}</text>
+</svg>
 <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
     {padId(props.data?.id || "-")}
 </div>
 <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
     {(props.data?.Vout || "?")}
-</div></div>
+</div>
+
+
+
+
+            </div>
 
 
           </PopoverTrigger>

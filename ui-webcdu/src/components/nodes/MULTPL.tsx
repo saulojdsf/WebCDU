@@ -12,15 +12,9 @@ const PARAMS = [
   { key: "id", label: "ID" },
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
-  { key: "P1", label: "P1" },
-  { key: "P2", label: "P2" },
-  { key: "P3", label: "P3" },
-  { key: "P4", label: "P4" },
-  { key: "Vmin", label: "Vmin" },
-  { key: "Vmax", label: "Vmax" },
 ];
 
-export function Placeholder(props : NodeProps) {
+export function MULTPL(props : NodeProps) {
     const isSelected = props.selected;
     const selectionStyles = isSelected ? "ring-4 ring-blue-500 ring-opacity-50 shadow-lg" : "";
     const [open, setOpen] = useState(false);
@@ -106,29 +100,26 @@ export function Placeholder(props : NodeProps) {
           <PopoverTrigger asChild>
             <div
               ref={nodeRef}
-              className={`bg-white rounded w-[180px] h-[110px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`bg-white rounded w-[150px] h-[75px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
               onDoubleClick={handleDoubleClick}
             >
-<Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black"/>
-<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black"/>
-<div className="text-center w-full">
-    <div className="text-sm mb-1">{props.data?.label || "PLACEHOLDER"}</div>
-    <div className="text-xs font-normal">
-        {PARAMS.filter(p => p.key !== 'id').map(param => (
-        <span key={param.key} className="inline-block mr-1">
-            {param.label}:{" "}{props.data?.[param.key] ?? "-"}
-        </span>
-        ))}
-    </div>
-</div>
+              <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black"/>
+              <Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black"/>
+              <div className="text-center w-full">
+<div className="text-sm mb-1">{"Π"}</div>
+
+
+                
+              </div>
 <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
     {padId(props.data?.id || "-")}
 </div>
 <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
     {(props.data?.Vout || "?")}
-</div></div>
+</div>
 
 
+            </div>
           </PopoverTrigger>
           <PopoverContent align="center" sideOffset={8} className="w-80">
             <div className="mb-2 font-semibold">Editar Parâmetros</div>
@@ -150,6 +141,7 @@ export function Placeholder(props : NodeProps) {
                     className="flex-1 border rounded px-2 py-1 text-xs"
                     {...(param.key === 'id' ? { inputMode: 'numeric', pattern: '[0-9]*' } : {})}
                     {...(param.key === 'Vin' ? { disabled: true } : {})}
+
                   />
                 </div>
               ))}

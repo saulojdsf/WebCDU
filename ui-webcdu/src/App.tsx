@@ -15,32 +15,25 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
+import { SOMA } from './components/nodes/SOMA'
+import { MULTPL } from './components/nodes/MULTPL'
+import { GANHO } from './components/nodes/GANHO'
+
 export const iframeHeight = "800px"
 
 
 
 const NODE_TYPES = {
   placeholder: Placeholder,
+  soma: SOMA,
+  multpl: MULTPL,
+  ganho: GANHO,
 }
 
 const EDGE_TYPES = {
   default: DefaultEdge,
 }
 
-const INITIAL_NODES = [
-  {
-    id: crypto.randomUUID(),
-    type: 'placeholder',
-    position: { x: 500, y: 500 },
-    data: {} ,
-  },
-{
-    id: crypto.randomUUID(),
-    type: 'placeholder',
-    position: { x: 1000, y: 750},
-    data: {}
-},
-] satisfies Node[]
 
 function padId(num: number) {
   return num.toString().padStart(4, '0');
@@ -49,28 +42,41 @@ function padId(num: number) {
 function App() {
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 const nextNodeId = useRef(1);
-const [nodes, setNodes, onNodesChange] = useNodesState([
-  {
-    id: padId(nextNodeId.current++),
-    type: 'placeholder',
-    position: { x: 500, y: 500 },
-    data: { id: padId(1) },
-  },
-  {
-    id: padId(nextNodeId.current++),
-    type: 'placeholder',
-    position: { x: 1000, y: 750 },
-    data: { id: padId(2) },
-  },
-]);
+const [nodes, setNodes, onNodesChange] = useNodesState([]);
 const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 const reactFlowWrapper = useRef<HTMLDivElement>(null);
 const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
 
-const onConnect = useCallback((connection : Connection) => {
-  return setEdges(edges => addEdge(connection, edges))
-},[]);
+const clearAll = useCallback(() => {
+  setNodes([]);
+  setEdges([]);
+  nextNodeId.current = 1;
+}, [setNodes, setEdges]);
+
+const onConnect = useCallback((connection: Connection) => {
+  setEdges(currentEdges => {
+    const updatedEdges = addEdge(connection, currentEdges);
+    setNodes(nodes => {
+      const incoming = updatedEdges.filter(e => e.target === connection.target);
+      const vinArray = incoming.map(e => {
+        const src = nodes.find(n => n.id === e.source);
+        if (src) {
+          const data = src.data as Record<string, any>;
+          return data.Vout;
+        }
+        return undefined;
+      }).filter(v => typeof v !== 'undefined');
+      const vinString = `[${vinArray.join(',')}]`;
+      return nodes.map(n =>
+        n.id === connection.target
+          ? { ...n, data: { ...n.data, Vin: vinString } }
+          : n
+      );
+    });
+    return updatedEdges;
+  });
+}, [setEdges, setNodes]);
 const onDragOver = useCallback((event : React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -98,11 +104,14 @@ const onDrop = useCallback((event: React.DragEvent) => {
     nextId++;
   }
   const id = padId(nextId);
+  // Use the dragged type if it matches a registered node type, otherwise fallback to 'placeholder'
+  const typeKey = typeof nodeData.type === 'string' ? nodeData.type.toLowerCase() : '';
+  const nodeType = typeKey in NODE_TYPES ? typeKey : 'placeholder';
   const newNode = {
     id,
-    type: 'placeholder', // For now, always use placeholder type
+    type: nodeType,
     position,
-    data: { label: nodeData.label, id },
+    data: { label: nodeData.label, id, Vout: `X${id}` },
   };
   setNodes(nds => nds.concat(newNode));
 }, [reactFlowInstance, setNodes, nodes]);
@@ -138,12 +147,30 @@ useEffect(() => {
   return () => window.removeEventListener('keydown', handleKeyDown);
 }, [selectedNodes, selectedEdges, setNodes, setEdges]);
 
+const exportNodes = useCallback(() => {
+  const exportData = nodes.map(n => ({
+    id: n.id,
+    type: n.type,
+    position: n.position,
+    data: n.data,
+  }));
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'nodes.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}, [nodes]);
+
   return (
     <>
-      <Toaster />
+      <Toaster position="top-center" />
 <div className="h-screen flex flex-col">
     <SidebarProvider className="flex flex-col h-full">
-        <SiteHeader/>
+        <SiteHeader onNew={clearAll} onExport={exportNodes}/>
         <div className="flex flex-1">
             <AppSidebar/>
             <SidebarInset>
