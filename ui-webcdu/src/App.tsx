@@ -5,6 +5,18 @@ import { Placeholder } from './components/nodes/PLACEHOLDER'
 import DefaultEdge from './components/edges/DefaultEdge'
 import { useCallback } from 'react'
 
+
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
+
+export const iframeHeight = "800px"
+
+
+
 const NODE_TYPES = {
   placeholder: Placeholder,
 }
@@ -44,26 +56,36 @@ const onDragOver = useCallback((event : React.DragEvent) => {
 
 
   return (
-    <div className="w-screen h-screen">
-      <ReactFlow 
-      nodeTypes={NODE_TYPES} 
-      nodes={nodes} 
-      edgeTypes={EDGE_TYPES} 
-      edges={edges} 
-      connectionMode={ConnectionMode.Strict}
-      onConnect={onConnect}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onDragOver={onDragOver}
-      defaultEdgeOptions={{
-        type: 'default',
-      }}
-      >
-        <Background gap={12} size={2} color="#aaa"/>
-        <Controls position="top-right"/>
-        <MiniMap />
-      </ReactFlow>
-    </div>
+    <>
+<div className="h-screen flex flex-col">
+    <SidebarProvider className="flex flex-col h-full">
+        <SiteHeader/>
+        <div className="flex flex-1">
+            <AppSidebar/>
+            <SidebarInset>
+                <div className="w-full h-full">
+                    <ReactFlow 
+                        nodeTypes={NODE_TYPES} 
+                        nodes={nodes} 
+                        edgeTypes={EDGE_TYPES} 
+                        edges={edges} 
+                        connectionMode={ConnectionMode.Strict} 
+                        onConnect={onConnect} 
+                        onNodesChange={onNodesChange} 
+                        onEdgesChange={onEdgesChange} 
+                        onDragOver={onDragOver} 
+                        defaultEdgeOptions={{ type: 'default', }}
+                    >
+                        <Background gap={12} size={2} color="#aaa"/>
+                        <Controls position="top-right"/>
+                        <MiniMap/>
+                    </ReactFlow>
+                </div>
+            </SidebarInset>
+        </div>
+    </SidebarProvider>
+</div>
+    </>
   )
 }
 
