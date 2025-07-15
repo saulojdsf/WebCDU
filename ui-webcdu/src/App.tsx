@@ -14,6 +14,8 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { CommandMenu } from "@/components/command-menu"
+
 
 import { SOMA } from './components/nodes/SOMA'
 import { MULTPL } from './components/nodes/MULTPL'
@@ -40,6 +42,29 @@ function padId(num: number) {
 }
 
 function App() {
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [commandMenuResetKey, setCommandMenuResetKey] = useState(0);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      const isInput =
+        active &&
+        (
+          active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          (active as HTMLElement).isContentEditable
+        );
+      if (!isInput && e.key === "/") {
+        e.preventDefault();
+        setCommandMenuResetKey(k => k + 1);
+        setCommandOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 const nextNodeId = useRef(1);
 const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -165,8 +190,74 @@ const exportNodes = useCallback(() => {
   URL.revokeObjectURL(url);
 }, [nodes]);
 
+const updateConnectedVins = useCallback((changedNodeId: string) => {
+  setNodes(nodes => {
+    // Find all outgoing edges from changedNodeId
+    const outgoingEdges = edges.filter(e => e.source === changedNodeId);
+    // For each target node, update its Vin to reflect the current Vout(s) of its sources
+    return nodes.map(n => {
+      // If this node is a target of an outgoing edge
+      if (outgoingEdges.some(e => e.target === n.id)) {
+        // Find all incoming edges to this node
+        const incomingEdges = edges.filter(e => e.target === n.id);
+        const newVinArray = incomingEdges.map(e => {
+          const src = nodes.find(node => node.id === e.source);
+          return src?.data?.Vout;
+        }).filter(Boolean);
+        return { ...n, data: { ...n.data, Vin: `[${newVinArray.join(',')}]` } };
+      }
+      return n;
+    });
+  });
+}, [setNodes, edges]);
+
+// Helper to update node and then update connected vins
+function updateNodeAndConnectedVins(nodeId: string, updater: (nodes: any[]) => any[], newId?: string) {
+  setNodes(nodes => {
+    const updatedNodes = updater(nodes);
+    // After updating, call updateConnectedVins with the newId (if provided), else nodeId
+    setTimeout(() => {
+      updateConnectedVins(newId || nodeId);
+    }, 0);
+    return updatedNodes;
+  });
+}
+
+// When rendering nodes, inject updateConnectedVins and updateNodeAndConnectedVins into node data
+const nodesWithCallbacks = nodes.map(n => {
+  if (["placeholder", "soma", "multpl", "ganho"].includes(n.type ?? "")) {
+    return { ...n, data: { ...n.data, updateConnectedVins, updateNodeAndConnectedVins } };
+  }
+  return n;
+});
+
+  function handleCreateNode(type: string) {
+    if (!reactFlowInstance) return;
+    // Find the lowest available ID from 0001 to 9999
+    const usedIds = new Set(nodes.map(n => parseInt(n.data?.id, 10)));
+    let nextId = 1;
+    while (usedIds.has(nextId) && nextId <= 9999) {
+      nextId++;
+    }
+    const id = padId(nextId);
+    // Center of viewport
+    const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+    const center = reactFlowInstance.project({
+      x: (bounds?.width ?? 800) / 2,
+      y: (bounds?.height ?? 600) / 2,
+    });
+    const newNode = {
+      id,
+      type,
+      position: center,
+      data: { label: type.charAt(0).toUpperCase() + type.slice(1), id, Vout: `X${id}` },
+    };
+    setNodes(nds => nds.concat(newNode));
+  }
+
   return (
     <>
+      <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onCreateNode={handleCreateNode} resetKey={commandMenuResetKey} />
       <Toaster position="top-center" />
 <div className="h-screen flex flex-col">
     <SidebarProvider className="flex flex-col h-full">
@@ -177,7 +268,7 @@ const exportNodes = useCallback(() => {
                 <div className="w-full h-full" ref={reactFlowWrapper}>
                     <ReactFlow 
                         nodeTypes={NODE_TYPES} 
-                        nodes={nodes} 
+                        nodes={nodesWithCallbacks} 
                         edgeTypes={EDGE_TYPES} 
                         edges={edges} 
                         connectionMode={ConnectionMode.Strict} 

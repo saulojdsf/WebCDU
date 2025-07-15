@@ -41,6 +41,9 @@ export function Placeholder(props : NodeProps) {
       }, {} as Record<string, string>));
     }, [props.data]);
 
+    const updateConnectedVins = props.data?.updateConnectedVins;
+    const updateNodeAndConnectedVins = props.data?.updateNodeAndConnectedVins;
+
     const handleDoubleClick = () => setOpen(true);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
@@ -97,7 +100,13 @@ export function Placeholder(props : NodeProps) {
           return;
         }
       }
-      setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      let idChanged = newId !== currentId;
+      let voutChanged = newVout !== currentVout;
+      if ((idChanged || voutChanged) && typeof updateNodeAndConnectedVins === 'function') {
+        updateNodeAndConnectedVins(props.id, (nodes: any[]) => nodes.map((n: any) => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n), idChanged ? newId : undefined);
+      } else {
+        setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      }
       setOpen(false);
     };
 
@@ -127,7 +136,6 @@ export function Placeholder(props : NodeProps) {
 <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
     {(props.data?.Vout || "?")}
 </div></div>
-
 
           </PopoverTrigger>
           <PopoverContent align="center" sideOffset={8} className="w-80">

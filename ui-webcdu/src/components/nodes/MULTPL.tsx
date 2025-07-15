@@ -35,6 +35,9 @@ export function MULTPL(props : NodeProps) {
       }, {} as Record<string, string>));
     }, [props.data]);
 
+    const updateConnectedVins = props.data?.updateConnectedVins;
+    const updateNodeAndConnectedVins = props.data?.updateNodeAndConnectedVins;
+
     const handleDoubleClick = () => setOpen(true);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
@@ -91,7 +94,13 @@ export function MULTPL(props : NodeProps) {
           return;
         }
       }
-      setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      let idChanged = newId !== currentId;
+      let voutChanged = newVout !== currentVout;
+      if ((idChanged || voutChanged) && typeof updateNodeAndConnectedVins === 'function') {
+        updateNodeAndConnectedVins(props.id, (nodes: any[]) => nodes.map((n: any) => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n), idChanged ? newId : undefined);
+      } else {
+        setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      }
       setOpen(false);
     };
 
