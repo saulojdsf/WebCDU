@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
-export function SiteHeader({ onNew, onExport }: { onNew?: () => void, onExport?: () => void }) {
+export function SiteHeader({ onNew, onExport, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames }: { onNew?: () => void, onExport?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void }) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
@@ -119,10 +119,10 @@ export function SiteHeader({ onNew, onExport }: { onNew?: () => void, onExport?:
     <MenubarMenu>
         <MenubarTrigger>Exibir</MenubarTrigger>
         <MenubarContent>
-            <MenubarCheckboxItem checked={true}>
+            <MenubarCheckboxItem checked={showVariableNames} onCheckedChange={onToggleVariableNames}>
                 Nomes de variáveis
             </MenubarCheckboxItem>
-            <MenubarCheckboxItem checked={true}>
+            <MenubarCheckboxItem checked={showBlockNumbers} onCheckedChange={onToggleBlockNumbers}>
                 Numero dos blocos
             </MenubarCheckboxItem>
 

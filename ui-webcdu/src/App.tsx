@@ -44,6 +44,8 @@ function padId(num: number) {
 function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandMenuResetKey, setCommandMenuResetKey] = useState(0);
+  const [showBlockNumbers, setShowBlockNumbers] = useState(true);
+  const [showVariableNames, setShowVariableNames] = useState(true);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -226,7 +228,7 @@ function updateNodeAndConnectedVins(nodeId: string, updater: (nodes: any[]) => a
 // When rendering nodes, inject updateConnectedVins and updateNodeAndConnectedVins into node data
 const nodesWithCallbacks = nodes.map(n => {
   if (["placeholder", "soma", "multpl", "ganho"].includes(n.type ?? "")) {
-    return { ...n, data: { ...n.data, updateConnectedVins, updateNodeAndConnectedVins } };
+    return { ...n, data: { ...n.data, updateConnectedVins, updateNodeAndConnectedVins, showBlockNumbers, showVariableNames } };
   }
   return n;
 });
@@ -261,7 +263,14 @@ const nodesWithCallbacks = nodes.map(n => {
       <Toaster position="top-center" />
 <div className="h-screen flex flex-col">
     <SidebarProvider className="flex flex-col h-full">
-        <SiteHeader onNew={clearAll} onExport={exportNodes}/>
+        <SiteHeader
+          onNew={clearAll}
+          onExport={exportNodes}
+          showBlockNumbers={showBlockNumbers}
+          onToggleBlockNumbers={() => setShowBlockNumbers(v => !v)}
+          showVariableNames={showVariableNames}
+          onToggleVariableNames={() => setShowVariableNames(v => !v)}
+        />
         <div className="flex flex-1">
             <AppSidebar/>
             <SidebarInset>

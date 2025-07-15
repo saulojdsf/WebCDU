@@ -23,9 +23,9 @@ import {
 
 const NODE_COMMANDS = [
   { type: "placeholder", label: "Placeholder" },
-  { type: "soma", label: "Soma" },
-  { type: "multpl", label: "Multiplicador" },
-  { type: "ganho", label: "Ganho" },
+  { type: "soma", label: "SOMA" },
+  { type: "multpl", label: "MULTPL" },
+  { type: "ganho", label: "GANHO" },
 ];
 
 type CommandMenuProps = {

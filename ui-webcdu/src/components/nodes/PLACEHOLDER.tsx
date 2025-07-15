@@ -43,6 +43,8 @@ export function Placeholder(props : NodeProps) {
 
     const updateConnectedVins = props.data?.updateConnectedVins;
     const updateNodeAndConnectedVins = props.data?.updateNodeAndConnectedVins;
+    const showBlockNumbers = props.data?.showBlockNumbers;
+    const showVariableNames = props.data?.showVariableNames;
 
     const handleDoubleClick = () => setOpen(true);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,12 +132,17 @@ export function Placeholder(props : NodeProps) {
         ))}
     </div>
 </div>
-<div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
-    {padId(props.data?.id || "-")}
+{showBlockNumbers && (
+  <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
+      {padId(props.data?.id || "-")}
+  </div>
+)}
+{showVariableNames && (
+  <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
+      {(props.data?.Vout || "?")}
+  </div>
+)}
 </div>
-<div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
-    {(props.data?.Vout || "?")}
-</div></div>
 
           </PopoverTrigger>
           <PopoverContent align="center" sideOffset={8} className="w-80">
