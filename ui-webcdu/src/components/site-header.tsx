@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
-export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange }: { onNew?: () => void, onExport?: () => void, onOpen?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void, onAutoRearrange?: () => void }) {
+export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange, onSugiyamaLayout }: { onNew?: () => void, onExport?: () => void, onOpen?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void, onAutoRearrange?: () => void, onSugiyamaLayout?: () => void }) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
@@ -115,6 +115,10 @@ export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggle
                     <MenubarItem>Localizar anterior</MenubarItem>
                 </MenubarSubContent>
             </MenubarSub>
+            <MenubarSeparator/>
+            <MenubarItem onClick={onSugiyamaLayout}>
+                Sugiyama Layout
+            </MenubarItem>
             <MenubarSeparator/>
             <MenubarItem>Cortar</MenubarItem>
             <MenubarItem>Copiar</MenubarItem>
