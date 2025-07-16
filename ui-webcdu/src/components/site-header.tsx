@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
+<<<<<<< HEAD
 interface SiteHeaderProps {
   onNew?: () => void;
   onExport?: () => void;
@@ -64,6 +65,9 @@ export function SiteHeader({
   onSearchModeChange,
   onClearSearch
 }: SiteHeaderProps) {
+=======
+export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange, onSugiyamaLayout }: { onNew?: () => void, onExport?: () => void, onOpen?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void, onAutoRearrange?: () => void, onSugiyamaLayout?: () => void }) {
+>>>>>>> f8d34da (Bug fixed)
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 

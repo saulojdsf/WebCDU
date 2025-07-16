@@ -128,74 +128,17 @@ function App() {
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
 
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-    const edgesRef = useRef(edges);
-    useEffect(() => {
-        edgesRef.current = edges;
-    }, [edges]);
-    const nextNodeId = useRef(1);
-    const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
-    const reactFlowWrapper = useRef<HTMLDivElement>(null);
-    const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-    const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
-
-    // Convert ReactFlow nodes and edges to searchable format
-    const searchableNodes: SearchableNode[] = useMemo(() => 
-        nodes.map(node => ({
-            ...node,
-            data: {
-                ...node.data,
-                id: node.data?.id || node.id,
-                Vin: node.data?.Vin,
-                Vout: node.data?.Vout
-            }
-        })), [nodes]
-    );
-
-    const searchableEdges: SearchableEdge[] = useMemo(() => 
-        edges.map(edge => ({
-            id: edge.id,
-            source: edge.source,
-            target: edge.target,
-            type: edge.type,
-            data: edge.data,
-            label: edge.label
-        })), [edges]
-    );
-
-    // Initialize search functionality
-    const {
-        searchState,
-        handleSearchInput,
-        handleSearchModeChange,
-        clearSearch
-    } = useSearch(searchableNodes, searchableEdges);
-
-    // Connect visualization controller with ReactFlow instance
-    useEffect(() => {
-        if (reactFlowInstance) {
-            visualizationController.setReactFlowInstance(reactFlowInstance);
-        }
-    }, [reactFlowInstance]);
-
-    // Handle search result visualization
-    useEffect(() => {
-        if (searchState.results && searchState.isActive) {
-            // Apply highlighting and center view on search results
-            visualizationController.highlightSearchResults(searchState.results);
-            visualizationController.centerViewOnNodes(searchState.results.nodes);
-        } else {
-            // Clear highlighting when search is inactive
-            visualizationController.clearHighlighting();
-        }
-    }, [searchState.results, searchState.isActive]);
-
-    // Enhanced clear search function that also clears visualization
-    const handleClearSearch = useCallback(() => {
-        clearSearch();
-        visualizationController.clearHighlighting();
-    }, [clearSearch]);
+const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+const edgesRef = useRef(edges);
+useEffect(() => {
+  edgesRef.current = edges;
+}, [edges]);
+const nextNodeId = useRef(1);
+const [nodes, setNodes, onNodesChange] = useNodesState([]);
+const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+const reactFlowWrapper = useRef<HTMLDivElement>(null);
+const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
+const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
 
     const clearAll = useCallback(() => {
         setNodes([]);
@@ -345,51 +288,26 @@ function App() {
         });
     }, [setNodes]);
 
-    // Create wrapper components that receive the update functions and search highlighting state
-    const createNodeWrapper = (Component: any) => {
-        return (props: any) => {
-            const isHighlighted = searchState.highlightedElements.nodes.includes(props.id);
-            const isDimmed = searchState.isActive && !isHighlighted;
-            
-            return (
-                <Component
-                    {...props}
-                    updateConnectedVins={updateConnectedVins}
-                    showBlockNumbers={showBlockNumbers}
-                    showVariableNames={showVariableNames}
-                    isSearchHighlighted={isHighlighted}
-                    isSearchDimmed={isDimmed}
-                />
-            );
-        };
-    };
+// Create wrapper components that receive the update functions
+const createNodeWrapper = (Component: any) => {
+  return (props: any) => (
+    <Component 
+      {...props} 
+      updateConnectedVins={updateConnectedVins}
+      showBlockNumbers={showBlockNumbers}
+      showVariableNames={showVariableNames}
+    />
+  );
+};
 
-    // Create wrapped node types
-    const NODE_TYPES_WITH_CALLBACKS = useMemo(() => {
-        const wrappedTypes: any = {};
-        Object.keys(NODE_TYPES).forEach(key => {
-            wrappedTypes[key] = createNodeWrapper(NODE_TYPES[key as keyof typeof NODE_TYPES]);
-        });
-        return wrappedTypes;
-    }, [updateConnectedVins, showBlockNumbers, showVariableNames, searchState.highlightedElements.nodes, searchState.isActive]);
-    
-    // Create wrapped edge types with search highlighting
-    const EDGE_TYPES_WITH_HIGHLIGHTING = useMemo(() => {
-        return {
-            default: (props: any) => {
-                const isHighlighted = searchState.highlightedElements.edges.includes(props.id);
-                const isDimmed = searchState.isActive && !isHighlighted;
-                
-                return (
-                    <SearchHighlightEdge
-                        {...props}
-                        isSearchHighlighted={isHighlighted}
-                        isSearchDimmed={isDimmed}
-                    />
-                );
-            }
-        };
-    }, [searchState.highlightedElements.edges, searchState.isActive]);
+// Create wrapped node types
+const NODE_TYPES_WITH_CALLBACKS = useMemo(() => {
+  const wrappedTypes: any = {};
+  Object.keys(NODE_TYPES).forEach(key => {
+    wrappedTypes[key] = createNodeWrapper(NODE_TYPES[key as keyof typeof NODE_TYPES]);
+  });
+  return wrappedTypes;
+}, [updateConnectedVins, showBlockNumbers, showVariableNames]);
 
     function handleCreateNode(type: string) {
         if (!reactFlowInstance) return;
@@ -414,67 +332,73 @@ function App() {
         setNodes(nds => nds.concat(newNode));
     }
 
-    const autoRearrangeNodes = useCallback(() => {
-        if (!reactFlowInstance) return;
-
-        // Get all nodes and edges
-        const allNodes = nodes;
-        const allEdges = edges;
-
-        // Find nodes with no incoming edges (sources)
-        const sourceNodes = allNodes.filter(node =>
-            !allEdges.some(edge => edge.target === node.id)
-        );
-
-        // Arrange nodes in layers from left to right
-        const nodePositions = new Map();
-
-        // Start with source nodes at x=0
-        sourceNodes.forEach((node, index) => {
-            nodePositions.set(node.id, { x: 0, y: index * 150 });
+  const autoRearrangeNodes = useCallback(() => {
+    if (!reactFlowInstance) return;
+    
+    // Get all nodes and edges
+    const allNodes = nodes;
+    const allEdges = edges;
+    
+    // Find nodes with no incoming edges (sources)
+    const sourceNodes = allNodes.filter(node => 
+      !allEdges.some(edge => edge.target === node.id)
+    );
+    
+    // Find nodes with no outgoing edges (sinks)
+    const sinkNodes = allNodes.filter(node => 
+      !allEdges.some(edge => edge.source === node.id)
+    );
+    
+    // Arrange nodes in layers from left to right
+    const arrangedNodes = [...allNodes];
+    const nodePositions = new Map();
+    
+    // Start with source nodes at x=0
+    sourceNodes.forEach((node, index) => {
+      nodePositions.set(node.id, { x: 0, y: index * 150 });
+    });
+    
+    // Process remaining nodes based on their connections
+    const processed = new Set(sourceNodes.map(n => n.id));
+    let currentLayer = 1;
+    
+    while (processed.size < allNodes.length) {
+      const currentLayerNodes = allNodes.filter(node => {
+        if (processed.has(node.id)) return false;
+        // Check if all incoming edges are from processed nodes
+        const incomingEdges = allEdges.filter(edge => edge.target === node.id);
+        return incomingEdges.every(edge => processed.has(edge.source));
+      });
+      
+      if (currentLayerNodes.length === 0) {
+        // If no nodes can be processed, put remaining nodes in the last layer
+        const remainingNodes = allNodes.filter(node => !processed.has(node.id));
+        remainingNodes.forEach((node, index) => {
+          nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
         });
-
-        // Process remaining nodes based on their connections
-        const processed = new Set(sourceNodes.map(n => n.id));
-        let currentLayer = 1;
-
-        while (processed.size < allNodes.length) {
-            const currentLayerNodes = allNodes.filter(node => {
-                if (processed.has(node.id)) return false;
-                // Check if all incoming edges are from processed nodes
-                const incomingEdges = allEdges.filter(edge => edge.target === node.id);
-                return incomingEdges.every(edge => processed.has(edge.source));
-            });
-
-            if (currentLayerNodes.length === 0) {
-                // If no nodes can be processed, put remaining nodes in the last layer
-                const remainingNodes = allNodes.filter(node => !processed.has(node.id));
-                remainingNodes.forEach((node, index) => {
-                    nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
-                });
-                break;
-            }
-
-            currentLayerNodes.forEach((node, index) => {
-                nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
-                processed.add(node.id);
-            });
-
-            currentLayer++;
-        }
-
-        // Update node positions
-        setNodes(nodes => nodes.map(node => {
-            const newPos = nodePositions.get(node.id);
-            if (newPos) {
-                return {
-                    ...node,
-                    position: reactFlowInstance.screenToFlowPosition({ x: newPos.x, y: newPos.y })
-                };
-            }
-            return node;
-        }));
-    }, [nodes, edges, setNodes, reactFlowInstance]);
+        break;
+      }
+      
+      currentLayerNodes.forEach((node, index) => {
+        nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
+        processed.add(node.id);
+      });
+      
+      currentLayer++;
+    }
+    
+    // Update node positions
+    setNodes(nodes => nodes.map(node => {
+      const newPos = nodePositions.get(node.id);
+      if (newPos) {
+        return {
+          ...node,
+          position: reactFlowInstance.project({ x: newPos.x, y: newPos.y })
+        };
+      }
+      return node;
+    }));
+  }, [nodes, edges, setNodes, reactFlowInstance]);
 
     const loadNodes = useCallback(() => {
         const input = document.createElement('input');
@@ -557,57 +481,52 @@ function App() {
         }
     }, [nodes, edges, setNodes, reactFlowInstance, elk]);
 
-    return (
-        <>
-            <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onCreateNode={handleCreateNode} resetKey={commandMenuResetKey} />
-            <Toaster position="top-center" />
-            <div className="h-screen flex flex-col">
-                <SidebarProvider className="flex flex-col h-full">
-                    <SiteHeader
-                        onNew={clearAll}
-                        onExport={exportNodes}
-                        onOpen={loadNodes}
-                        showBlockNumbers={showBlockNumbers}
-                        onToggleBlockNumbers={() => setShowBlockNumbers(v => !v)}
-                        showVariableNames={showVariableNames}
-                        onToggleVariableNames={() => setShowVariableNames(v => !v)}
-                        onAutoRearrange={autoRearrangeNodes}
-                        onSugiyamaLayout={onSugiyamaLayout}
-                        searchState={searchState}
-                        onSearchInput={handleSearchInput}
-                        onSearchModeChange={handleSearchModeChange}
-                        onClearSearch={handleClearSearch}
-                    />
-                    <div className="flex flex-1">
-                        <AppSidebar />
-                        <SidebarInset>
-                            <div className="w-full h-full" ref={reactFlowWrapper}>
-                                <ReactFlow
-                                    nodeTypes={NODE_TYPES_WITH_CALLBACKS}
-                                    nodes={nodes}
-                                    edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
-                                    edges={edges}
-                                    connectionMode={ConnectionMode.Strict}
-                                    onConnect={onConnect}
-                                    onNodesChange={onNodesChange}
-                                    onEdgesChange={onEdgesChange}
-                                    onDrop={onDrop}
-                                    onDragOver={onDragOver}
-                                    onInit={setReactFlowInstance}
-                                    onSelectionChange={onSelectionChange}
-                                    defaultEdgeOptions={{ type: 'default', }}
-                                >
-                                    <Background gap={12} size={2} color="#aaa" />
-                                    <Controls position="top-right" />
-                                    <MiniMap />
-                                </ReactFlow>
-                            </div>
-                        </SidebarInset>
-                    </div>
-                </SidebarProvider>
-            </div>
-        </>
-    )
+  return (
+    <>
+      <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onCreateNode={handleCreateNode} resetKey={commandMenuResetKey} />
+      <Toaster position="top-center" />
+<div className="h-screen flex flex-col">
+    <SidebarProvider className="flex flex-col h-full">
+        <SiteHeader
+          onNew={clearAll}
+          onExport={exportNodes}
+          onOpen={loadNodes}
+          showBlockNumbers={showBlockNumbers}
+          onToggleBlockNumbers={() => setShowBlockNumbers(v => !v)}
+          showVariableNames={showVariableNames}
+          onToggleVariableNames={() => setShowVariableNames(v => !v)}
+          onAutoRearrange={autoRearrangeNodes}
+        />
+        <div className="flex flex-1">
+            <AppSidebar/>
+            <SidebarInset>
+                <div className="w-full h-full" ref={reactFlowWrapper}>
+                    <ReactFlow 
+                        nodeTypes={NODE_TYPES_WITH_CALLBACKS} 
+                        nodes={nodes} 
+                        edgeTypes={EDGE_TYPES} 
+                        edges={edges} 
+                        connectionMode={ConnectionMode.Strict} 
+                        onConnect={onConnect} 
+                        onNodesChange={onNodesChange} 
+                        onEdgesChange={onEdgesChange} 
+                        onDrop={onDrop}
+                        onDragOver={onDragOver}
+                        onInit={setReactFlowInstance}
+                        onSelectionChange={onSelectionChange}
+                        defaultEdgeOptions={{ type: 'default', }}
+                    >
+                        <Background gap={12} size={2} color="#aaa"/>
+                        <Controls position="top-right"/>
+                        <MiniMap/>
+                    </ReactFlow>
+                </div>
+            </SidebarInset>
+        </div>
+    </SidebarProvider>
+</div>
+    </>
+  )
 }
 
 export default App
