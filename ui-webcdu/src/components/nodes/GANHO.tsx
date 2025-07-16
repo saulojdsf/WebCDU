@@ -15,7 +15,11 @@ const PARAMS = [
   { key: "P1", label: "P1" },
 ];
 
-export function GANHO(props : NodeProps) {
+export function GANHO(props : NodeProps & { 
+  updateConnectedVins?: (id: string) => void;
+  showBlockNumbers?: boolean;
+  showVariableNames?: boolean;
+}) {
     const isSelected = props.selected;
     const selectionStyles = isSelected ? "ring-4 ring-blue-500 ring-opacity-50 shadow-lg" : "";
     const [open, setOpen] = useState(false);
@@ -36,10 +40,9 @@ export function GANHO(props : NodeProps) {
       }, {} as Record<string, string>));
     }, [props.data]);
 
-    const updateConnectedVins = props.data?.updateConnectedVins;
-    const updateNodeAndConnectedVins = props.data?.updateNodeAndConnectedVins;
-    const showBlockNumbers = props.data?.showBlockNumbers;
-    const showVariableNames = props.data?.showVariableNames;
+    const updateConnectedVins = props.updateConnectedVins;
+    const showBlockNumbers = props.showBlockNumbers;
+    const showVariableNames = props.showVariableNames;
 
     const handleDoubleClick = () => setOpen(true);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,10 +102,9 @@ export function GANHO(props : NodeProps) {
       }
       let idChanged = newId !== currentId;
       let voutChanged = newVout !== currentVout;
-      if ((idChanged || voutChanged) && typeof updateNodeAndConnectedVins === 'function') {
-        updateNodeAndConnectedVins(props.id, (nodes: any[]) => nodes.map((n: any) => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n), idChanged ? newId : undefined);
-      } else {
-        setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
+      if ((idChanged || voutChanged) && typeof updateConnectedVins === 'function') {
+        updateConnectedVins(props.id);
       }
       setOpen(false);
     };
@@ -116,8 +118,10 @@ export function GANHO(props : NodeProps) {
               className={`bg-transparent rounded w-[150px] h-[75px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
               onDoubleClick={handleDoubleClick}
             >
-            <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-10 border-0 bg-black"/>
-            <Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black"/>
+<Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-10 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
+
+<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
+
 <svg
     className="w-[150px] h-[75px]" >
     <polygon

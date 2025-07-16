@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
-export function SiteHeader({ onNew, onExport, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames }: { onNew?: () => void, onExport?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void }) {
+export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange }: { onNew?: () => void, onExport?: () => void, onOpen?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void, onAutoRearrange?: () => void }) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
@@ -58,7 +58,7 @@ export function SiteHeader({ onNew, onExport, showBlockNumbers, onToggleBlockNum
                 <MenubarShortcut>Ctrl+N</MenubarShortcut>
               </MenubarItem>
             </AlertDialogTrigger>
-            <MenubarItem>
+            <MenubarItem onClick={onOpen}>
                 Abrir
                 <MenubarShortcut>Ctrl+O</MenubarShortcut>
             </MenubarItem>
@@ -98,6 +98,11 @@ export function SiteHeader({ onNew, onExport, showBlockNumbers, onToggleBlockNum
             <MenubarItem>
                 Refazer
                 <MenubarShortcut>Ctrl+Shift+Z</MenubarShortcut>
+            </MenubarItem>
+            <MenubarSeparator/>
+            <MenubarItem onClick={onAutoRearrange}>
+                Auto Rearranjar
+                <MenubarShortcut>Ctrl+Shift+A</MenubarShortcut>
             </MenubarItem>
             <MenubarSeparator/>
             <MenubarSub>

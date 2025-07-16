@@ -14,7 +14,7 @@ const PARAMS = [
   { key: "Vout", label: "Vout" },
 ];
 
-export function MULTPL(props : NodeProps & { 
+export function SIN(props : NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -118,15 +118,12 @@ export function MULTPL(props : NodeProps & {
             >
 <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
 
-<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{height: '50px', backgroundColor: 'red'}}/>
+<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
 
+<div className="text-center w-full">
+    <div className="text-lg">{props.data?.label || "PLACEHOLDER"}</div>
 
-              <div className="text-center w-full">
-<div className="text-xl mb-1">{"Π"}</div>
-
-
-                
-              </div>
+</div>
 {showBlockNumbers && (
   <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
       {padId(props.data?.id || "-")}
@@ -137,9 +134,12 @@ export function MULTPL(props : NodeProps & {
       {(props.data?.Vout || "?")}
   </div>
 )}
+<div className="absolute top-0 left-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
+    {"FUNCAO"}
+</div>
 
+</div>
 
-            </div>
           </PopoverTrigger>
           <PopoverContent align="center" sideOffset={8} className="w-80">
             <div className="mb-2 font-semibold">Editar Parâmetros</div>
@@ -161,7 +161,6 @@ export function MULTPL(props : NodeProps & {
                     className="flex-1 border rounded px-2 py-1 text-xs"
                     {...(param.key === 'id' ? { inputMode: 'numeric', pattern: '[0-9]*' } : {})}
                     {...(param.key === 'Vin' ? { disabled: true } : {})}
-
                   />
                 </div>
               ))}

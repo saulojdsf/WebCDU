@@ -2,10 +2,10 @@ import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState
 import type { ReactFlowInstance } from 'reactflow';
 import 'reactflow/dist/style.css'
 
-import { Placeholder } from './components/nodes/PLACEHOLDER'
 import DefaultEdge from './components/edges/DefaultEdge'
-import { useCallback, useRef, useState, useEffect } from 'react'
+import { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import { Toaster } from './components/ui/sonner';
+import { toast } from 'sonner';
 
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -17,19 +17,75 @@ import {
 import { CommandMenu } from "@/components/command-menu"
 
 
-import { SOMA } from './components/nodes/SOMA'
-import { MULTPL } from './components/nodes/MULTPL'
+import { ABS } from './components/nodes/ABS'
+import { ACOS } from './components/nodes/ACOS'
+import { ASIN } from './components/nodes/ASIN'
+import { ATAN } from './components/nodes/ATAN'
+import { ATAN2 } from './components/nodes/ATAN2'
+import { COS } from './components/nodes/COS'
+import { DEGREE } from './components/nodes/DEGREE'
+import { DIVSAO } from './components/nodes/DIVSAO'
+import { ENTRAD } from './components/nodes/ENTRAD'
+import { EXP } from './components/nodes/EXP'
+import { FRACAO } from './components/nodes/FRACAO'
 import { GANHO } from './components/nodes/GANHO'
+import { INVRS } from './components/nodes/INVRS'
+import { LEDLAG } from './components/nodes/LEDLAG'
+import { LOG } from './components/nodes/LOG'
+import { LOG10 } from './components/nodes/LOG10'
+import { MENOS } from './components/nodes/MENOS'
+import { MULTPL } from './components/nodes/MULTPL'
+import { OFFSET } from './components/nodes/OFFSET'
+import { ORD1 } from './components/nodes/ORD1'
+import { Placeholder } from './components/nodes/PLACEHOLDER'
+import { PROINT } from './components/nodes/PROINT'
+import { RADIAN } from './components/nodes/RADIAN'
+import { ROUND } from './components/nodes/ROUND'
+import { SIN } from './components/nodes/SIN'
+import { SINAL } from './components/nodes/SINAL'
+import { SOMA } from './components/nodes/SOMA'
+import { SQRT } from './components/nodes/SQRT'
+import { TRUNC } from './components/nodes/TRUNC'
+import { TAN } from './components/nodes/TAN'
+import { X2 } from './components/nodes/X2'
+import { XK } from './components/nodes/XK'
+
 
 export const iframeHeight = "800px"
 
-
-
 const NODE_TYPES = {
-  placeholder: Placeholder,
-  soma: SOMA,
-  multpl: MULTPL,
+  abs: ABS,
+  acos: ACOS,
+  asin: ASIN,
+  atan: ATAN,
+  atan2: ATAN2,
+  cos: COS,
+  degree: DEGREE,
+  divsao: DIVSAO,
+  entrad: ENTRAD,
+  exp: EXP,
+  fracao: FRACAO,
   ganho: GANHO,
+  invrs: INVRS,
+  ledlag: LEDLAG,
+  log: LOG,
+  log10: LOG10,
+  menos: MENOS,
+  multpl: MULTPL,
+  offset: OFFSET,
+  ord1: ORD1,
+  proint: PROINT,
+  placeholder: Placeholder,
+  radian: RADIAN,
+  round: ROUND,
+  sin: SIN,
+  sinal: SINAL,
+  soma: SOMA,
+  sqrt: SQRT,
+  tan: TAN,
+  trunc: TRUNC,
+  x2: X2,
+  xk: XK,
 }
 
 const EDGE_TYPES = {
@@ -68,6 +124,10 @@ function App() {
   }, []);
 
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+const edgesRef = useRef(edges);
+useEffect(() => {
+  edgesRef.current = edges;
+}, [edges]);
 const nextNodeId = useRef(1);
 const [nodes, setNodes, onNodesChange] = useNodesState([]);
 const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -195,13 +255,13 @@ const exportNodes = useCallback(() => {
 const updateConnectedVins = useCallback((changedNodeId: string) => {
   setNodes(nodes => {
     // Find all outgoing edges from changedNodeId
-    const outgoingEdges = edges.filter(e => e.source === changedNodeId);
+    const outgoingEdges = edgesRef.current.filter(e => e.source === changedNodeId);
     // For each target node, update its Vin to reflect the current Vout(s) of its sources
     return nodes.map(n => {
       // If this node is a target of an outgoing edge
       if (outgoingEdges.some(e => e.target === n.id)) {
         // Find all incoming edges to this node
-        const incomingEdges = edges.filter(e => e.target === n.id);
+        const incomingEdges = edgesRef.current.filter(e => e.target === n.id);
         const newVinArray = incomingEdges.map(e => {
           const src = nodes.find(node => node.id === e.source);
           return src?.data?.Vout;
@@ -211,27 +271,28 @@ const updateConnectedVins = useCallback((changedNodeId: string) => {
       return n;
     });
   });
-}, [setNodes, edges]);
+}, [setNodes]);
 
-// Helper to update node and then update connected vins
-function updateNodeAndConnectedVins(nodeId: string, updater: (nodes: any[]) => any[], newId?: string) {
-  setNodes(nodes => {
-    const updatedNodes = updater(nodes);
-    // After updating, call updateConnectedVins with the newId (if provided), else nodeId
-    setTimeout(() => {
-      updateConnectedVins(newId || nodeId);
-    }, 0);
-    return updatedNodes;
+// Create wrapper components that receive the update functions
+const createNodeWrapper = (Component: any) => {
+  return (props: any) => (
+    <Component 
+      {...props} 
+      updateConnectedVins={updateConnectedVins}
+      showBlockNumbers={showBlockNumbers}
+      showVariableNames={showVariableNames}
+    />
+  );
+};
+
+// Create wrapped node types
+const NODE_TYPES_WITH_CALLBACKS = useMemo(() => {
+  const wrappedTypes: any = {};
+  Object.keys(NODE_TYPES).forEach(key => {
+    wrappedTypes[key] = createNodeWrapper(NODE_TYPES[key as keyof typeof NODE_TYPES]);
   });
-}
-
-// When rendering nodes, inject updateConnectedVins and updateNodeAndConnectedVins into node data
-const nodesWithCallbacks = nodes.map(n => {
-  if (["placeholder", "soma", "multpl", "ganho"].includes(n.type ?? "")) {
-    return { ...n, data: { ...n.data, updateConnectedVins, updateNodeAndConnectedVins, showBlockNumbers, showVariableNames } };
-  }
-  return n;
-});
+  return wrappedTypes;
+}, [updateConnectedVins, showBlockNumbers, showVariableNames]);
 
   function handleCreateNode(type: string) {
     if (!reactFlowInstance) return;
@@ -257,6 +318,110 @@ const nodesWithCallbacks = nodes.map(n => {
     setNodes(nds => nds.concat(newNode));
   }
 
+  const autoRearrangeNodes = useCallback(() => {
+    if (!reactFlowInstance) return;
+    
+    // Get all nodes and edges
+    const allNodes = nodes;
+    const allEdges = edges;
+    
+    // Find nodes with no incoming edges (sources)
+    const sourceNodes = allNodes.filter(node => 
+      !allEdges.some(edge => edge.target === node.id)
+    );
+    
+    // Find nodes with no outgoing edges (sinks)
+    const sinkNodes = allNodes.filter(node => 
+      !allEdges.some(edge => edge.source === node.id)
+    );
+    
+    // Arrange nodes in layers from left to right
+    const arrangedNodes = [...allNodes];
+    const nodePositions = new Map();
+    
+    // Start with source nodes at x=0
+    sourceNodes.forEach((node, index) => {
+      nodePositions.set(node.id, { x: 0, y: index * 150 });
+    });
+    
+    // Process remaining nodes based on their connections
+    const processed = new Set(sourceNodes.map(n => n.id));
+    let currentLayer = 1;
+    
+    while (processed.size < allNodes.length) {
+      const currentLayerNodes = allNodes.filter(node => {
+        if (processed.has(node.id)) return false;
+        // Check if all incoming edges are from processed nodes
+        const incomingEdges = allEdges.filter(edge => edge.target === node.id);
+        return incomingEdges.every(edge => processed.has(edge.source));
+      });
+      
+      if (currentLayerNodes.length === 0) {
+        // If no nodes can be processed, put remaining nodes in the last layer
+        const remainingNodes = allNodes.filter(node => !processed.has(node.id));
+        remainingNodes.forEach((node, index) => {
+          nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
+        });
+        break;
+      }
+      
+      currentLayerNodes.forEach((node, index) => {
+        nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
+        processed.add(node.id);
+      });
+      
+      currentLayer++;
+    }
+    
+    // Update node positions
+    setNodes(nodes => nodes.map(node => {
+      const newPos = nodePositions.get(node.id);
+      if (newPos) {
+        return {
+          ...node,
+          position: reactFlowInstance.project({ x: newPos.x, y: newPos.y })
+        };
+      }
+      return node;
+    }));
+  }, [nodes, edges, setNodes, reactFlowInstance]);
+
+  const loadNodes = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target?.result as string);
+          if (Array.isArray(data)) {
+            // Reset the nextNodeId to the highest ID + 1
+            const maxId = Math.max(...data.map((node: any) => parseInt(node.data?.id || '0', 10)), 0);
+            nextNodeId.current = maxId + 1;
+            
+            // Load nodes and edges
+            setNodes(data);
+            // Note: Edges would need to be loaded separately if they're stored in the JSON
+            setEdges([]); // Reset edges for now
+            
+            toast.success('Diagrama carregado com sucesso!');
+          } else {
+            toast.error('Formato de arquivo inválido');
+          }
+        } catch (error) {
+          toast.error('Erro ao carregar arquivo');
+          console.error('Error loading file:', error);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, [setNodes, setEdges]);
+
   return (
     <>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onCreateNode={handleCreateNode} resetKey={commandMenuResetKey} />
@@ -266,18 +431,20 @@ const nodesWithCallbacks = nodes.map(n => {
         <SiteHeader
           onNew={clearAll}
           onExport={exportNodes}
+          onOpen={loadNodes}
           showBlockNumbers={showBlockNumbers}
           onToggleBlockNumbers={() => setShowBlockNumbers(v => !v)}
           showVariableNames={showVariableNames}
           onToggleVariableNames={() => setShowVariableNames(v => !v)}
+          onAutoRearrange={autoRearrangeNodes}
         />
         <div className="flex flex-1">
             <AppSidebar/>
             <SidebarInset>
                 <div className="w-full h-full" ref={reactFlowWrapper}>
                     <ReactFlow 
-                        nodeTypes={NODE_TYPES} 
-                        nodes={nodesWithCallbacks} 
+                        nodeTypes={NODE_TYPES_WITH_CALLBACKS} 
+                        nodes={nodes} 
                         edgeTypes={EDGE_TYPES} 
                         edges={edges} 
                         connectionMode={ConnectionMode.Strict} 

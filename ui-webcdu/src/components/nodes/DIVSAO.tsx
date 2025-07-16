@@ -14,7 +14,7 @@ const PARAMS = [
   { key: "Vout", label: "Vout" },
 ];
 
-export function MULTPL(props : NodeProps & { 
+export function DIVSAO(props : NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -122,7 +122,8 @@ export function MULTPL(props : NodeProps & {
 
 
               <div className="text-center w-full">
-<div className="text-xl mb-1">{"Π"}</div>
+<div className="text-lg">{"÷"}</div>
+
 
 
                 

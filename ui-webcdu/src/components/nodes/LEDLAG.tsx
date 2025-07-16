@@ -12,9 +12,15 @@ const PARAMS = [
   { key: "id", label: "ID" },
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
+  { key: "P1", label: "P1" },
+  { key: "P2", label: "P2" },
+  { key: "P3", label: "P3" },
+  { key: "P4", label: "P4" },
+  { key: "Vmin", label: "Vmin" },
+  { key: "Vmax", label: "Vmax" },
 ];
 
-export function MULTPL(props : NodeProps & { 
+export function LEDLAG(props : NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -113,33 +119,40 @@ export function MULTPL(props : NodeProps & {
           <PopoverTrigger asChild>
             <div
               ref={nodeRef}
-              className={`bg-white rounded w-[150px] h-[75px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
               onDoubleClick={handleDoubleClick}
             >
 <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
 
-<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{height: '50px', backgroundColor: 'red'}}/>
+<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
 
+<svg className="w-[150px] h-[150px]">
+<text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"LEDLAG"}</text>
 
-              <div className="text-center w-full">
-<div className="text-xl mb-1">{"Π"}</div>
+{props.data.Vmax && (
+  <>
+<text x="85" y="15" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmax || "?")}</text>
 
+    <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" stroke-width="2"/>
+    <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="2"/>
+    <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" stroke-width="2"/>
+<text x="35" y="143" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmin || "?")}</text>
 
-                
-              </div>
-{showBlockNumbers && (
-  <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
-      {padId(props.data?.id || "-")}
-  </div>
-)}
-{showVariableNames && (
-  <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
-      {(props.data?.Vout || "?")}
-  </div>
+    </>
 )}
 
 
-            </div>
+    <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2"/>
+    <text x="40" y="69.5" font-family="Arial" font-size="20" fill="#000">{"P1+sP2"}</text>
+    <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" stroke-width="2"/>
+    <text x="40" y="92.5" font-family="Arial" font-size="20" fill="#000">{"P3+sP4"}</text>
+    {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+    {showBlockNumbers && (<text x="120" y="107.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.id || "?")}</text>)}
+    
+
+</svg>
+</div>
+
           </PopoverTrigger>
           <PopoverContent align="center" sideOffset={8} className="w-80">
             <div className="mb-2 font-semibold">Editar Parâmetros</div>
@@ -161,7 +174,6 @@ export function MULTPL(props : NodeProps & {
                     className="flex-1 border rounded px-2 py-1 text-xs"
                     {...(param.key === 'id' ? { inputMode: 'numeric', pattern: '[0-9]*' } : {})}
                     {...(param.key === 'Vin' ? { disabled: true } : {})}
-
                   />
                 </div>
               ))}
