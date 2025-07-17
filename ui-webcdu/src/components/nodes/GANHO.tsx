@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { toast } from "sonner";
+import { NodeHighlightWrapper } from "./NodeHighlightWrapper";
 
 function padId(num: string | number) {
   return num.toString().padStart(4, '0');
@@ -19,9 +20,23 @@ export function GANHO(props : NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
+  isSearchHighlighted?: boolean;
+  isSearchDimmed?: boolean;
 }) {
     const isSelected = props.selected;
-    const selectionStyles = isSelected ? "ring-4 ring-blue-500 ring-opacity-50 shadow-lg" : "";
+    const isSearchHighlighted = props.isSearchHighlighted || false;
+    const isSearchDimmed = props.isSearchDimmed || false;
+    
+    // Combine selection and search highlighting styles
+    let containerStyles = "";
+    if (isSearchHighlighted) {
+        containerStyles = "ring-4 ring-orange-500 ring-opacity-75 shadow-lg";
+    } else if (isSelected) {
+        containerStyles = "ring-4 ring-blue-500 ring-opacity-50 shadow-lg";
+    }
+    
+    // Apply dimming when search is active but this node is not highlighted
+    const opacityStyle = isSearchDimmed ? "opacity-50" : "opacity-100";
     const [open, setOpen] = useState(false);
     const nodeRef = useRef<HTMLDivElement>(null);
     const { setNodes, getNodes } = useReactFlow();
@@ -113,9 +128,12 @@ export function GANHO(props : NodeProps & {
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             
-            <div
-              ref={nodeRef}
-              className={`bg-transparent rounded w-[150px] h-[75px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+            <NodeHighlightWrapper
+              nodeRef={nodeRef}
+              isSelected={isSelected}
+              isSearchHighlighted={isSearchHighlighted}
+              isSearchDimmed={isSearchDimmed}
+              className="w-[150px] h-[75px] border-2 border-transparent text-black font-bold"
               onDoubleClick={handleDoubleClick}
             >
 <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-10 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
@@ -146,7 +164,7 @@ export function GANHO(props : NodeProps & {
 
 
 
-            </div>
+            </NodeHighlightWrapper>
 
 
           </PopoverTrigger>

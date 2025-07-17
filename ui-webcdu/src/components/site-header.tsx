@@ -1,9 +1,10 @@
 import { SidebarIcon } from "lucide-react"
 
-import { SearchForm } from "@/components/search-form"
+import { SearchComponent } from "@/components/SearchComponent"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
+import type { SearchState } from "@/lib/search-types"
 
 import {
   Menubar,
@@ -31,7 +32,38 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
-export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange, onSugiyamaLayout }: { onNew?: () => void, onExport?: () => void, onOpen?: () => void, showBlockNumbers: boolean, onToggleBlockNumbers: () => void, showVariableNames: boolean, onToggleVariableNames: () => void, onAutoRearrange?: () => void, onSugiyamaLayout?: () => void }) {
+interface SiteHeaderProps {
+  onNew?: () => void;
+  onExport?: () => void;
+  onOpen?: () => void;
+  showBlockNumbers: boolean;
+  onToggleBlockNumbers: () => void;
+  showVariableNames: boolean;
+  onToggleVariableNames: () => void;
+  onAutoRearrange?: () => void;
+  onSugiyamaLayout?: () => void;
+  // Search-related props
+  searchState: SearchState;
+  onSearchInput: (query: string) => void;
+  onSearchModeChange: (mode: 'id' | 'variable') => void;
+  onClearSearch: () => void;
+}
+
+export function SiteHeader({ 
+  onNew, 
+  onExport, 
+  onOpen, 
+  showBlockNumbers, 
+  onToggleBlockNumbers, 
+  showVariableNames, 
+  onToggleVariableNames, 
+  onAutoRearrange, 
+  onSugiyamaLayout,
+  searchState,
+  onSearchInput,
+  onSearchModeChange,
+  onClearSearch
+}: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
@@ -108,11 +140,25 @@ export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggle
             <MenubarSub>
                 <MenubarSubTrigger>Localizar</MenubarSubTrigger>
                 <MenubarSubContent>
-                    <MenubarItem>Bloco</MenubarItem>
+                    <MenubarItem onClick={() => {
+                      onSearchModeChange('id');
+                      document.getElementById('node-search')?.focus();
+                    }}>
+                      Buscar por ID
+                      <MenubarShortcut>/</MenubarShortcut>
+                    </MenubarItem>
+                    <MenubarItem onClick={() => {
+                      onSearchModeChange('variable');
+                      document.getElementById('node-search')?.focus();
+                    }}>
+                      Buscar por Variável
+                      <MenubarShortcut>Alt+M</MenubarShortcut>
+                    </MenubarItem>
                     <MenubarSeparator/>
-                    <MenubarItem>Variavel...</MenubarItem>
-                    <MenubarItem>Localizar proxima</MenubarItem>
-                    <MenubarItem>Localizar anterior</MenubarItem>
+                    <MenubarItem onClick={onClearSearch}>
+                      Limpar busca
+                      <MenubarShortcut>Esc</MenubarShortcut>
+                    </MenubarItem>
                 </MenubarSubContent>
             </MenubarSub>
             <MenubarSeparator/>
@@ -162,7 +208,13 @@ export function SiteHeader({ onNew, onExport, onOpen, showBlockNumbers, onToggle
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-        <SearchForm className="w-full sm:ml-auto sm:w-auto" />
+        <SearchComponent 
+          searchState={searchState}
+          onSearchInput={onSearchInput}
+          onSearchModeChange={onSearchModeChange}
+          onClearSearch={onClearSearch}
+          className="w-full sm:ml-auto sm:w-auto" 
+        />
       </div>
     </header>
   )

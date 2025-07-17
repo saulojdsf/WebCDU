@@ -1,11 +1,15 @@
-import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState, useNodesState, type Connection, addEdge, type Node, useReactFlow } from 'reactflow'
+import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState, useNodesState, type Connection, addEdge, type Node } from 'reactflow'
 import type { ReactFlowInstance } from 'reactflow';
 import 'reactflow/dist/style.css'
 
 import DefaultEdge from './components/edges/DefaultEdge'
+import SearchHighlightEdge from './components/edges/SearchHighlightEdge'
 import { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
+import { useSearch } from '@/hooks/useSearch';
+import { visualizationController } from '@/lib/visualization-controller';
+import type { SearchableNode, SearchableEdge } from '@/lib/search-types';
 
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -135,6 +139,63 @@ function App() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
+
+    // Convert ReactFlow nodes and edges to searchable format
+    const searchableNodes: SearchableNode[] = useMemo(() => 
+        nodes.map(node => ({
+            ...node,
+            data: {
+                ...node.data,
+                id: node.data?.id || node.id,
+                Vin: node.data?.Vin,
+                Vout: node.data?.Vout
+            }
+        })), [nodes]
+    );
+
+    const searchableEdges: SearchableEdge[] = useMemo(() => 
+        edges.map(edge => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: edge.type,
+            data: edge.data,
+            label: edge.label
+        })), [edges]
+    );
+
+    // Initialize search functionality
+    const {
+        searchState,
+        handleSearchInput,
+        handleSearchModeChange,
+        clearSearch
+    } = useSearch(searchableNodes, searchableEdges);
+
+    // Connect visualization controller with ReactFlow instance
+    useEffect(() => {
+        if (reactFlowInstance) {
+            visualizationController.setReactFlowInstance(reactFlowInstance);
+        }
+    }, [reactFlowInstance]);
+
+    // Handle search result visualization
+    useEffect(() => {
+        if (searchState.results && searchState.isActive) {
+            // Apply highlighting and center view on search results
+            visualizationController.highlightSearchResults(searchState.results);
+            visualizationController.centerViewOnNodes(searchState.results.nodes);
+        } else {
+            // Clear highlighting when search is inactive
+            visualizationController.clearHighlighting();
+        }
+    }, [searchState.results, searchState.isActive]);
+
+    // Enhanced clear search function that also clears visualization
+    const handleClearSearch = useCallback(() => {
+        clearSearch();
+        visualizationController.clearHighlighting();
+    }, [clearSearch]);
 
     const clearAll = useCallback(() => {
         setNodes([]);
@@ -284,16 +345,23 @@ function App() {
         });
     }, [setNodes]);
 
-    // Create wrapper components that receive the update functions
+    // Create wrapper components that receive the update functions and search highlighting state
     const createNodeWrapper = (Component: any) => {
-        return (props: any) => (
-            <Component
-                {...props}
-                updateConnectedVins={updateConnectedVins}
-                showBlockNumbers={showBlockNumbers}
-                showVariableNames={showVariableNames}
-            />
-        );
+        return (props: any) => {
+            const isHighlighted = searchState.highlightedElements.nodes.includes(props.id);
+            const isDimmed = searchState.isActive && !isHighlighted;
+            
+            return (
+                <Component
+                    {...props}
+                    updateConnectedVins={updateConnectedVins}
+                    showBlockNumbers={showBlockNumbers}
+                    showVariableNames={showVariableNames}
+                    isSearchHighlighted={isHighlighted}
+                    isSearchDimmed={isDimmed}
+                />
+            );
+        };
     };
 
     // Create wrapped node types
@@ -303,7 +371,25 @@ function App() {
             wrappedTypes[key] = createNodeWrapper(NODE_TYPES[key as keyof typeof NODE_TYPES]);
         });
         return wrappedTypes;
-    }, [updateConnectedVins, showBlockNumbers, showVariableNames]);
+    }, [updateConnectedVins, showBlockNumbers, showVariableNames, searchState.highlightedElements.nodes, searchState.isActive]);
+    
+    // Create wrapped edge types with search highlighting
+    const EDGE_TYPES_WITH_HIGHLIGHTING = useMemo(() => {
+        return {
+            default: (props: any) => {
+                const isHighlighted = searchState.highlightedElements.edges.includes(props.id);
+                const isDimmed = searchState.isActive && !isHighlighted;
+                
+                return (
+                    <SearchHighlightEdge
+                        {...props}
+                        isSearchHighlighted={isHighlighted}
+                        isSearchDimmed={isDimmed}
+                    />
+                );
+            }
+        };
+    }, [searchState.highlightedElements.edges, searchState.isActive]);
 
     function handleCreateNode(type: string) {
         if (!reactFlowInstance) return;
@@ -340,13 +426,7 @@ function App() {
             !allEdges.some(edge => edge.target === node.id)
         );
 
-        // Find nodes with no outgoing edges (sinks)
-        const sinkNodes = allNodes.filter(node =>
-            !allEdges.some(edge => edge.source === node.id)
-        );
-
         // Arrange nodes in layers from left to right
-        const arrangedNodes = [...allNodes];
         const nodePositions = new Map();
 
         // Start with source nodes at x=0
@@ -493,6 +573,10 @@ function App() {
                         onToggleVariableNames={() => setShowVariableNames(v => !v)}
                         onAutoRearrange={autoRearrangeNodes}
                         onSugiyamaLayout={onSugiyamaLayout}
+                        searchState={searchState}
+                        onSearchInput={handleSearchInput}
+                        onSearchModeChange={handleSearchModeChange}
+                        onClearSearch={handleClearSearch}
                     />
                     <div className="flex flex-1">
                         <AppSidebar />
@@ -501,7 +585,7 @@ function App() {
                                 <ReactFlow
                                     nodeTypes={NODE_TYPES_WITH_CALLBACKS}
                                     nodes={nodes}
-                                    edgeTypes={EDGE_TYPES}
+                                    edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
                                     edges={edges}
                                     connectionMode={ConnectionMode.Strict}
                                     onConnect={onConnect}
