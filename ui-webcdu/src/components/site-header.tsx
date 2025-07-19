@@ -4,6 +4,7 @@ import { SearchForm } from "@/components/search-form"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
+import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
 
 import {
   Menubar,
@@ -188,6 +189,10 @@ export function SiteHeader(props: SiteHeaderProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Drawing Toolbar */}
+        <DrawingToolbar className="hidden lg:flex" />
+
         <SearchForm className="w-full sm:ml-auto sm:w-auto" />
       </div>
     </header>

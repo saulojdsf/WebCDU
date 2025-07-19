@@ -9,3 +9,19 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
 });
+
+// Mock ResizeObserver for Radix UI components
+global.ResizeObserver = class ResizeObserver {
+  constructor(callback: ResizeObserverCallback) {
+    // Mock implementation
+  }
+  observe() {
+    // Mock implementation
+  }
+  unobserve() {
+    // Mock implementation
+  }
+  disconnect() {
+    // Mock implementation
+  }
+};

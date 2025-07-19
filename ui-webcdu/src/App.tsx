@@ -22,6 +22,9 @@ import {
     SidebarProvider,
 } from "@/components/ui/sidebar"
 import { CommandMenu } from "@/components/command-menu"
+import { useDrawingCursor } from "@/hooks/useDrawingCursor"
+import { useDrawing } from "@/contexts/DrawingContext"
+import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
 import { POLS } from './components/nodes/POLS'
 import { COMPAR } from './components/nodes/COMPAR';
 import { ENTRAD } from './components/nodes/ENTRAD'
@@ -75,7 +78,7 @@ const NODE_TYPES = {
     descid: SOBDES,
     soma: ARITIMETIC,
     divsao: ARITIMETIC,
-    multpl: ARITIMETIC, 
+    multpl: ARITIMETIC,
     min: MINMAX,
     max: MINMAX,
     noise: GENERIC1P,
@@ -169,6 +172,12 @@ function App() {
     const [commandMenuResetKey, setCommandMenuResetKey] = useState(0);
     const [showBlockNumbers, setShowBlockNumbers] = useState(true);
     const [showVariableNames, setShowVariableNames] = useState(true);
+
+    // Initialize drawing cursor management
+    useDrawingCursor();
+
+    // Get drawing context for persistence
+    const drawingContext = useDrawing();
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -282,7 +291,8 @@ function App() {
         setNodes([]);
         setEdges([]);
         nextNodeId.current = 1;
-    }, [setNodes, setEdges]);
+        drawingContext.clearDrawing();
+    }, [setNodes, setEdges, drawingContext]);
 
     const onConnect = useCallback((connection: Connection) => {
         setEdges(currentEdges => {
@@ -399,6 +409,8 @@ function App() {
                 data: e.data,
                 label: e.label,
             })),
+            // Include drawing data in export
+            drawingData: drawingContext.exportDrawingData(),
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -409,7 +421,7 @@ function App() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }, [nodes, edges]);
+    }, [nodes, edges, drawingContext]);
 
     const updateConnectedVins = useCallback((changedNodeId: string) => {
         setNodes(nodes => {
@@ -592,6 +604,15 @@ function App() {
 
                         setNodes(data.nodes);
                         setEdges(data.edges);
+
+                        // Import drawing data if present
+                        if (data.drawingData) {
+                            drawingContext.importDrawingData(data.drawingData);
+                        } else {
+                            // Clear drawing data if not present in loaded file
+                            drawingContext.clearDrawing();
+                        }
+
                         toast.success('Diagrama carregado com sucesso!');
                     } else {
                         toast.error('Formato de arquivo inválido');
@@ -604,7 +625,7 @@ function App() {
             reader.readAsText(file);
         };
         input.click();
-    }, [setNodes, setEdges]);
+    }, [setNodes, setEdges, drawingContext]);
 
     // Layout algorithm implementations first
     const applyHierarchicalLayout = useCallback(async () => {
@@ -1156,6 +1177,7 @@ function App() {
                                     <Background gap={12} size={2} color="#aaa" />
                                     <Controls position="top-right" />
                                     <MiniMap />
+                                    <DrawingCanvasOverlay />
                                 </ReactFlow>
                             </div>
                         </SidebarInset>
