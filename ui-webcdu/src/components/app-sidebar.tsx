@@ -1,19 +1,19 @@
 import * as React from "react"
 import {
-  Activity,
-  AlarmClock,
-  Binary,
-  Calculator,
-  ChartSpline,
-  ChevronsLeftRightEllipsis,
-  GitCompareArrows,
-  LifeBuoy,
-  MonitorX,
-  Search,
-  Send,
-  ToggleLeft,
-  Waypoints,
-  Bolt,
+    Activity,
+    AlarmClock,
+    Binary,
+    Calculator,
+    ChartSpline,
+    ChevronsLeftRightEllipsis,
+    GitCompareArrows,
+    LifeBuoy,
+    MonitorX,
+    Search,
+    Send,
+    ToggleLeft,
+    Waypoints,
+    Bolt,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -21,24 +21,24 @@ import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
 const data = {
-  user: {
-    name: "Saulo Silva",
-    email: "saulo.silva@ons.org.br",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Aritméticos",
+    user: {
+        name: "Saulo Silva",
+        email: "saulo.silva@ons.org.br",
+        avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+        {
+            title: "Aritméticos",
             url: "#",
             icon: Calculator,
             isActive: true,
@@ -70,7 +70,7 @@ const data = {
             icon: Activity,
             items: [
                 {
-                    title: "ORD(1)",
+                    title: "ORD1",
                     url: "#"
                 },
                 {
@@ -156,25 +156,25 @@ const data = {
             icon: GitCompareArrows,
             items: [
                 {
-                    title: ".LT.",
+                    title: "LT",
                     url: "#"
                 },
                 {
-                    title: ".LE.",
+                    title: "LE",
                     url: "#"
                 },
                 {
-                    title: ".GT.",
+                    title: "GT",
                     url: "#"
                 },
                 {
-                    title: ".GE.",
+                    title: "GE",
                     url: "#"
                 }, {
-                    title: ".EQ.",
+                    title: "EQ",
                     url: "#"
                 }, {
-                    title: ".NE.",
+                    title: "NE",
                     url: "#"
                 },
             ]
@@ -184,205 +184,205 @@ const data = {
             icon: Binary,
             items: [
                 {
-                    title: ".AND.",
+                    title: "AND",
                     url: "#"
                 },
                 {
-                    title: ".OR.",
+                    title: "OR",
                     url: "#"
                 },
                 {
-                    title: ".XOR.",
+                    title: "XOR",
                     url: "#"
                 },
                 {
-                    title: ".NOT.",
+                    title: "NOT",
                     url: "#"
                 }, {
-                    title: ".NAND.",
+                    title: "NAND",
                     url: "#"
                 }, {
-                    title: ".NOR.",
+                    title: "NOR",
                     url: "#"
                 }, {
-                    title: ".NXOR.",
+                    title: "NXOR",
                     url: "#"
                 }, {
                     title: "FFLOP1",
                     url: "#"
                 },
             ]
-        },{
+        }, {
             title: "Seletores",
             url: "#",
             icon: ToggleLeft,
             items: [{
-                    title: "MAX",
-                    url: "#"
-                },{
-                    title: "MIN",
-                    url: "#"
-                },{
-                    title: "SELET2",
-                    url: "#"
-                },]
-          },
-          {
+                title: "MAX",
+                url: "#"
+            }, {
+                title: "MIN",
+                url: "#"
+            }, {
+                title: "SELET2",
+                url: "#"
+            },]
+        },
+        {
             title: "Atraso",
             url: "#",
             icon: AlarmClock,
             items: [{
-                    title: "DELAY",
-                    url: "#"
-                },{
-                    title: "ATRASO",
-                    url: "#"
-                },]
-          },{
+                title: "DELAY",
+                url: "#"
+            }, {
+                title: "ATRASO",
+                url: "#"
+            },]
+        }, {
             title: "Amostragem e Temporização",
             url: "#",
             icon: Search,
             items: [{
-                    title: "T/HOLD",
-                    url: "#"
-                },{
-                    title: "S/HOLD",
-                    url: "#"
-                },{
-                    title: "ACUM",
-                    url: "#"
-                },{
-                    title: "DISMAX",
-                    url: "#"
-                },{
-                    title: "DISMIN",
-                    url: "#"
-                },{
-                    title: "DLAYON",
-                    url: "#"
-                },{
-                    title: "DLAYOF",
-                    url: "#"
-                },{
-                    title: "MONEST",
-                    url: "#"
-                },]
-          },{
+                title: "THOLD",
+                url: "#"
+            }, {
+                title: "SHOLD",
+                url: "#"
+            }, {
+                title: "ACUM",
+                url: "#"
+            }, {
+                title: "DISMAX",
+                url: "#"
+            }, {
+                title: "DISMIN",
+                url: "#"
+            }, {
+                title: "DLAYON",
+                url: "#"
+            }, {
+                title: "DLAYOF",
+                url: "#"
+            }, {
+                title: "MONEST",
+                url: "#"
+            },]
+        }, {
             title: "Funções Matemáticas",
             url: "#",
             icon: ChartSpline,
             items: [{
-                    title: "DEGREE",
-                    url: "#"
-                },{
-                    title: "RADIAN",
-                    url: "#"
-                },{
-                    title: "SIN",
-                    url: "#"
-                },{
-                    title: "COS",
-                    url: "#"
-                },{
-                    title: "TAN",
-                    url: "#"
-                },{
-                    title: "ACOS",
-                    url: "#"
-                },{
-                    title: "ASIN",
-                    url: "#"
-                },{
-                    title: "ATAN",
-                    url: "#"
-                },{
-                    title: "ATAN2",
-                    url: "#"
-                },{
-                    title: "SQRT",
-                    url: "#"
-                },{
-                    title: "X**2",
-                    url: "#"
-                },{
-                    title: "X**K",
-                    url: "#"
-                },{
-                    title: "EXP",
-                    url: "#"
-                },{
-                    title: "LOG",
-                    url: "#"
-                },{
-                    title: "LOG10",
-                    url: "#"
-                },{
-                    title: "INVRS",
-                    url: "#"
-                },{
-                    title: "OFFSET",
-                    url: "#"
-                },{
-                    title: "MENOS",
-                    url: "#"
-                },{
-                    title: "ABS",
-                    url: "#"
-                },{
-                    title: "SINAL",
-                    url: "#"
-                },{
-                    title: "TRUNC",
-                    url: "#"
-                },{
-                    title: "ROUND",
-                    url: "#"
-                },{
-                    title: "PULSO",
-                    url: "#"
-                },{
-                    title: "RAMPA",
-                    url: "#"
-                },{
-                    title: "RETA",
-                    url: "#"
-                },{
-                    title: "DEADB1",
-                    url: "#"
-                },{
-                    title: "DEADB2",
-                    url: "#"
-                },{
-                    title: "HISTE1",
-                    url: "#"
-                },{
-                    title: "SAT01",
-                    url: "#"
-                },{
-                    title: "PONTOS",
-                    url: "#"
-                },{
-                    title: "STEPS",
-                    url: "#"
-                },]
-          },{
+                title: "DEGREE",
+                url: "#"
+            }, {
+                title: "RADIAN",
+                url: "#"
+            }, {
+                title: "SIN",
+                url: "#"
+            }, {
+                title: "COS",
+                url: "#"
+            }, {
+                title: "TAN",
+                url: "#"
+            }, {
+                title: "ACOS",
+                url: "#"
+            }, {
+                title: "ASIN",
+                url: "#"
+            }, {
+                title: "ATAN",
+                url: "#"
+            }, {
+                title: "ATAN2",
+                url: "#"
+            }, {
+                title: "SQRT",
+                url: "#"
+            }, {
+                title: "X**2",
+                url: "#"
+            }, {
+                title: "X**K",
+                url: "#"
+            }, {
+                title: "EXP",
+                url: "#"
+            }, {
+                title: "LOG",
+                url: "#"
+            }, {
+                title: "LOG10",
+                url: "#"
+            }, {
+                title: "INVRS",
+                url: "#"
+            }, {
+                title: "OFFSET",
+                url: "#"
+            }, {
+                title: "MENOS",
+                url: "#"
+            }, {
+                title: "ABS",
+                url: "#"
+            }, {
+                title: "SINAL",
+                url: "#"
+            }, {
+                title: "TRUNC",
+                url: "#"
+            }, {
+                title: "ROUND",
+                url: "#"
+            }, {
+                title: "PULSO",
+                url: "#"
+            }, {
+                title: "RAMPA",
+                url: "#"
+            }, {
+                title: "RETA",
+                url: "#"
+            }, {
+                title: "DEADB1",
+                url: "#"
+            }, {
+                title: "DEADB2",
+                url: "#"
+            }, {
+                title: "HISTE1",
+                url: "#"
+            }, {
+                title: "SAT01",
+                url: "#"
+            }, {
+                title: "PONTOS",
+                url: "#"
+            }, {
+                title: "STEPS",
+                url: "#"
+            },]
+        }, {
             title: "Não-lineares",
             url: "#",
             icon: Waypoints,
             items: [{
-                    title: "FEX",
-                    url: "#"
-                },{
-                    title: "SUBIDA",
-                    url: "#"
-                },{
-                    title: "DESCID",
-                    url: "#"
-                },{
-                    title: "NOISE",
-                    url: "#"
-                },]
-          }
+                title: "FEX",
+                url: "#"
+            }, {
+                title: "SUBIDA",
+                url: "#"
+            }, {
+                title: "DESCID",
+                url: "#"
+            }, {
+                title: "NOISE",
+                url: "#"
+            },]
+        }
     ],
     navSecondary: [
         {
@@ -395,45 +395,45 @@ const data = {
             icon: Send
         },
     ],
-    projects: [ ]
+    projects: []
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const onDragStart = (event: React.DragEvent) => {
-    event.dataTransfer.setData('application/reactflow', 'placeholder');
-    event.dataTransfer.effectAllowed = 'move';
-  };
+    const onDragStart = (event: React.DragEvent) => {
+        event.dataTransfer.setData('application/reactflow', 'placeholder');
+        event.dataTransfer.effectAllowed = 'move';
+    };
 
-  return (
-    <Sidebar
-      className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
-      {...props}
-    >
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Bolt className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">WebCDU</span>
-                  <span className="truncate text-xs">Versão 0.1.0</span>
-                </div>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-    </Sidebar>
-  )
+    return (
+        <Sidebar
+            className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
+            {...props}
+        >
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <a href="#">
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                                    <Bolt className="size-4" />
+                                </div>
+                                <div className="grid flex-1 text-left text-sm leading-tight">
+                                    <span className="truncate font-semibold">WebCDU</span>
+                                    <span className="truncate text-xs">Versão 0.1.0</span>
+                                </div>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent>
+                <NavMain items={data.navMain} />
+                {/* <NavProjects projects={data.projects} /> */}
+                <NavSecondary items={data.navSecondary} className="mt-auto" />
+            </SidebarContent>
+            <SidebarFooter>
+                <NavUser user={data.user} />
+            </SidebarFooter>
+        </Sidebar>
+    )
 }

@@ -15,7 +15,7 @@ const PARAMS = [
   { key: "P1", label: "P1" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function DLAYONOFF(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -117,12 +117,23 @@ export function SOBDES(props: NodeProps & {
           className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
           onDoubleClick={handleDoubleClick}
         >
-          
-          <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
-          <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
+
+          <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black" />
+          <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black" />
 
           <svg className="w-[150px] h-[150px]">
             <defs>
+              <marker
+                fill="#ccc"
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="5"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" />
+              </marker>
               <marker
                 fill="#000"
                 id="arrow2"
@@ -135,24 +146,64 @@ export function SOBDES(props: NodeProps & {
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
             </defs>
-
             <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
 
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
+            {props.type === "dlayon" && (
               <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
+                <line x1="20" y1="100" x2="20" y2="50" stroke="#ccc" marker-end="url(#arrow)" />
+
+                <line x1="20" x2="30" y1="70" y2="70" stroke="black" />
+                <line x1="30" x2="30" y1="70" y2="50" stroke="black" />
+                <line x1="30" x2="30" y1="61" y2="59" stroke="black" marker-end="url(#arrow2)" />
+                <line x1="30" x2="90" y1="50" y2="50" stroke="black" />
+                <line x1="90" x2="90" y1="50" y2="70" stroke="black" />
+                <line x1="90" x2="130" y1="70" y2="70" stroke="black" />
+
+                <line x1="30" x2="30" y1="70" y2="100" stroke="#ccc" stroke-dasharray="0 4 0" />
+
+                <line x1="20" x2="80" y1="100" y2="100" stroke="black" />
+                <line x1="80" x2="80" y1="100" y2="80" stroke="black" />
+                <line x1="80" x2="90" y1="80" y2="80" stroke="black" />
+                <line x1="90" x2="90" y1="80" y2="100" stroke="black" />
+                <line x1="90" x2="130" y1="100" y2="100" stroke="black" />
+
+
+                <line x1="45" x2="33" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
+                <line x1="58" x2="76" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
+                <text x="45" y="95" font-family="Arial" font-size="10" fill="#000">{"P1"}</text>
               </>
-              )}
+            )}
+            {props.type === "dlayof" && (
+              <>
+                <line x1="20" y1="100" x2="20" y2="50" stroke="#ccc" marker-end="url(#arrow)" />
+
+                <line x1="20" x2="30" y1="70" y2="70" stroke="black" />
+                <line x1="30" x2="30" y1="70" y2="50" stroke="black" />
+                
+                
+                <line x1="40" x2="40" y1="59" y2="61" stroke="black" marker-end="url(#arrow2)" />
+                
+                <line x1="30" x2="40" y1="50" y2="50" stroke="black" />
+                <line x1="40" x2="40" y1="50" y2="70" stroke="black" />
+                <line x1="40" x2="130" y1="70" y2="70" stroke="black" />
+
+                <line x1="40" x2="40" y1="70" y2="100" stroke="#ccc" stroke-dasharray="0 4 0" />
+
+                <line x1="20" x2="30" y1="100" y2="100" stroke="black" />
+                <line x1="30" x2="30" y1="100" y2="80" stroke="black" />
+                <line x1="30" x2="110" y1="80" y2="80" stroke="black" />
+                <line x1="110" x2="110" y1="80" y2="100" stroke="black" />
+                <line x1="110" x2="130" y1="100" y2="100" stroke="black" />
+
+
+                <line x1="68" x2="43" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
+                <line x1="85" x2="107" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
+                <text x="70" y="95" font-family="Arial" font-size="10" fill="#000">{"P1"}</text>
+              </>
+            )}
+
 
 
 

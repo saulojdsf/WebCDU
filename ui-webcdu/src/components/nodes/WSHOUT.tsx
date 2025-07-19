@@ -13,9 +13,13 @@ const PARAMS = [
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
   { key: "P1", label: "P1" },
+  { key: "P2", label: "P2" },
+  { key: "P3", label: "P3" },
+  { key: "Vmin", label: "Vmin" },
+  { key: "Vmax", label: "Vmax" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function WSHOUT(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -122,40 +126,25 @@ export function SOBDES(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <defs>
-              <marker
-                fill="#000"
-                id="arrow2"
-                viewBox="0 0 10 10"
-                refX="5"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" />
-              </marker>
-            </defs>
-
             <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
+            {props.data.Vmax && (
               <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
+                <text x="85" y="15" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmax || "?")}</text>
+
+                <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" stroke-width="2" />
+                <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="2" />
+                <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" stroke-width="2" />
+                <text x="35" y="143" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmin || "?")}</text>
+
               </>
-              )}
+            )}
 
 
-
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <text x="75" y="69.5" font-family="Arial" font-size="20" fill="#000" textAnchor="middle">{"sP1"}</text>
+            <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" stroke-width="2" />
+            <text x="75" y="92.5" font-family="Arial" font-size="20" fill="#000" textAnchor="middle">{"P2+sp3"}</text>
             {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
             {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 

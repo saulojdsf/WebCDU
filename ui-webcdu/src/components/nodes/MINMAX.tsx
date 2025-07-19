@@ -12,10 +12,9 @@ const PARAMS = [
   { key: "id", label: "ID" },
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
-  { key: "P1", label: "P1" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function MINMAX(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -112,50 +111,19 @@ export function SOBDES(props: NodeProps & {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
+
         <div
           ref={nodeRef}
           className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
           onDoubleClick={handleDoubleClick}
         >
-          
           <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <defs>
-              <marker
-                fill="#000"
-                id="arrow2"
-                viewBox="0 0 10 10"
-                refX="5"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" />
-              </marker>
-            </defs>
-
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
-              <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-              </>
-              )}
-
-
-
+            <text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{props.type.toUpperCase()}</text>
             {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
             {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
@@ -182,6 +150,7 @@ export function SOBDES(props: NodeProps & {
                 value={form[param.key]}
                 onChange={handleInputChange}
                 className="flex-1 border rounded px-2 py-1 text-xs"
+                {...(param.key === 'Stip' ? { disabled: true } : {})}
                 {...(param.key === 'id' ? { inputMode: 'numeric', pattern: '[0-9]*' } : {})}
                 {...(param.key === 'Vin' ? { disabled: true } : {})}
               />

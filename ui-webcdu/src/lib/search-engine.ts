@@ -259,7 +259,9 @@ export class SearchEngine implements ISearchEngine {
     // If cache is at max size, remove oldest entry
     if (this.searchCache.size >= this.maxCacheSize) {
       const oldestKey = this.searchCache.keys().next().value;
-      this.searchCache.delete(oldestKey);
+      if (oldestKey !== undefined) {
+        this.searchCache.delete(oldestKey);
+      }
     }
     
     // Add new result to cache

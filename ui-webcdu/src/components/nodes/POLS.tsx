@@ -12,10 +12,17 @@ const PARAMS = [
   { key: "id", label: "ID" },
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
-  { key: "P1", label: "P1" },
+  { key: "N3", label: "N3" },
+  { key: "N2", label: "N2" },
+  { key: "N1", label: "N1" },
+  { key: "N0", label: "N0" },
+  { key: "D3", label: "D3" },
+  { key: "D2", label: "D2" },
+  { key: "D1", label: "D1" },
+  { key: "D0", label: "D0" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function POLS(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -114,50 +121,22 @@ export function SOBDES(props: NodeProps & {
       <PopoverTrigger asChild>
         <div
           ref={nodeRef}
-          className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+          className={`bg-transparent rounded w-[250px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
           onDoubleClick={handleDoubleClick}
         >
           
           <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
-          <svg className="w-[150px] h-[150px]">
-            <defs>
-              <marker
-                fill="#000"
-                id="arrow2"
-                viewBox="0 0 10 10"
-                refX="5"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" />
-              </marker>
-            </defs>
+          <svg className="w-[250px] h-[150px]">
+            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"POL(S)"}</text>
 
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
-
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
-              <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-              </>
-              )}
-
-
-
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <rect x="0" y="37.5" width={250} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <text x="30" y="69.5" font-family="Arial" font-size="20" fill="#000">{"N3s³+N2s²+N1s+N0"}</text>
+            <line x1="20" y1="73.5" x2="230" y2="73.5" stroke="#000" stroke-width="2" />
+            <text x="30" y="92.5" font-family="Arial" font-size="20" fill="#000">{"D3s³+D2s²+D1s+D0"}</text>
+            {showVariableNames && (<text x="215" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="215" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

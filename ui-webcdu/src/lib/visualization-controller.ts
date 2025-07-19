@@ -127,9 +127,9 @@ export class VisualizationController implements IVisualizationController {
         });
       } else {
         // Multiple nodes - fit view to show all
-        const nodeIds = nodes.map(node => node.id);
+        const nodeObjects = nodes.map(node => ({ id: node.id }));
         this.reactFlowInstance.fitView({
-          nodes: nodeIds,
+          nodes: nodeObjects,
           padding: 0.2,
           duration: this.config.transitionDuration,
           maxZoom: 1.5,

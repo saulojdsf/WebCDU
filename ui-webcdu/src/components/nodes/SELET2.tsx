@@ -15,7 +15,7 @@ const PARAMS = [
   { key: "P1", label: "P1" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function SELET2(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -118,47 +118,36 @@ export function SOBDES(props: NodeProps & {
           onDoubleClick={handleDoubleClick}
         >
           
-          <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
+          <Handle id="vin" type="target" position={Position.Left} className="!absolute !top-[60px] !-left-3 !w-3 !h-3 border-0 !bg-black"  />
+          <Handle id="vin2" type="target" position={Position.Left} className="!absolute !top-[90px] !-left-3 !w-3 !h-3 border-0 !bg-black"/>
+          <Handle id="vin3" type="target" position={Position.Bottom} className="!absolute !-bottom-3 !w-3 !h-3 border-0 !bg-black"  />
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <defs>
-              <marker
-                fill="#000"
-                id="arrow2"
-                viewBox="0 0 10 10"
-                refX="5"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" />
-              </marker>
-            </defs>
-
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+          <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+            <line x1="75" y1="150" x2="75" y2="100" stroke="#000" stroke-width="2" />
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            
+            <line x1="0" y1="90" x2="65" y2="90" stroke="#000" stroke-width="2" />
+            <line x1="0" y1="60" x2="65" y2="60" stroke="#000" stroke-width="2" />
+            
+            <line x1="66" y1="65" x2="76" y2="55" stroke="#000" stroke-width="2" />
+            <line x1="66" y1="95" x2="76" y2="85" stroke="#000" stroke-width="2" />
+            
+            <line x1="80" y1="90" x2="95" y2="90" stroke="#000" stroke-width="2" />
+            <line x1="80" y1="60" x2="95" y2="60" stroke="#000" stroke-width="2" />
+            <line x1="95" y1="60" x2="95" y2="90" stroke="#000" stroke-width="2" />
+            <line x1="95" y1="75" x2="150" y2="75" stroke="#000" stroke-width="2" />
+            <text x="5" y="58" font-family="Arial" font-size="10" fill="#000">{"=<0"}</text>
+            <text x="5" y="100" font-family="Arial" font-size="10" fill="#000">{">0"}</text>
+            
 
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
-              <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-              </>
-              )}
-
-
-
+            
             {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
             {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
+            
 
           </svg>
         </div>

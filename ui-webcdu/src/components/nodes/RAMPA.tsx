@@ -13,9 +13,11 @@ const PARAMS = [
   { key: "Vin", label: "Vin" },
   { key: "Vout", label: "Vout" },
   { key: "P1", label: "P1" },
+  { key: "P2", label: "P2" },
+  { key: "P3", label: "P3" },
 ];
 
-export function SOBDES(props: NodeProps & {
+export function RAMPA(props: NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
@@ -124,8 +126,8 @@ export function SOBDES(props: NodeProps & {
           <svg className="w-[150px] h-[150px]">
             <defs>
               <marker
-                fill="#000"
-                id="arrow2"
+                fill="#ccc"
+                id="arrow"
                 viewBox="0 0 10 10"
                 refX="5"
                 refY="5"
@@ -135,24 +137,28 @@ export function SOBDES(props: NodeProps & {
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
             </defs>
-
             <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
 
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
-            {props.type === "subida" && (
-             <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-             </>
-              )}
-            {props.type === "descid" && ( 
-              <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
-              </>
-              )}
+            
+                <line x1="40" x2="40" y1="90" y2="100" stroke="#ccc" />
+                <line x1="100" x2="100" y1="100" y2="60" stroke="#ccc" />
+                <line x1="20" x2="100" y1="60" y2="60" stroke="#ccc" />
+
+                <line x1="20" y1="100" x2="20" y2="50" stroke="#ccc" marker-end="url(#arrow)" />
+                <line x1="20" y1="100" x2="120" y2="100" stroke="#ccc" marker-end="url(#arrow)" />
+                
+                <line x1="20" x2="40" y1="90" y2="90" stroke="black" />
+                <line x1="40" x2="100" y1="90" y2="60" stroke="black" />
+                <line x1="100" x2="120" y1="60" y2="60" stroke="black" />
+                
+                <text x="36" y="108" font-family="Arial" font-size="8" fill="#000">{"P1"}</text>
+                <text x="96" y="108" font-family="Arial" font-size="8" fill="#000">{"P3"}</text>
+                <text x="8" y="93" font-family="Arial" font-size="8" fill="#000">{"P2"}</text>
+                <text x="8" y="63" font-family="Arial" font-size="8" fill="#000">{"P4"}</text>
+                
+                
 
 
 
