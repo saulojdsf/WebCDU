@@ -1,9 +1,10 @@
-import { SidebarIcon } from "lucide-react"
+import { SidebarIcon, Brush } from "lucide-react"
 
-import { SearchForm } from "@/components/search-form"
+import { SearchComponent } from "@/components/SearchComponent"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
+import type { SearchState, SearchMode } from "@/lib/search-types"
 
 import {
   Menubar,
@@ -31,37 +32,39 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
 
-import type { SearchMode } from '@/lib/search-types';
-
-interface SiteHeaderProps {
-  onNew?: () => void;
-  onExport?: () => void;
-  onOpen?: () => void;
-  showBlockNumbers: boolean;
-  onToggleBlockNumbers: () => void;
-  showVariableNames: boolean;
-  onToggleVariableNames: () => void;
-  onAutoRearrange?: () => void;
-  onSugiyamaLayout?: () => void;
-  searchState?: any;
-  onSearchInput?: (input: string) => void;
-  onSearchModeChange?: (mode: SearchMode) => void;
-  onClearSearch?: () => void;
-  onArrangementStrategy?: (strategy: string) => void;
-  onArrangementPreview?: () => void;
-  onArrangementUndo?: () => void;
-  onArrangementRedo?: () => void;
-  onToggleNodeLock?: (nodeIds: string[]) => void;
-  onLockAllNodes?: () => void;
-  onUnlockAllNodes?: () => void;
-  canUndo?: boolean;
-  canRedo?: boolean;
-  isPreviewActive?: boolean;
-  selectedNodes?: string[];
-}
-
-export function SiteHeader(props: SiteHeaderProps) {
-  const { onNew, onExport, onOpen, showBlockNumbers, onToggleBlockNumbers, showVariableNames, onToggleVariableNames, onAutoRearrange } = props;
+export function SiteHeader({
+  onNew,
+  onExport,
+  onOpen,
+  showBlockNumbers,
+  onToggleBlockNumbers,
+  showVariableNames,
+  onToggleVariableNames,
+  onAutoRearrange,
+  onSugiyamaLayout,
+  searchState,
+  onSearchInput,
+  onSearchModeChange,
+  onClearSearch,
+  isDrawingMode,
+  onToggleDrawingMode
+}: {
+  onNew?: () => void,
+  onExport?: () => void,
+  onOpen?: () => void,
+  showBlockNumbers: boolean,
+  onToggleBlockNumbers: () => void,
+  showVariableNames: boolean,
+  onToggleVariableNames: () => void,
+  onAutoRearrange?: () => void,
+  onSugiyamaLayout?: () => void,
+  searchState: SearchState,
+  onSearchInput: (query: string) => void,
+  onSearchModeChange: (mode: SearchMode) => void,
+  onClearSearch: () => void,
+  isDrawingMode?: boolean,
+  onToggleDrawingMode?: () => void
+}) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
@@ -77,6 +80,20 @@ export function SiteHeader(props: SiteHeaderProps) {
           <SidebarIcon />
         </Button>
         <Separator orientation="vertical" className="mr-2 h-4" />
+        {onToggleDrawingMode && (
+          <>
+            <Button
+              className="h-8 w-8"
+              variant={isDrawingMode ? "default" : "ghost"}
+              size="icon"
+              onClick={onToggleDrawingMode}
+              title={isDrawingMode ? "Sair do modo desenho" : "Entrar no modo desenho"}
+            >
+              <Brush className="h-4 w-4" />
+            </Button>
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </>
+        )}
         <AlertDialog open={open} onOpenChange={setOpen}>
           <Menubar>
             <MenubarMenu>
@@ -138,13 +155,31 @@ export function SiteHeader(props: SiteHeaderProps) {
                 <MenubarSub>
                   <MenubarSubTrigger>Localizar</MenubarSubTrigger>
                   <MenubarSubContent>
-                    <MenubarItem>Bloco</MenubarItem>
+                    <MenubarItem onClick={() => {
+                      onSearchModeChange?.('id');
+                      document.getElementById('node-search')?.focus();
+                    }}>
+                      Buscar por ID
+                      <MenubarShortcut>/</MenubarShortcut>
+                    </MenubarItem>
+                    <MenubarItem onClick={() => {
+                      onSearchModeChange?.('variable');
+                      document.getElementById('node-search')?.focus();
+                    }}>
+                      Buscar por Variável
+                      <MenubarShortcut>Alt+M</MenubarShortcut>
+                    </MenubarItem>
                     <MenubarSeparator />
-                    <MenubarItem>Variavel...</MenubarItem>
-                    <MenubarItem>Localizar proxima</MenubarItem>
-                    <MenubarItem>Localizar anterior</MenubarItem>
+                    <MenubarItem onClick={onClearSearch}>
+                      Limpar busca
+                      <MenubarShortcut>Esc</MenubarShortcut>
+                    </MenubarItem>
                   </MenubarSubContent>
                 </MenubarSub>
+                <MenubarSeparator />
+                <MenubarItem onClick={onSugiyamaLayout}>
+                  Sugiyama Layout
+                </MenubarItem>
                 <MenubarSeparator />
                 <MenubarItem>Cortar</MenubarItem>
                 <MenubarItem>Copiar</MenubarItem>
@@ -160,7 +195,13 @@ export function SiteHeader(props: SiteHeaderProps) {
                 <MenubarCheckboxItem checked={showBlockNumbers} onCheckedChange={onToggleBlockNumbers}>
                   Numero dos blocos
                 </MenubarCheckboxItem>
-
+                <MenubarSeparator />
+                {onToggleDrawingMode && (
+                  <MenubarCheckboxItem checked={isDrawingMode} onCheckedChange={onToggleDrawingMode}>
+                    Modo desenho
+                    <MenubarShortcut>D</MenubarShortcut>
+                  </MenubarCheckboxItem>
+                )}
                 <MenubarSeparator />
                 <MenubarItem>
                   Recarregar
@@ -188,7 +229,15 @@ export function SiteHeader(props: SiteHeaderProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <SearchForm className="w-full sm:ml-auto sm:w-auto" />
+        {searchState && onSearchInput && onSearchModeChange && onClearSearch && (
+          <SearchComponent
+            searchState={searchState}
+            onSearchInput={onSearchInput}
+            onSearchModeChange={onSearchModeChange}
+            onClearSearch={onClearSearch}
+            className="w-full sm:ml-auto sm:w-auto"
+          />
+        )}
       </div>
     </header>
   )
