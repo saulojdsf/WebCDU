@@ -32,6 +32,12 @@ export function useViewportSync(options: ViewportSyncOptions = {}) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const rafRef = useRef<number | null>(null);
   const pendingUpdateRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
+  const onViewportChangeRef = useRef(onViewportChange);
+
+  // Update the callback ref when it changes
+  useEffect(() => {
+    onViewportChangeRef.current = onViewportChange;
+  }, [onViewportChange]);
 
   // Determine actual throttle time based on performance mode
   const actualThrottleMs = useMemo(() => {
@@ -58,7 +64,7 @@ export function useViewportSync(options: ViewportSyncOptions = {}) {
 
   // Process viewport changes with optimizations
   const processViewportChange = useCallback(() => {
-    if (!pendingUpdateRef.current || !onViewportChange) return;
+    if (!pendingUpdateRef.current || !onViewportChangeRef.current) return;
     
     const { x, y, zoom } = pendingUpdateRef.current;
     pendingUpdateRef.current = null;
@@ -71,15 +77,16 @@ export function useViewportSync(options: ViewportSyncOptions = {}) {
     lastUpdateRef.current = performance.now();
     
     // Call the viewport change handler
-    onViewportChange({ 
+    onViewportChangeRef.current({ 
       x, 
       y, 
       zoom
     });
-  }, [onViewportChange, shouldSkipRender]);
+  }, [shouldSkipRender]);
 
-  const handleViewportChange = useCallback(() => {
-    if (!onViewportChange) return;
+  // Handle viewport changes with proper dependency management
+  useEffect(() => {
+    if (!onViewportChangeRef.current) return;
 
     const now = performance.now();
     const timeSinceLastUpdate = now - lastUpdateRef.current;
@@ -124,11 +131,7 @@ export function useViewportSync(options: ViewportSyncOptions = {}) {
         processViewportChange();
       });
     }
-  }, [x, y, zoom, onViewportChange, actualThrottleMs, significantChangeThreshold, processViewportChange]);
-
-  useEffect(() => {
-    handleViewportChange();
-  }, [handleViewportChange]);
+  }, [x, y, zoom, actualThrottleMs, significantChangeThreshold.zoom, significantChangeThreshold.position, processViewportChange]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -144,12 +147,12 @@ export function useViewportSync(options: ViewportSyncOptions = {}) {
 
   // Force sync viewport immediately (useful for critical updates)
   const forceSyncViewport = useCallback(() => {
-    if (onViewportChange) {
+    if (onViewportChangeRef.current) {
       lastViewportRef.current = { x, y, zoom };
       lastUpdateRef.current = performance.now();
-      onViewportChange({ x, y, zoom });
+      onViewportChangeRef.current({ x, y, zoom });
     }
-  }, [x, y, zoom, onViewportChange]);
+  }, [x, y, zoom]);
 
   // Get visible bounds in flow coordinates
   const getVisibleBounds = useCallback(() => {

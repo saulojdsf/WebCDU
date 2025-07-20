@@ -127,6 +127,12 @@
 
 
 
+
+
+
+
+
+
   - Sync drawing canvas transformations with React Flow viewport
   - Handle zoom and pan operations to maintain drawing alignment
   - Implement efficient redraw strategies for viewport changes
