@@ -225,7 +225,7 @@ export function DrawingCanvas({
 
             // Clear canvas and redraw everything with preview
             drawingEngineRef.current.redraw();
-            drawingEngineRef.current.previewShape(
+            drawingEngineRef.current.previewShapeWithCanvasPoints(
                 canvasStartPoint,
                 canvasEndPoint,
                 currentTool as 'rectangle' | 'circle' | 'line',
@@ -255,7 +255,7 @@ export function DrawingCanvas({
             const canvasStartPoint = drawingEngineRef.current.canvasRelativeToCanvas(startPoint);
             const canvasEndPoint = drawingEngineRef.current.canvasRelativeToCanvas(constrainedPoint);
 
-            drawingEngineRef.current.drawShape(
+            drawingEngineRef.current.drawShapeWithCanvasPoints(
                 canvasStartPoint,
                 canvasEndPoint,
                 currentTool as 'rectangle' | 'circle' | 'line',

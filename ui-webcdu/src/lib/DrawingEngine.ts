@@ -420,8 +420,9 @@ export class DrawingEngine {
       // For pen tool, continue drawing the path
       this.currentPath.lineTo(canvasPoint.x, canvasPoint.y);
 
-      // Draw the current segment without viewport transform
+      // Draw the current segment with viewport transform to match final rendering
       this.context.save();
+      this.applyViewportTransform();
       this.context.stroke(this.currentPath);
       this.context.restore();
     }
@@ -687,6 +688,29 @@ export class DrawingEngine {
   }
 
   /**
+   * Draw a geometric shape with pre-transformed canvas coordinates
+   */
+  public drawShapeWithCanvasPoints(start: Point, end: Point, shapeType: 'rectangle' | 'circle' | 'line', settings: ToolSettings['shapes']): void {
+    const bounds = {
+      x: Math.min(start.x, end.x),
+      y: Math.min(start.y, end.y),
+      width: Math.abs(end.x - start.x),
+      height: Math.abs(end.y - start.y),
+    };
+
+    const shape: Shape = {
+      id: this.generateId(),
+      type: shapeType,
+      bounds,
+      settings: { ...settings },
+      timestamp: Date.now(),
+    };
+
+    this.drawingData.shapes.push(shape);
+    this.redraw();
+  }
+
+  /**
    * Preview a shape while drawing (doesn't save to data)
    */
   public previewShape(start: Point, end: Point, shapeType: 'rectangle' | 'circle' | 'line', settings: ToolSettings['shapes']): void {
@@ -706,6 +730,29 @@ export class DrawingEngine {
         break;
       case 'line':
         this.drawLinePreview(startCanvas, endCanvas);
+        break;
+    }
+
+    this.context.restore();
+  }
+
+  /**
+   * Preview a shape while drawing with pre-transformed canvas coordinates (doesn't save to data)
+   */
+  public previewShapeWithCanvasPoints(start: Point, end: Point, shapeType: 'rectangle' | 'circle' | 'line', settings: ToolSettings['shapes']): void {
+    this.context.save();
+    this.applyViewportTransform();
+    this.setupShapeDrawing(settings);
+
+    switch (shapeType) {
+      case 'rectangle':
+        this.drawRectanglePreview(start, end, settings);
+        break;
+      case 'circle':
+        this.drawCirclePreview(start, end, settings);
+        break;
+      case 'line':
+        this.drawLinePreview(start, end);
         break;
     }
 

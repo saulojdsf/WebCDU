@@ -50,6 +50,48 @@ export function DrawingCanvasOverlay({ className }: DrawingCanvasOverlayProps) {
         }
     }, [canvasRef, isDrawingMode, reactFlowInstance]);
 
+    // Stable callback for viewport changes to prevent infinite re-renders
+    const handleViewportChange = useCallback((viewport: { x: number; y: number; zoom: number }) => {
+        // Handle viewport changes with optimizations
+        const now = performance.now();
+        const timeSinceLastSync = now - lastSyncTimeRef.current;
+
+        // Always force sync if we're in drawing mode to ensure accuracy
+        if (isDrawingMode) {
+            if (drawingEngineRef.current) {
+                drawingEngineRef.current.forceViewportSync(viewport.zoom, { x: viewport.x, y: viewport.y });
+            }
+            lastSyncTimeRef.current = now;
+            pendingSyncRef.current = false;
+            return;
+        }
+
+        // Force sync if it's been too long since the last sync
+        if (timeSinceLastSync > 500) {
+            lastSyncTimeRef.current = now;
+            pendingSyncRef.current = false;
+
+            // Force immediate redraw with the new viewport
+            if (drawingEngineRef.current) {
+                drawingEngineRef.current.forceViewportSync(viewport.zoom, { x: viewport.x, y: viewport.y });
+            }
+        } else if (!pendingSyncRef.current) {
+            // Schedule a sync for the next animation frame
+            pendingSyncRef.current = true;
+            requestAnimationFrame(() => {
+                if (pendingSyncRef.current) {
+                    lastSyncTimeRef.current = performance.now();
+                    pendingSyncRef.current = false;
+
+                    // Apply the viewport update
+                    if (drawingEngineRef.current) {
+                        drawingEngineRef.current.setViewportTransform(viewport.zoom, { x: viewport.x, y: viewport.y });
+                    }
+                }
+            });
+        }
+    }, [isDrawingMode]);
+
     // Use enhanced viewport synchronization with performance optimizations
     const { viewport, shouldSkipRender, forceSyncViewport, getVisibleBounds } = useViewportSync({
         throttleMs: 16, // Base throttle at 60fps
@@ -58,46 +100,7 @@ export function DrawingCanvasOverlay({ className }: DrawingCanvasOverlayProps) {
             position: 1
         },
         performanceMode: 'balanced', // Balance between quality and performance
-        onViewportChange: (viewport) => {
-            // Handle viewport changes with optimizations
-            const now = performance.now();
-            const timeSinceLastSync = now - lastSyncTimeRef.current;
-
-            // Always force sync if we're in drawing mode to ensure accuracy
-            if (isDrawingMode) {
-                if (drawingEngineRef.current) {
-                    drawingEngineRef.current.forceViewportSync(viewport.zoom, { x: viewport.x, y: viewport.y });
-                }
-                lastSyncTimeRef.current = now;
-                pendingSyncRef.current = false;
-                return;
-            }
-
-            // Force sync if it's been too long since the last sync
-            if (timeSinceLastSync > 500) {
-                lastSyncTimeRef.current = now;
-                pendingSyncRef.current = false;
-
-                // Force immediate redraw with the new viewport
-                if (drawingEngineRef.current) {
-                    drawingEngineRef.current.forceViewportSync(viewport.zoom, { x: viewport.x, y: viewport.y });
-                }
-            } else if (!pendingSyncRef.current) {
-                // Schedule a sync for the next animation frame
-                pendingSyncRef.current = true;
-                requestAnimationFrame(() => {
-                    if (pendingSyncRef.current) {
-                        lastSyncTimeRef.current = performance.now();
-                        pendingSyncRef.current = false;
-
-                        // Apply the viewport update
-                        if (drawingEngineRef.current) {
-                            drawingEngineRef.current.setViewportTransform(viewport.zoom, { x: viewport.x, y: viewport.y });
-                        }
-                    }
-                });
-            }
-        }
+        onViewportChange: handleViewportChange
     });
 
     // Memoize viewport offset to prevent unnecessary re-renders
@@ -116,19 +119,13 @@ export function DrawingCanvasOverlay({ className }: DrawingCanvasOverlayProps) {
                 Math.abs(currentOffset.y - currentViewport.y) > 0.1;
 
             if (scaleChanged || offsetChanged) {
-                console.log('Viewport out of sync - forcing sync:', {
-                    currentScale,
-                    targetScale: currentViewport.zoom,
-                    currentOffset,
-                    targetOffset: { x: currentViewport.x, y: currentViewport.y }
-                });
                 drawingEngineRef.current.forceViewportSync(currentViewport.zoom, {
                     x: currentViewport.x,
                     y: currentViewport.y
                 });
             }
         }
-    });
+    }, [isDrawingMode, reactFlowInstance]);
 
     // Add a continuous sync check while in drawing mode to catch any drift
     useEffect(() => {
@@ -215,10 +212,9 @@ export function DrawingCanvasOverlay({ className }: DrawingCanvasOverlayProps) {
         if (isDrawingMode && drawingEngineRef.current) {
             // Force immediate viewport sync with current React Flow viewport
             const currentViewport = reactFlowInstance.getViewport();
-            console.log('Drawing mode activated - syncing viewport:', currentViewport);
 
             // Add a small delay to ensure React Flow has finished any pending updates
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (drawingEngineRef.current) {
                     drawingEngineRef.current.forceViewportSync(currentViewport.zoom, {
                         x: currentViewport.x,
@@ -226,6 +222,8 @@ export function DrawingCanvasOverlay({ className }: DrawingCanvasOverlayProps) {
                     });
                 }
             }, 10);
+
+            return () => clearTimeout(timeoutId);
         }
     }, [isDrawingMode, reactFlowInstance]);
 
