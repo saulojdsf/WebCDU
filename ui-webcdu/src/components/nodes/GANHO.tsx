@@ -122,7 +122,7 @@ export function GANHO(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"GANHO"}</text>
+            <text x="5" y="35" fontFamily="Arial" font-size="10" fill="#000">{"GANHO"}</text>
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
             <text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{(props.data.P1 || "?")}</text>

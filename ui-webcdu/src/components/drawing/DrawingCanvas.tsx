@@ -9,6 +9,7 @@ interface DrawingCanvasProps {
     scale?: number;
     offset?: Point;
     className?: string;
+    onViewportSync?: () => void;
 }
 
 export function DrawingCanvas({
@@ -16,7 +17,8 @@ export function DrawingCanvas({
     height,
     scale = 1,
     offset = { x: 0, y: 0 },
-    className = ''
+    className = '',
+    onViewportSync
 }: DrawingCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const drawingEngineRef = useRef<DrawingEngine | null>(null);
@@ -41,6 +43,11 @@ export function DrawingCanvas({
         if (canvasRef.current && !drawingEngineRef.current) {
             try {
                 drawingEngineRef.current = new DrawingEngine(canvasRef.current);
+
+                // Expose the drawing engine instance for external access
+                // This allows the DrawingCanvasOverlay to access it directly
+                (canvasRef.current as any)._drawingEngine = drawingEngineRef.current;
+
                 setCanvasRef(canvasRef as React.RefObject<HTMLCanvasElement>);
             } catch (error) {
                 console.error('Failed to initialize DrawingEngine:', error);
@@ -51,7 +58,14 @@ export function DrawingCanvas({
     // Update viewport transformation when scale or offset changes
     useEffect(() => {
         if (drawingEngineRef.current) {
-            drawingEngineRef.current.setViewportTransform(scale, offset);
+            // Use a debounced approach to avoid excessive redraws during rapid changes
+            const handler = window.setTimeout(() => {
+                drawingEngineRef.current?.forceViewportSync(scale, offset);
+            }, 0);
+
+            return () => {
+                window.clearTimeout(handler);
+            };
         }
     }, [scale, offset]);
 
@@ -108,11 +122,13 @@ export function DrawingCanvas({
         };
     }, []);
 
-    // Get mouse position relative to canvas
+    // Get mouse position relative to canvas (screen coordinates)
     const getMousePosition = useCallback((event: React.MouseEvent<HTMLCanvasElement>): Point => {
         if (!canvasRef.current) return { x: 0, y: 0 };
 
+        // Get the canvas bounding rect to account for all offsets
         const rect = canvasRef.current.getBoundingClientRect();
+
         return {
             x: event.clientX - rect.left,
             y: event.clientY - rect.top,
@@ -161,18 +177,29 @@ export function DrawingCanvas({
         }
 
         event.preventDefault();
+        event.stopPropagation();
+
+        // Force viewport sync before starting to draw to ensure coordinates are accurate
+        if (onViewportSync) {
+            onViewportSync();
+        }
+
         const point = getMousePosition(event);
 
         setIsDrawing(true);
 
         if (currentTool === 'pen' || currentTool === 'eraser') {
             // For pen and eraser, start drawing immediately
-            drawingEngineRef.current.startDrawing(point, currentTool, toolSettings);
+            // Use the new method that expects canvas-relative coordinates
+            const canvasPoint = drawingEngineRef.current.canvasRelativeToCanvas(point);
+            const viewportState = drawingEngineRef.current.getViewportState();
+            console.log('Drawing start - Original point:', point, 'Canvas point:', canvasPoint, 'Viewport:', viewportState);
+            drawingEngineRef.current.startDrawingWithCanvasPoint(canvasPoint, currentTool, toolSettings);
         } else if (['rectangle', 'circle', 'line'].includes(currentTool)) {
             // For shapes, just store the start point
             setStartPoint(point);
         }
-    }, [isDrawingMode, currentTool, toolSettings, getMousePosition]);
+    }, [isDrawingMode, currentTool, toolSettings, getMousePosition, layerState, onViewportSync]);
 
     // Handle mouse move - continue drawing or show shape preview
     const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -181,25 +208,31 @@ export function DrawingCanvas({
         }
 
         event.preventDefault();
+        event.stopPropagation();
         const point = getMousePosition(event);
 
         if (currentTool === 'pen' || currentTool === 'eraser') {
             // For pen and eraser, continue drawing
-            drawingEngineRef.current.continueDrawing(point);
+            const canvasPoint = drawingEngineRef.current.canvasRelativeToCanvas(point);
+            drawingEngineRef.current.continueDrawingWithCanvasPoint(canvasPoint);
         } else if (['rectangle', 'circle', 'line'].includes(currentTool) && startPoint) {
             // For shapes, show preview
             const constrainedPoint = applyShapeConstraints(startPoint, point);
 
+            // Transform both points to canvas coordinates
+            const canvasStartPoint = drawingEngineRef.current.canvasRelativeToCanvas(startPoint);
+            const canvasEndPoint = drawingEngineRef.current.canvasRelativeToCanvas(constrainedPoint);
+
             // Clear canvas and redraw everything with preview
             drawingEngineRef.current.redraw();
             drawingEngineRef.current.previewShape(
-                startPoint,
-                constrainedPoint,
+                canvasStartPoint,
+                canvasEndPoint,
                 currentTool as 'rectangle' | 'circle' | 'line',
                 toolSettings.shapes
             );
         }
-    }, [isDrawing, currentTool, getMousePosition, startPoint, applyShapeConstraints, toolSettings.shapes]);
+    }, [isDrawing, currentTool, getMousePosition, startPoint, applyShapeConstraints, toolSettings.shapes, layerState]);
 
     // Handle mouse up - end drawing
     const handleMouseUp = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -208,6 +241,7 @@ export function DrawingCanvas({
         }
 
         event.preventDefault();
+        event.stopPropagation();
         const point = getMousePosition(event);
 
         if (currentTool === 'pen' || currentTool === 'eraser') {
@@ -216,9 +250,14 @@ export function DrawingCanvas({
         } else if (['rectangle', 'circle', 'line'].includes(currentTool) && startPoint) {
             // For shapes, finalize the shape
             const constrainedPoint = applyShapeConstraints(startPoint, point);
+
+            // Transform both points to canvas coordinates
+            const canvasStartPoint = drawingEngineRef.current.canvasRelativeToCanvas(startPoint);
+            const canvasEndPoint = drawingEngineRef.current.canvasRelativeToCanvas(constrainedPoint);
+
             drawingEngineRef.current.drawShape(
-                startPoint,
-                constrainedPoint,
+                canvasStartPoint,
+                canvasEndPoint,
                 currentTool as 'rectangle' | 'circle' | 'line',
                 toolSettings.shapes
             );

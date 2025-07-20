@@ -25,6 +25,7 @@ import { CommandMenu } from "@/components/command-menu"
 import { useDrawingCursor } from "@/hooks/useDrawingCursor"
 import { useDrawing } from "@/contexts/DrawingContext"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
+import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
 import { POLS } from './components/nodes/POLS'
 import { COMPAR } from './components/nodes/COMPAR';
 import { ENTRAD } from './components/nodes/ENTRAD'
@@ -176,8 +177,13 @@ function App() {
     // Initialize drawing cursor management
     useDrawingCursor();
 
-    // Get drawing context for persistence
+    // Get drawing context for persistence and mode management
     const drawingContext = useDrawing();
+
+    // Handle drawing mode toggle
+    const handleToggleDrawingMode = useCallback(() => {
+        drawingContext.setDrawingMode(!drawingContext.isDrawingMode);
+    }, [drawingContext]);
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -194,10 +200,15 @@ function App() {
                 setCommandMenuResetKey(k => k + 1);
                 setCommandOpen(true);
             }
+            // Toggle drawing mode with 'D' key
+            if (!isInput && e.key.toLowerCase() === 'd' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+                e.preventDefault();
+                handleToggleDrawingMode();
+            }
         };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, []);
+    }, [handleToggleDrawingMode]);
 
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const edgesRef = useRef(edges);
@@ -260,13 +271,13 @@ function App() {
     // Arrangement system integration hooks - simplified for demo
     useEffect(() => {
         // In a full implementation, this would initialize the arrangement system
-        console.log('Arrangement system would be initialized here');
+        // console.log('Arrangement system would be initialized here');
     }, []);
 
     // Update arrangement system with current nodes and edges
     useEffect(() => {
         // In a full implementation, this would update the arrangement manager
-        console.log('Arrangement system would be updated with nodes/edges here');
+        // console.log('Arrangement system would be updated with nodes/edges here');
     }, [nodes, edges]);
 
     // Handle search result visualization
@@ -1082,25 +1093,8 @@ function App() {
                         onSearchInput={handleSearchInput}
                         onSearchModeChange={handleSearchModeChange}
                         onClearSearch={handleClearSearch}
-                        // Arrangement-related props
-                        onArrangementStrategy={handleArrangementStrategyChange}
-                        onArrangementPreview={handlePreview}
-                        onArrangementUndo={handleUndo}
-                        onArrangementRedo={handleRedo}
-                        onToggleNodeLock={handleToggleNodeLock}
-                        onLockAllNodes={() => {
-                            const allNodeIds = nodes.map(node => node.id);
-                            setLockedNodes(new Set(allNodeIds));
-                            toast.info('All nodes locked');
-                        }}
-                        onUnlockAllNodes={() => {
-                            setLockedNodes(new Set());
-                            toast.info('All nodes unlocked');
-                        }}
-                        canUndo={arrangementHistoryIndex >= 0}
-                        canRedo={arrangementHistoryIndex < arrangementHistory.length - 1}
-                        isPreviewActive={isArrangementPreviewActive}
-                        selectedNodes={selectedNodes}
+                        isDrawingMode={drawingContext.isDrawingMode}
+                        onToggleDrawingMode={handleToggleDrawingMode}
                     />
                     <div className="flex flex-1">
                         <AppSidebar />
@@ -1165,20 +1159,39 @@ function App() {
                                     edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
                                     edges={edges}
                                     connectionMode={ConnectionMode.Strict}
-                                    onConnect={onConnect}
-                                    onNodesChange={onNodesChange}
-                                    onEdgesChange={onEdgesChange}
-                                    onDrop={onDrop}
-                                    onDragOver={onDragOver}
+                                    onConnect={drawingContext.isDrawingMode ? undefined : onConnect}
+                                    onNodesChange={drawingContext.isDrawingMode ? undefined : onNodesChange}
+                                    onEdgesChange={drawingContext.isDrawingMode ? undefined : onEdgesChange}
+                                    onDrop={drawingContext.isDrawingMode ? undefined : onDrop}
+                                    onDragOver={drawingContext.isDrawingMode ? undefined : onDragOver}
                                     onInit={setReactFlowInstance}
-                                    onSelectionChange={onSelectionChange}
+                                    onSelectionChange={drawingContext.isDrawingMode ? undefined : onSelectionChange}
                                     defaultEdgeOptions={{ type: 'default', }}
+                                    nodesDraggable={!drawingContext.isDrawingMode}
+                                    nodesConnectable={!drawingContext.isDrawingMode}
+                                    elementsSelectable={!drawingContext.isDrawingMode}
                                 >
                                     <Background gap={12} size={2} color="#aaa" />
                                     <Controls position="top-right" />
                                     <MiniMap />
                                     <DrawingCanvasOverlay />
                                 </ReactFlow>
+
+                                {/* Drawing Mode Status Indicator */}
+                                {drawingContext.isDrawingMode && (
+                                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+                                        <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                                            Modo Desenho Ativo
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Drawing Toolbar - Only show when drawing mode is active */}
+                                {drawingContext.isDrawingMode && (
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <DrawingToolbar />
+                                    </div>
+                                )}
                             </div>
                         </SidebarInset>
                     </div>
