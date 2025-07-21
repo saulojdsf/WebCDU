@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/switch';
 import { useDrawing } from '@/contexts/DrawingContext';
 import type { DrawingTool } from '@/lib/drawing-types';
+import './drawing-toolbar.css';
 
 interface DrawingToolbarProps {
     className?: string;
@@ -163,7 +164,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
 
             {/* Full Drawing Toolbar - Only visible when drawing mode is active, positioned at bottom */}
             {isDrawingMode && (
-                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-white border rounded-lg shadow-lg p-4">
+                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-background border border-border rounded-lg shadow-lg p-4 theme-transition drawing-toolbar">
                     <div className="flex items-center gap-2">
                         {/* Tool Selection */}
                         <div className="flex items-center gap-1">
@@ -177,7 +178,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                                         variant={isActive ? "default" : "ghost"}
                                         size="sm"
                                         onClick={() => handleToolSelect(tool)}
-                                        className="h-8 w-8 p-0"
+                                        className={`h-8 w-8 p-0 drawing-toolbar-button ${isActive ? 'active' : ''}`}
                                         title={TOOL_LABELS[tool]}
                                     >
                                         <Icon className="h-4 w-4" />
@@ -186,7 +187,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                             })}
                         </div>
 
-                        <Separator orientation="vertical" className="h-6" />
+                        <Separator orientation="vertical" className="h-6 drawing-toolbar-separator" />
 
                         {/* Quick Settings */}
                         <div className="flex items-center gap-2">
@@ -234,7 +235,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                             )}
                         </div>
 
-                        <Separator orientation="vertical" className="h-6" />
+                        <Separator orientation="vertical" className="h-6 drawing-toolbar-separator" />
 
                         {/* Advanced Settings */}
                         <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -320,7 +321,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                             </PopoverContent>
                         </Popover>
 
-                        <Separator orientation="vertical" className="h-6" />
+                        <Separator orientation="vertical" className="h-6 drawing-toolbar-separator" />
 
                         {/* Layer Controls */}
                         <div className="flex items-center gap-1">
@@ -434,7 +435,7 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={clearDrawing}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 title="Limpar todos os desenhos"
                             >
                                 <Trash2 className="h-4 w-4" />

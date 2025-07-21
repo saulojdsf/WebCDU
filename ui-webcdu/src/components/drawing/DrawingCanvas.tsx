@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useDrawing } from '../../contexts/DrawingContext';
 import { DrawingEngine } from '../../lib/DrawingEngine';
 import type { Point } from '../../lib/drawing-types';
+import './drawing-canvas.css';
 
 interface DrawingCanvasProps {
     width: number;
@@ -324,7 +325,7 @@ export function DrawingCanvas({
             ref={canvasRef}
             width={width}
             height={height}
-            className={`absolute top-0 left-0 pointer-events-auto ${className}`}
+            className={`absolute top-0 left-0 pointer-events-auto drawing-canvas drawing-canvas-${currentTool} ${layerState.locked ? 'drawing-canvas-locked' : ''} ${className}`}
             style={{
                 width: `${width}px`,
                 height: `${height}px`,

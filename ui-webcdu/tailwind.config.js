@@ -59,10 +59,35 @@ export default {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+        canvas: {
+          DEFAULT: 'hsl(var(--canvas-background))',
+          grid: 'hsl(var(--canvas-grid))',
+          'node-selected': 'hsl(var(--canvas-node-selected))',
+          'node-border': 'hsl(var(--canvas-node-border))',
+          edge: 'hsl(var(--canvas-edge))',
+          'edge-selected': 'hsl(var(--canvas-edge-selected))',
+        },
+        control: {
+          DEFAULT: 'hsl(var(--control-background))',
+          foreground: 'hsl(var(--control-foreground))',
+          border: 'hsl(var(--control-border))',
+          hover: 'hsl(var(--control-hover))',
+        },
+        dialog: {
+          overlay: 'hsl(var(--dialog-overlay))',
+        },
+        toast: {
+          DEFAULT: 'hsl(var(--toast-background))',
+          foreground: 'hsl(var(--toast-foreground))',
+          border: 'hsl(var(--toast-border))',
+          success: 'hsl(var(--toast-success))',
+          error: 'hsl(var(--toast-error))',
+          warning: 'hsl(var(--toast-warning))',
+          info: 'hsl(var(--toast-info))',
+        }
   		}
   	}
   },
   plugins: [require("tailwindcss-animate")],
 }
-

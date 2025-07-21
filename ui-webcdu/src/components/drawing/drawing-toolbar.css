@@ -1,0 +1,49 @@
+/* Drawing Toolbar Theme Styles */
+
+.drawing-toolbar {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.drawing-toolbar-button {
+  color: hsl(var(--foreground));
+  background-color: transparent;
+}
+
+.drawing-toolbar-button:hover {
+  background-color: hsl(var(--accent));
+}
+
+.drawing-toolbar-button.active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.drawing-toolbar-separator {
+  background-color: hsl(var(--border));
+}
+
+.drawing-toolbar-slider-track {
+  background-color: hsl(var(--secondary));
+}
+
+.drawing-toolbar-slider-range {
+  background-color: hsl(var(--primary));
+}
+
+.drawing-toolbar-slider-thumb {
+  background-color: hsl(var(--background));
+  border: 2px solid hsl(var(--primary));
+}
+
+.drawing-toolbar-color-input {
+  border: 1px solid hsl(var(--border));
+}
+
+/* Dark mode specific adjustments */
+.dark .drawing-toolbar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

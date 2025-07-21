@@ -1,0 +1,47 @@
+/* Drawing Canvas Theme Styles */
+
+.drawing-canvas {
+  /* Use transparent background to allow the ReactFlow background to show through */
+  background-color: transparent;
+}
+
+/* Cursor styles for different drawing tools */
+.drawing-canvas-pen {
+  cursor: crosshair;
+}
+
+.drawing-canvas-eraser {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><path d="M15 3h6v6"></path><path d="m10 14 11-11"></path></svg>') 0 20, auto;
+}
+
+.dark .drawing-canvas-eraser {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><path d="M15 3h6v6"></path><path d="m10 14 11-11"></path></svg>') 0 20, auto;
+}
+
+.drawing-canvas-rectangle {
+  cursor: crosshair;
+}
+
+.drawing-canvas-circle {
+  cursor: crosshair;
+}
+
+.drawing-canvas-line {
+  cursor: crosshair;
+}
+
+/* Locked canvas style */
+.drawing-canvas-locked {
+  cursor: not-allowed !important;
+}
+
+/* Canvas overlay for when drawing is disabled */
+.drawing-canvas-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}

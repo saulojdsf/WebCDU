@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* Base colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -23,13 +24,19 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
+    
+    /* Chart colors */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    
+    /* Layout variables */
     --radius: 0.5rem;
     --header-height: 3.5rem;
+    
+    /* Sidebar specific colors */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -38,8 +45,44 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Canvas specific colors */
+    --canvas-background: 0 0% 100%;
+    --canvas-grid: 220 13% 91%;
+    --canvas-node-selected: 217.2 91.2% 59.8%;
+    --canvas-node-border: 214.3 31.8% 91.4%;
+    --canvas-edge: 222.2 84% 4.9%;
+    --canvas-edge-selected: 217.2 91.2% 59.8%;
+    
+    /* Control specific colors */
+    --control-background: 0 0% 100%;
+    --control-foreground: 222.2 84% 4.9%;
+    --control-border: 214.3 31.8% 91.4%;
+    --control-hover: 210 40% 96.1%;
+    
+    /* Dialog specific colors */
+    --dialog-overlay: 0 0% 0% / 50%;
+    
+    /* Toast specific colors */
+    --toast-background: 0 0% 100%;
+    --toast-foreground: 222.2 84% 4.9%;
+    --toast-border: 214.3 31.8% 91.4%;
+    --toast-success: 142.1 76.2% 36.3%;
+    --toast-error: 0 84.2% 60.2%;
+    --toast-warning: 38 92% 50%;
+    --toast-info: 217.2 91.2% 59.8%;
   }
+  
+  /* Theme transition for all elements */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  /* Dark theme overrides */
   .dark {
+    /* Base colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -59,12 +102,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
+    /* Chart colors */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
-  ;
+    --chart-5: 340 75% 55%;
+    
+    /* Sidebar specific colors */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -72,7 +118,34 @@
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Canvas specific colors */
+    --canvas-background: 222.2 84% 4.9%;
+    --canvas-grid: 217.2 32.6% 17.5%;
+    --canvas-node-selected: 217.2 91.2% 59.8%;
+    --canvas-node-border: 217.2 32.6% 17.5%;
+    --canvas-edge: 210 40% 98%;
+    --canvas-edge-selected: 217.2 91.2% 59.8%;
+    
+    /* Control specific colors */
+    --control-background: 222.2 84% 4.9%;
+    --control-foreground: 210 40% 98%;
+    --control-border: 217.2 32.6% 17.5%;
+    --control-hover: 217.2 32.6% 17.5%;
+    
+    /* Dialog specific colors */
+    --dialog-overlay: 0 0% 0% / 70%;
+    
+    /* Toast specific colors */
+    --toast-background: 222.2 84% 4.9%;
+    --toast-foreground: 210 40% 98%;
+    --toast-border: 217.2 32.6% 17.5%;
+    --toast-success: 142.1 70.6% 45.3%;
+    --toast-error: 0 62.8% 30.6%;
+    --toast-warning: 38 92% 50%;
+    --toast-info: 217.2 91.2% 59.8%;
+  }
 }
 
 @layer base {
@@ -81,5 +154,12 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Disable transitions when users have reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition-duration: 0.01ms !important;
+    }
   }
 }

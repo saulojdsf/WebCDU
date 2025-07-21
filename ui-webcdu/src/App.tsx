@@ -1,6 +1,7 @@
 import ReactFlow, { Background, ConnectionMode, Controls, MiniMap, useEdgesState, useNodesState, type Connection, addEdge, type Node } from 'reactflow'
 import type { ReactFlowInstance } from 'reactflow';
 import 'reactflow/dist/style.css'
+import { useTheme } from "next-themes";
 
 import DefaultEdge from './components/edges/DefaultEdge'
 import SearchHighlightEdge from './components/edges/SearchHighlightEdge'
@@ -178,6 +179,7 @@ function App() {
     const [commandMenuResetKey, setCommandMenuResetKey] = useState(0);
     const [showBlockNumbers, setShowBlockNumbers] = useState(true);
     const [showVariableNames, setShowVariableNames] = useState(true);
+    const { resolvedTheme } = useTheme();
 
     // Initialize drawing cursor management
     useDrawingCursor();
@@ -1255,7 +1257,7 @@ function App() {
                                             closeMenu={closeMenu}
                                             openGroupMenu={openGroupMenu}
                                         />
-                                        <Background gap={12} size={2} color="#aaa" />
+                                        <Background gap={12} size={2} color={resolvedTheme === "dark" ? "#444" : "#aaa"} />
                                         <Controls position="top-right" />
                                         <MiniMap />
                                         <DrawingCanvasOverlay />

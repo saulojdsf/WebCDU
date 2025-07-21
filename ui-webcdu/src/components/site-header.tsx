@@ -4,6 +4,7 @@ import { SearchComponent } from "@/components/SearchComponent"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import type { SearchState, SearchMode } from "@/lib/search-types"
 
 import {
@@ -279,15 +280,18 @@ export function SiteHeader({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        {searchState && onSearchInput && onSearchModeChange && onClearSearch && (
-          <SearchComponent
-            searchState={searchState}
-            onSearchInput={onSearchInput}
-            onSearchModeChange={onSearchModeChange}
-            onClearSearch={onClearSearch}
-            className="w-full sm:ml-auto sm:w-auto"
-          />
-        )}
+        <div className="flex items-center gap-2 ml-auto">
+          {searchState && onSearchInput && onSearchModeChange && onClearSearch && (
+            <SearchComponent
+              searchState={searchState}
+              onSearchInput={onSearchInput}
+              onSearchModeChange={onSearchModeChange}
+              onClearSearch={onClearSearch}
+              className="w-full sm:w-auto"
+            />
+          )}
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )
