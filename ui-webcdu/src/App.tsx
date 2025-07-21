@@ -26,6 +26,9 @@ import { useDrawingCursor } from "@/hooks/useDrawingCursor"
 import { useDrawing } from "@/contexts/DrawingContext"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
 import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
+import { useGroupState } from "@/hooks/useGroupState"
+import { GroupCanvas } from "@/components/groups"
+import { GroupLayer, useGroupContextMenu } from "./components/groups/GroupLayer"
 import { POLS } from './components/nodes/POLS'
 import { COMPAR } from './components/nodes/COMPAR';
 import { ENTRAD } from './components/nodes/ENTRAD'
@@ -222,12 +225,27 @@ function App() {
     const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
 
+    useEffect(() => {
+        const handler = (e: any) => {
+            const nodeIds: string[] = e.detail?.nodeIds || [];
+            setSelectedNodes(nodeIds);
+        };
+        window.addEventListener('select-nodes', handler);
+        return () => window.removeEventListener('select-nodes', handler);
+    }, []);
+
+    // Group state management
+    const groupStateManager = useGroupState();
+
     // Arrangement system state - simplified for integration demo
     const [currentArrangementStrategy, setCurrentArrangementStrategy] = useState('hierarchical');
     const [isArrangementPreviewActive, setIsArrangementPreviewActive] = useState(false);
     const [lockedNodes, setLockedNodes] = useState<Set<string>>(new Set());
     const [arrangementHistory, setArrangementHistory] = useState<any[]>([]);
     const [arrangementHistoryIndex, setArrangementHistoryIndex] = useState(-1);
+
+    // Group context menu state/handlers
+    const { contextMenu, openGroupMenu, openCanvasMenu, closeMenu } = useGroupContextMenu();
 
     // Convert ReactFlow nodes and edges to searchable format
     const searchableNodes: SearchableNode[] = useMemo(() =>
@@ -303,7 +321,8 @@ function App() {
         setEdges([]);
         nextNodeId.current = 1;
         drawingContext.clearDrawing();
-    }, [setNodes, setEdges, drawingContext]);
+        groupStateManager.resetGroupState();
+    }, [setNodes, setEdges, drawingContext, groupStateManager]);
 
     const onConnect = useCallback((connection: Connection) => {
         setEdges(currentEdges => {
@@ -366,7 +385,7 @@ function App() {
         setNodes(nds => nds.concat(newNode));
     }, [reactFlowInstance, setNodes, nodes]);
 
-    // Handle selection
+    // Handle selection with multi-node support
     const onSelectionChange = useCallback(({ nodes, edges }: { nodes: Node[]; edges: any[] }) => {
         const nodeIds = nodes.map(n => n.id);
         const edgeIds = edges.map(e => e.id);
@@ -377,6 +396,53 @@ function App() {
         // In a full implementation, this would update arrangement options
         console.log('Selected nodes for arrangement:', nodeIds);
     }, []);
+
+    // Handle node click with Ctrl+click for multi-selection
+    const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+        event.stopPropagation();
+
+        if (event.ctrlKey || event.metaKey) {
+            // Multi-selection with Ctrl+click
+            setSelectedNodes(prev => {
+                if (prev.includes(node.id)) {
+                    // Remove from selection if already selected
+                    return prev.filter(id => id !== node.id);
+                } else {
+                    // Add to selection
+                    return [...prev, node.id];
+                }
+            });
+        } else {
+            // Single selection (default behavior)
+            setSelectedNodes([node.id]);
+        }
+
+        // Clear edge selection when selecting nodes
+        setSelectedEdges([]);
+    }, []);
+
+    // Handle selection start for drag selection
+    const onSelectionStart = useCallback((event: React.MouseEvent) => {
+        // This will be handled by ReactFlow's built-in selection box
+        console.log('Selection drag started');
+    }, []);
+
+    // Handle selection end for drag selection
+    const onSelectionEnd = useCallback((event: React.MouseEvent) => {
+        // This will be handled by ReactFlow's built-in selection box
+        console.log('Selection drag ended');
+    }, []);
+
+    // Callback to toggle split state
+    const handleSplitToggle = useCallback((edgeId: string, split: boolean) => {
+        setEdges(eds =>
+            eds.map(e =>
+                e.id === edgeId
+                    ? { ...e, data: { ...e.data, split } }
+                    : e
+            )
+        );
+    }, [setEdges]);
 
     // Handle delete key
     useEffect(() => {
@@ -399,10 +465,54 @@ function App() {
                     setEdges(eds => eds.filter(e => !selectedEdges.includes(e.id)));
                 }
             }
+
+            // Split/Unsplit edges with 'S' key
+            if (event.key.toLowerCase() === 's' && !isInput && selectedEdges.length > 0) {
+                event.preventDefault();
+                selectedEdges.forEach(edgeId => {
+                    const edge = edges.find(e => e.id === edgeId);
+                    if (edge) {
+                        const currentSplit = edge.data?.split || false;
+                        handleSplitToggle(edgeId, !currentSplit);
+                    }
+                });
+            }
+
+            // Group selected nodes with Ctrl+G
+            if (event.key.toLowerCase() === 'g' && event.ctrlKey && !event.shiftKey && !isInput) {
+                event.preventDefault();
+                if (selectedNodes.length > 1) {
+                    const nodeIdsToGroup = selectedNodes.filter(
+                        nodeId => !groupStateManager.groupState.groups.some(g => g.nodeIds.includes(nodeId))
+                    );
+                    if (nodeIdsToGroup.length > 1) {
+                        groupStateManager.createGroup({ nodeIds: nodeIdsToGroup }, nodes);
+                        toast.success(`Grouped ${nodeIdsToGroup.length} nodes`);
+                    } else {
+                        toast.error('Selected nodes are already in groups');
+                    }
+                } else {
+                    toast.error('Select at least 2 nodes to create a group');
+                }
+            }
+
+            // Ungroup selected groups with Ctrl+Shift+G
+            if (event.key.toLowerCase() === 'g' && event.ctrlKey && event.shiftKey && !isInput) {
+                event.preventDefault();
+                const selectedGroups = groupStateManager.groupState.selectedGroupIds;
+                if (selectedGroups.length > 0) {
+                    selectedGroups.forEach(groupId => {
+                        groupStateManager.deleteGroup(groupId);
+                    });
+                    toast.success(`Ungrouped ${selectedGroups.length} group(s)`);
+                } else {
+                    toast.error('No groups selected to ungroup');
+                }
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodes, selectedEdges, setNodes, setEdges]);
+    }, [selectedNodes, selectedEdges, setNodes, setEdges, edges, handleSplitToggle, groupStateManager, nodes]);
 
     const exportNodes = useCallback(() => {
         const exportData = {
@@ -422,6 +532,8 @@ function App() {
             })),
             // Include drawing data in export
             drawingData: drawingContext.exportDrawingData(),
+            // Include group data in export
+            groupData: groupStateManager.getGroupStateForPersistence(),
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -432,7 +544,7 @@ function App() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }, [nodes, edges, drawingContext]);
+    }, [nodes, edges, drawingContext, groupStateManager]);
 
     const updateConnectedVins = useCallback((changedNodeId: string) => {
         setNodes(nodes => {
@@ -454,6 +566,26 @@ function App() {
             });
         });
     }, [setNodes]);
+
+    // Helper to get Vout from a node
+    const getNodeVout = useCallback((nodeId: string) => {
+        const node = nodes.find(n => n.id === nodeId);
+        return node?.data?.Vout || "X";
+    }, [nodes]);
+
+    // Edges with injected data for split/unsplit
+    const edgesWithSplit = useMemo(() =>
+        edges.map(e => ({
+            ...e,
+            data: {
+                ...e.data,
+                onSplitToggle: handleSplitToggle,
+                sourceVout: getNodeVout(e.source),
+                split: e.data?.split || false,
+            }
+        })),
+        [edges, handleSplitToggle, getNodeVout]
+    );
 
     // Create wrapper components that receive the update functions and search highlighting state
     const createNodeWrapper = (Component: any) => {
@@ -524,77 +656,7 @@ function App() {
         setNodes(nds => nds.concat(newNode));
     }
 
-    const autoRearrangeNodes = useCallback(() => {
-        if (!reactFlowInstance) return;
 
-        // Get all nodes and edges
-        const allNodes = nodes;
-        const allEdges = edges;
-
-        // Find nodes with no incoming edges (sources)
-        const sourceNodes = allNodes.filter(node =>
-            !allEdges.some(edge => edge.target === node.id)
-        );
-
-        // Arrange nodes in layers from left to right
-        const nodePositions = new Map();
-
-        // Start with source nodes at x=0
-        sourceNodes.forEach((node, index) => {
-            nodePositions.set(node.id, { x: 0, y: index * 150 });
-        });
-
-        // Process remaining nodes based on their connections
-        const processed = new Set(sourceNodes.map(n => n.id));
-        let currentLayer = 1;
-
-        while (processed.size < allNodes.length) {
-            const currentLayerNodes = allNodes.filter(node => {
-                if (processed.has(node.id)) return false;
-                // Check if all incoming edges are from processed nodes
-                const incomingEdges = allEdges.filter(edge => edge.target === node.id);
-                return incomingEdges.every(edge => processed.has(edge.source));
-            });
-
-            if (currentLayerNodes.length === 0) {
-                // If no nodes can be processed, put remaining nodes in the last layer
-                const remainingNodes = allNodes.filter(node => !processed.has(node.id));
-                remainingNodes.forEach((node, index) => {
-                    nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
-                });
-                break;
-            }
-
-            currentLayerNodes.forEach((node, index) => {
-                nodePositions.set(node.id, { x: currentLayer * 300, y: index * 150 });
-                processed.add(node.id);
-            });
-
-            currentLayer++;
-        }
-
-        // Update node positions
-        setNodes(nodes => nodes.map(node => {
-            const newPos = nodePositions.get(node.id);
-            if (newPos && !lockedNodes.has(node.id)) {
-                return {
-                    ...node,
-                    position: { x: newPos.x, y: newPos.y }
-                };
-            }
-            return node;
-        }));
-
-        // Fit view to show all nodes after arrangement
-        setTimeout(() => {
-            reactFlowInstance.fitView({
-                padding: 0.1,
-                duration: 800,
-                minZoom: 0.1,
-                maxZoom: 1.5
-            });
-        }, 100);
-    }, [nodes, edges, setNodes, reactFlowInstance, lockedNodes]);
 
     const loadNodes = useCallback(() => {
         const input = document.createElement('input');
@@ -624,6 +686,14 @@ function App() {
                             drawingContext.clearDrawing();
                         }
 
+                        // Import group data if present
+                        if (data.groupData) {
+                            groupStateManager.loadGroupState(data.groupData);
+                        } else {
+                            // Clear group data if not present in loaded file
+                            groupStateManager.resetGroupState();
+                        }
+
                         toast.success('Diagrama carregado com sucesso!');
                     } else {
                         toast.error('Formato de arquivo inválido');
@@ -636,7 +706,7 @@ function App() {
             reader.readAsText(file);
         };
         input.click();
-    }, [setNodes, setEdges, drawingContext]);
+    }, [setNodes, setEdges, drawingContext, groupStateManager]);
 
     // Layout algorithm implementations first
     const applyHierarchicalLayout = useCallback(async () => {
@@ -783,33 +853,32 @@ function App() {
             edges.forEach(edge => {
                 const pos1 = positions.get(edge.source);
                 const pos2 = positions.get(edge.target);
-                if (!pos1 || !pos2) return;
+                if (pos1 && pos2) {
+                    const dx = pos2.x - pos1.x;
+                    const dy = pos2.y - pos1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
-                const dx = pos2.x - pos1.x;
-                const dy = pos2.y - pos1.y;
-                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const attractiveForce = distance * 0.01;
+                    const fx = (dx / distance) * attractiveForce;
+                    const fy = (dy / distance) * attractiveForce;
 
-                const attractiveForce = distance * 0.01;
-                const fx = (dx / distance) * attractiveForce;
-                const fy = (dy / distance) * attractiveForce;
-
-                const force1 = forces.get(edge.source);
-                const force2 = forces.get(edge.target);
-                if (force1 && force2) {
-                    force1.x += fx;
-                    force1.y += fy;
-                    force2.x -= fx;
-                    force2.y -= fy;
+                    const force1 = forces.get(edge.source);
+                    const force2 = forces.get(edge.target);
+                    if (force1 && force2) {
+                        force1.x += fx;
+                        force1.y += fy;
+                        force2.x -= fx;
+                        force2.y -= fy;
+                    }
                 }
             });
 
             // Apply forces to positions
-            const damping = 0.9;
             positions.forEach((pos, nodeId) => {
                 const force = forces.get(nodeId);
                 if (force) {
-                    pos.x += force.x * damping;
-                    pos.y += force.y * damping;
+                    pos.x += force.x * 0.1;
+                    pos.y += force.y * 0.1;
                 }
             });
         }
@@ -927,28 +996,67 @@ function App() {
         setCurrentArrangementStrategy(strategy);
 
         if (!reactFlowInstance) {
-            toast.error('Canvas not ready for arrangement');
+            toast.error('Canvas não está pronto para arranjo');
             return;
         }
 
         if (nodes.length === 0) {
-            toast.error('No nodes to arrange');
+            toast.error('Nenhum nó para arranjar');
             return;
         }
 
         try {
-            toast.info(`Applying ${strategy} layout...`);
+            toast.info(`Aplicando layout ${strategy}...`);
 
-            // For now, use the existing autoRearrangeNodes function for all strategies
-            // This ensures the arrangement actually works and fits the view
-            autoRearrangeNodes();
+            let positions;
+            switch (strategy) {
+                case 'hierarchical':
+                    positions = await applyHierarchicalLayout();
+                    break;
+                case 'grid':
+                    positions = await applyGridLayout();
+                    break;
+                case 'circular':
+                    positions = await applyCircularLayout();
+                    break;
+                case 'force':
+                    positions = await applyForceDirectedLayout();
+                    break;
+                case 'smart':
+                    positions = await applySmartLayout();
+                    break;
+                default:
+                    positions = await applyHierarchicalLayout();
+            }
 
-            toast.success(`Nodes arranged using ${strategy} layout`);
+            // Apply the new positions to nodes
+            setNodes(nodes => nodes.map(node => {
+                const newPos = positions.find(p => p.id === node.id);
+                if (newPos && !lockedNodes.has(node.id)) {
+                    return {
+                        ...node,
+                        position: { x: newPos.x, y: newPos.y }
+                    };
+                }
+                return node;
+            }));
+
+            // Fit view to show all nodes after arrangement
+            setTimeout(() => {
+                reactFlowInstance?.fitView({
+                    padding: 0.1,
+                    duration: 800,
+                    minZoom: 0.1,
+                    maxZoom: 1.5
+                });
+            }, 100);
+
+            toast.success(`Layout ${strategy} aplicado com sucesso`);
         } catch (error) {
             console.error('Arrangement failed:', error);
-            toast.error(`Failed to apply ${strategy} layout`);
+            toast.error(`Falha ao aplicar layout ${strategy}`);
         }
-    }, [reactFlowInstance, nodes, autoRearrangeNodes]);
+    }, [reactFlowInstance, nodes, lockedNodes, setNodes, applyHierarchicalLayout, applyGridLayout, applyCircularLayout, applyForceDirectedLayout, applySmartLayout]);
 
     // Handle the Arrange button click
     const handleArrangement = useCallback(() => {
@@ -1027,51 +1135,36 @@ function App() {
 
     const elk = useMemo(() => new ELK(), []);
 
-    const onSugiyamaLayout = useCallback(async () => {
-        if (!reactFlowInstance) return;
-        const elkGraph = {
-            id: 'root',
-            layoutOptions: {
-                'elk.algorithm': 'layered',
-                'elk.spacing.nodeNode': '40',
-                'elk.spacing.edgeNode': '60',
-                'elk.spacing.edgeEdge': '40',
-                'elk.layered.spacing.nodeNodeBetweenLayers': '60',
-                'elk.layered.spacing.edgeNodeBetweenLayers': '100',
-                'elk.layered.spacing.edgeEdgeBetweenLayers': '80',
-                'elk.spacing.componentComponent': '60',
-                'elk.contentAlignment': 'center',
-            },
-            children: nodes.map(node => ({
-                id: node.id,
-                width: 180,
-                height: 60,
-            })),
-            edges: edges.map(edge => ({
-                id: edge.id,
-                sources: [edge.source],
-                targets: [edge.target],
-            })),
+    // Note: Removed automatic selection clearing to avoid infinite loops
+    // Users can manually clear selections by clicking on empty canvas
+
+    // Handle group dragging
+    useEffect(() => {
+        const handler = (e: any) => {
+            const { groupId, delta } = e.detail || {};
+            if (!groupId || !delta) return;
+            // Find the group
+            const group = groupStateManager.groupState.groups.find(g => g.id === groupId);
+            if (!group) return;
+            // Move all member nodes
+            setNodes(nodes => nodes.map(node =>
+                group.nodeIds.includes(node.id)
+                    ? { ...node, position: { x: node.position.x + delta.dx, y: node.position.y + delta.dy } }
+                    : node
+            ));
+            // Update group bounds after moving nodes
+            setTimeout(() => {
+                groupStateManager.updateGroupBounds(groupId, nodes.map(node =>
+                    group.nodeIds.includes(node.id)
+                        ? { ...node, position: { x: node.position.x + delta.dx, y: node.position.y + delta.dy } }
+                        : node
+                ));
+            }, 0);
         };
-        try {
-            const layout = await elk.layout(elkGraph);
-            setNodes(nodes => nodes.map(node => {
-                const layoutNode = layout.children?.find((n: any) => n.id === node.id);
-                if (layoutNode) {
-                    const x = typeof layoutNode.x === 'number' ? layoutNode.x : 0;
-                    const y = typeof layoutNode.y === 'number' ? layoutNode.y : 0;
-                    return {
-                        ...node,
-                        position: reactFlowInstance.screenToFlowPosition({ x, y })
-                    };
-                }
-                return node;
-            }));
-        } catch (e) {
-            toast.error('Erro ao aplicar layout Sugiyama');
-            console.error(e);
-        }
-    }, [nodes, edges, setNodes, reactFlowInstance, elk]);
+        window.addEventListener('move-group', handler);
+        return () => window.removeEventListener('move-group', handler);
+    }, [groupStateManager, setNodes, nodes]);
+
 
     return (
         <>
@@ -1087,95 +1180,84 @@ function App() {
                         onToggleBlockNumbers={() => setShowBlockNumbers(v => !v)}
                         showVariableNames={showVariableNames}
                         onToggleVariableNames={() => setShowVariableNames(v => !v)}
-                        onAutoRearrange={autoRearrangeNodes}
-                        onSugiyamaLayout={onSugiyamaLayout}
                         searchState={searchState}
                         onSearchInput={handleSearchInput}
                         onSearchModeChange={handleSearchModeChange}
                         onClearSearch={handleClearSearch}
                         isDrawingMode={drawingContext.isDrawingMode}
                         onToggleDrawingMode={handleToggleDrawingMode}
+                        // New arrangement system props
+                        currentArrangementStrategy={currentArrangementStrategy}
+                        onArrangementStrategyChange={handleArrangementStrategyChange}
+                        onArrangement={handleArrangement}
+                        onArrangementPreview={handlePreview}
+                        onArrangementUndo={handleUndo}
+                        onArrangementRedo={handleRedo}
+                        isArrangementPreviewActive={isArrangementPreviewActive}
+                        canUndo={arrangementHistoryIndex >= 0}
+                        canRedo={arrangementHistoryIndex < arrangementHistory.length - 1}
                     />
                     <div className="flex flex-1">
                         <AppSidebar />
                         <SidebarInset>
                             <div className="w-full h-full relative" ref={reactFlowWrapper}>
-                                {/* Arrangement System Integration - Simplified UI */}
-                                <div className="absolute top-4 left-4 z-10">
-                                    <div className="bg-white border rounded-lg p-3 shadow-lg">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-sm font-medium">Arrangement System</span>
-                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                                {currentArrangementStrategy}
-                                            </span>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={handleArrangement}
-                                                className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-                                            >
-                                                Arrange
-                                            </button>
-                                            <button
-                                                onClick={handlePreview}
-                                                className={`px-3 py-1 text-xs rounded ${isArrangementPreviewActive
-                                                    ? 'bg-orange-500 text-white hover:bg-orange-600'
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                    }`}
-                                            >
-                                                {isArrangementPreviewActive ? 'Cancel Preview' : 'Preview'}
-                                            </button>
-                                            <button
-                                                onClick={handleUndo}
-                                                disabled={arrangementHistoryIndex < 0}
-                                                className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300 disabled:opacity-50"
-                                            >
-                                                Undo
-                                            </button>
-                                            <button
-                                                onClick={handleRedo}
-                                                disabled={arrangementHistoryIndex >= arrangementHistory.length - 1}
-                                                className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300 disabled:opacity-50"
-                                            >
-                                                Redo
-                                            </button>
-                                        </div>
-                                        {selectedNodes.length > 0 && (
-                                            <div className="mt-2 pt-2 border-t">
-                                                <button
-                                                    onClick={() => handleToggleNodeLock(selectedNodes)}
-                                                    className="px-3 py-1 bg-yellow-200 text-yellow-800 text-xs rounded hover:bg-yellow-300"
-                                                >
-                                                    Toggle Lock ({selectedNodes.length} nodes)
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <ReactFlow
-                                    nodeTypes={NODE_TYPES_WITH_CALLBACKS}
+                                <GroupCanvas
                                     nodes={nodes}
-                                    edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
-                                    edges={edges}
-                                    connectionMode={ConnectionMode.Strict}
-                                    onConnect={drawingContext.isDrawingMode ? undefined : onConnect}
-                                    onNodesChange={drawingContext.isDrawingMode ? undefined : onNodesChange}
-                                    onEdgesChange={drawingContext.isDrawingMode ? undefined : onEdgesChange}
-                                    onDrop={drawingContext.isDrawingMode ? undefined : onDrop}
-                                    onDragOver={drawingContext.isDrawingMode ? undefined : onDragOver}
-                                    onInit={setReactFlowInstance}
-                                    onSelectionChange={drawingContext.isDrawingMode ? undefined : onSelectionChange}
-                                    defaultEdgeOptions={{ type: 'default', }}
-                                    nodesDraggable={!drawingContext.isDrawingMode}
-                                    nodesConnectable={!drawingContext.isDrawingMode}
-                                    elementsSelectable={!drawingContext.isDrawingMode}
+                                    groupStateManager={groupStateManager}
+                                    selectedNodes={selectedNodes}
                                 >
-                                    <Background gap={12} size={2} color="#aaa" />
-                                    <Controls position="top-right" />
-                                    <MiniMap />
-                                    <DrawingCanvasOverlay />
-                                </ReactFlow>
+                                    <ReactFlow
+                                        nodeTypes={NODE_TYPES_WITH_CALLBACKS}
+                                        nodes={nodes}
+                                        edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
+                                        edges={edgesWithSplit}
+                                        connectionMode={ConnectionMode.Strict}
+                                        onConnect={drawingContext.isDrawingMode ? undefined : onConnect}
+                                        onNodesChange={drawingContext.isDrawingMode ? undefined : onNodesChange}
+                                        onEdgesChange={drawingContext.isDrawingMode ? undefined : onEdgesChange}
+                                        onDrop={drawingContext.isDrawingMode ? undefined : onDrop}
+                                        onDragOver={drawingContext.isDrawingMode ? undefined : onDragOver}
+                                        onInit={setReactFlowInstance}
+                                        onSelectionChange={drawingContext.isDrawingMode ? undefined : onSelectionChange}
+                                        onNodeClick={drawingContext.isDrawingMode ? undefined : onNodeClick}
+                                        onSelectionStart={drawingContext.isDrawingMode ? undefined : onSelectionStart}
+                                        onSelectionEnd={drawingContext.isDrawingMode ? undefined : onSelectionEnd}
+                                        onPaneClick={() => {
+                                            // Clear group selection when clicking on empty canvas
+                                            groupStateManager.clearSelection();
+                                        }}
+                                        onPaneContextMenu={(event) => {
+                                            event.preventDefault();
+                                            // Only show menu if multiple nodes are selected
+                                            if (selectedNodes.length > 1) {
+                                                openCanvasMenu(event.clientX, event.clientY);
+                                            }
+                                        }}
+                                        defaultEdgeOptions={{ type: 'default', }}
+                                        nodesDraggable={!drawingContext.isDrawingMode}
+                                        nodesConnectable={!drawingContext.isDrawingMode}
+                                        elementsSelectable={!drawingContext.isDrawingMode}
+                                        multiSelectionKeyCode="Control"
+                                        selectionKeyCode="Shift"
+                                        panOnDrag={true}
+                                        selectNodesOnDrag={false}
+                                    >
+                                        <GroupLayer
+                                            groups={groupStateManager.groupState.groups}
+                                            selectedGroupIds={groupStateManager.groupState.selectedGroupIds}
+                                            nodes={nodes}
+                                            groupStateManager={groupStateManager}
+                                            selectedNodes={selectedNodes}
+                                            contextMenu={contextMenu}
+                                            closeMenu={closeMenu}
+                                            openGroupMenu={openGroupMenu}
+                                        />
+                                        <Background gap={12} size={2} color="#aaa" />
+                                        <Controls position="top-right" />
+                                        <MiniMap />
+                                        <DrawingCanvasOverlay />
+                                    </ReactFlow>
+                                </GroupCanvas>
 
                                 {/* Drawing Mode Status Indicator */}
                                 {drawingContext.isDrawingMode && (

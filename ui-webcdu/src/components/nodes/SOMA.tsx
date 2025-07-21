@@ -39,11 +39,15 @@ export function SOMA(props : NodeProps & {
       }, {} as Record<string, string>));
     }, [props.data]);
 
+
+
     const updateConnectedVins = props.updateConnectedVins;
     const showBlockNumbers = props.showBlockNumbers;
     const showVariableNames = props.showVariableNames;
 
-    const handleDoubleClick = () => setOpen(true);
+    const handleDoubleClick = () => {
+      setOpen(true);
+    };
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       if (name === 'id') {

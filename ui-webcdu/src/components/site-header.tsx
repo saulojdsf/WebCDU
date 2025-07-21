@@ -40,14 +40,22 @@ export function SiteHeader({
   onToggleBlockNumbers,
   showVariableNames,
   onToggleVariableNames,
-  onAutoRearrange,
-  onSugiyamaLayout,
   searchState,
   onSearchInput,
   onSearchModeChange,
   onClearSearch,
   isDrawingMode,
-  onToggleDrawingMode
+  onToggleDrawingMode,
+  // New arrangement system props
+  currentArrangementStrategy,
+  onArrangementStrategyChange,
+  onArrangement,
+  onArrangementPreview,
+  onArrangementUndo,
+  onArrangementRedo,
+  isArrangementPreviewActive,
+  canUndo,
+  canRedo
 }: {
   onNew?: () => void,
   onExport?: () => void,
@@ -56,14 +64,22 @@ export function SiteHeader({
   onToggleBlockNumbers: () => void,
   showVariableNames: boolean,
   onToggleVariableNames: () => void,
-  onAutoRearrange?: () => void,
-  onSugiyamaLayout?: () => void,
   searchState: SearchState,
   onSearchInput: (query: string) => void,
   onSearchModeChange: (mode: SearchMode) => void,
   onClearSearch: () => void,
   isDrawingMode?: boolean,
-  onToggleDrawingMode?: () => void
+  onToggleDrawingMode?: () => void,
+  // New arrangement system props
+  currentArrangementStrategy?: string,
+  onArrangementStrategyChange?: (strategy: string) => void,
+  onArrangement?: () => void,
+  onArrangementPreview?: () => void,
+  onArrangementUndo?: () => void,
+  onArrangementRedo?: () => void,
+  isArrangementPreviewActive?: boolean,
+  canUndo?: boolean,
+  canRedo?: boolean
 }) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
@@ -147,10 +163,48 @@ export function SiteHeader({
                   <MenubarShortcut>Ctrl+Shift+Z</MenubarShortcut>
                 </MenubarItem>
                 <MenubarSeparator />
-                <MenubarItem onClick={onAutoRearrange}>
-                  Auto Rearranjar
-                  <MenubarShortcut>Ctrl+Shift+A</MenubarShortcut>
-                </MenubarItem>
+                <MenubarSub>
+                  <MenubarSubTrigger>Arranjo</MenubarSubTrigger>
+                  <MenubarSubContent>
+                    <MenubarItem onClick={() => onArrangementStrategyChange?.('hierarchical')}>
+                      Hierárquico
+                      {currentArrangementStrategy === 'hierarchical' && ' ✓'}
+                    </MenubarItem>
+                    <MenubarItem onClick={() => onArrangementStrategyChange?.('grid')}>
+                      Grade
+                      {currentArrangementStrategy === 'grid' && ' ✓'}
+                    </MenubarItem>
+                    <MenubarItem onClick={() => onArrangementStrategyChange?.('circular')}>
+                      Circular
+                      {currentArrangementStrategy === 'circular' && ' ✓'}
+                    </MenubarItem>
+                    <MenubarItem onClick={() => onArrangementStrategyChange?.('force')}>
+                      Força Dirigida
+                      {currentArrangementStrategy === 'force' && ' ✓'}
+                    </MenubarItem>
+                    <MenubarItem onClick={() => onArrangementStrategyChange?.('smart')}>
+                      Inteligente
+                      {currentArrangementStrategy === 'smart' && ' ✓'}
+                    </MenubarItem>
+                    <MenubarSeparator />
+                    <MenubarItem onClick={onArrangement}>
+                      Aplicar Arranjo
+                      <MenubarShortcut>Ctrl+Shift+A</MenubarShortcut>
+                    </MenubarItem>
+                    <MenubarItem onClick={onArrangementPreview}>
+                      {isArrangementPreviewActive ? 'Cancelar Preview' : 'Preview'}
+                    </MenubarItem>
+                    <MenubarSeparator />
+                    <MenubarItem onClick={onArrangementUndo} disabled={!canUndo}>
+                      Desfazer Arranjo
+                      <MenubarShortcut>Ctrl+Z</MenubarShortcut>
+                    </MenubarItem>
+                    <MenubarItem onClick={onArrangementRedo} disabled={!canRedo}>
+                      Refazer Arranjo
+                      <MenubarShortcut>Ctrl+Y</MenubarShortcut>
+                    </MenubarItem>
+                  </MenubarSubContent>
+                </MenubarSub>
                 <MenubarSeparator />
                 <MenubarSub>
                   <MenubarSubTrigger>Localizar</MenubarSubTrigger>
@@ -176,10 +230,6 @@ export function SiteHeader({
                     </MenubarItem>
                   </MenubarSubContent>
                 </MenubarSub>
-                <MenubarSeparator />
-                <MenubarItem onClick={onSugiyamaLayout}>
-                  Sugiyama Layout
-                </MenubarItem>
                 <MenubarSeparator />
                 <MenubarItem>Cortar</MenubarItem>
                 <MenubarItem>Copiar</MenubarItem>

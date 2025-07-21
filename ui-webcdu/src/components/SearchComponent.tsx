@@ -48,15 +48,15 @@ export function SearchComponent({
   // Reference to the search input element
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // Focus the search input when pressing / key
+  // Focus the search input when pressing Ctrl+F (instead of /)
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
       // Check if the active element is not an input or textarea
       const isInputActive = document.activeElement instanceof HTMLInputElement || 
                            document.activeElement instanceof HTMLTextAreaElement;
       
-      // Focus search input when pressing / key (unless already in an input)
-      if (event.key === '/' && !isInputActive) {
+      // Focus search input when pressing Ctrl+F (unless already in an input)
+      if ((event.key === 'f' || event.key === 'F') && event.ctrlKey && !isInputActive) {
         event.preventDefault();
         searchInputRef.current?.focus();
       }
