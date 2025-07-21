@@ -5,6 +5,7 @@ import './lib/reactflow-theme.css'
 import './lib/theme-transitions.css'
 import App from './App.tsx'
 import { DrawingProvider } from './contexts/DrawingContext'
+import { ParameterProvider } from './contexts/ParameterContext'
 import { ThemeProvider } from 'next-themes'
 
 createRoot(document.getElementById('root')!).render(
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')!).render(
       disableTransitionOnChange={false}
     >
       <DrawingProvider>
-        <App />
+        <ParameterProvider>
+          <App />
+        </ParameterProvider>
       </DrawingProvider>
     </ThemeProvider>
   </StrictMode>,

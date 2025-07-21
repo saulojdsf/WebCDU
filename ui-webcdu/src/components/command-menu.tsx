@@ -100,6 +100,7 @@ const NODE_COMMANDS = [
   { type: "x2", label: "X2" },
   { type: "xk", label: "XK" },
   { type: "xor", label: "XOR" },
+  { type: "placeholder", label: "PLACEHOLDER" },
 ];
 
 type CommandMenuProps = {

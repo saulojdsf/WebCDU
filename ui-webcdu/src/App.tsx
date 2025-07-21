@@ -24,146 +24,20 @@ import {
 } from "@/components/ui/sidebar"
 import { CommandMenu } from "@/components/command-menu"
 import { useDrawingCursor } from "@/hooks/useDrawingCursor"
+import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts"
 import { useDrawing } from "@/contexts/DrawingContext"
+import { useParameter } from "@/contexts/ParameterContext"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
 import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
 import { useGroupState } from "@/hooks/useGroupState"
 import { GroupCanvas } from "@/components/groups"
 import { GroupLayer, useGroupContextMenu } from "./components/groups/GroupLayer"
-import { POLS } from './components/nodes/POLS'
-import { COMPAR } from './components/nodes/COMPAR';
-import { ENTRAD } from './components/nodes/ENTRAD'
-import { FRACAO } from './components/nodes/FRACAO'
-import { LEDLAG } from './components/nodes/LEDLAG'
-import { GANHO } from './components/nodes/GANHO'
-import { ORD1 } from './components/nodes/ORD1'
-import { Placeholder } from './components/nodes/PLACEHOLDER'
-import { PROINT } from './components/nodes/PROINT'
-import { FUNCAO } from './components/nodes/FUNCAO';
-import { IMPORT } from './components/nodes/IMPORT';
-import { EXPORT } from './components/nodes/EXPORT'
-import { SAIDA } from './components/nodes/SAIDA';
-import { LIMITA } from './components/nodes/LIMITA';
-import { GENERIC1P } from './components/nodes/GENERIC1P';
-import { GENERIC } from './components/nodes/GENERIC';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { LAGNL } from './components/nodes/LAGNL';
-import { WSHOUT } from './components/nodes/WSHOUT';
-import { LOGIC } from './components/nodes/LOGIC';
-import { HOLD } from './components/nodes/HOLD';
-import { ATAN2 } from './components/nodes/ATAN2';
-import { ATRASO } from './components/nodes/ATRASO';
-import { GENERIC3P } from './components/nodes/GENERIC3P';
-import { DLAYONOFF } from './components/nodes/DLAYONOFF';
-import { MONEST } from './components/nodes/MONEST';
-import { OFFSET } from './components/nodes/OFFSET'
-import { RAMPA } from './components/nodes/RAMPA'
-import { PULSO } from './components/nodes/PULSO'
-import { GENERIC4P } from './components/nodes/GENERIC4P'
-import { HISTE1 } from './components/nodes/HISTE1'
-import { GENERIC2P } from './components/nodes/GENERIC2P'
-import { X2 } from './components/nodes/X2'
-import { XK } from './components/nodes/XK'
-import { NOT } from './components/nodes/NOT'
-import { MINMAX } from './components/nodes/MINMAX'
-import { ARITIMETIC } from './components/nodes/ARITMETIC'
-import { FIMPRG } from './components/nodes/FIMPRG';
-import { DERIVA } from './components/nodes/DERIVA';
-import { SOBDES } from './components/nodes/SOBDES';
-import { ALERTA } from './components/nodes/ALERTA';
-import { SELET2 } from './components/nodes/SELET2';
-import { INTRES } from './components/nodes/INTRES';
+import { BASE_NODE_TYPES } from '@/components/nodes/node-types';
+import { ParameterSidebar } from './components/parameter-sidebar';
 export const iframeHeight = "800px"
 
-// Define node types outside component to prevent recreation
-const BASE_NODE_TYPES = {
-    alerta: ALERTA,
-    fimprg: FIMPRG,
-    deriva: DERIVA,
-    subida: SOBDES,
-    descid: SOBDES,
-    soma: ARITIMETIC,
-    divsao: ARITIMETIC,
-    multpl: ARITIMETIC,
-    min: MINMAX,
-    max: MINMAX,
-    noise: GENERIC1P,
-    not: NOT,
-    fflop1: LOGIC,
-    x2: X2,
-    xk: XK,
-    reta: GENERIC2P,
-    exp: GENERIC3P,
-    deadb1: GENERIC4P,
-    deadb2: GENERIC4P,
-    histe1: HISTE1,
-    sat01: GENERIC4P,
-    steps: GENERIC4P,
-    pulso: PULSO,
-    rampa: RAMPA,
-    monest: MONEST,
-    offset: OFFSET,
-    dlayon: DLAYONOFF,
-    dlayof: DLAYONOFF,
-    dismax: GENERIC3P,
-    dismin: GENERIC3P,
-    delay: GENERIC,
-    atan2: ATAN2,
-    and: LOGIC,
-    or: LOGIC,
-    xor: LOGIC,
-    nand: LOGIC,
-    nor: LOGIC,
-    nxor: LOGIC,
-    thold: HOLD,
-    shold: HOLD,
-    atraso: ATRASO,
-    fex: GENERIC,
-    proint: PROINT,
-    ord1: ORD1,
-    fracao: FRACAO,
-    placeholder: Placeholder,
-    lt: COMPAR,
-    le: COMPAR,
-    gt: COMPAR,
-    ge: COMPAR,
-    eq: COMPAR,
-    ne: COMPAR,
-    entrad: ENTRAD,
-    export: EXPORT,
-    abs: FUNCAO,
-    acos: FUNCAO,
-    asin: FUNCAO,
-    atan: FUNCAO,
-    cos: FUNCAO,
-    degree: FUNCAO,
-    invrs: FUNCAO,
-    log: FUNCAO,
-    log10: FUNCAO,
-    menos: FUNCAO,
-    radian: FUNCAO,
-    round: FUNCAO,
-    sin: FUNCAO,
-    sinal: FUNCAO,
-    sqrt: FUNCAO,
-    ledlag: LEDLAG,
-    ldlag2: LEDLAG,
-    tan: FUNCAO,
-    trunc: FUNCAO,
-    ganho: GANHO,
-    import: IMPORT,
-    saida: SAIDA,
-    limita: LIMITA,
-    ratelm: LIMITA,
-    pols: POLS,
-    lagnl: LAGNL,
-    wshout: WSHOUT,
-    wshou2: WSHOUT,
-    proin2: PROINT,
-    selet2: SELET2,
-    intres: INTRES,
-} as const;
-
+// (BASE_NODE_TYPES is now imported)
 // Define edge types outside component to prevent recreation
 const BASE_EDGE_TYPES = {
     default: DefaultEdge,
@@ -175,11 +49,16 @@ function padId(num: number) {
 }
 
 function App() {
+    const parameterContext = useParameter();
     const [commandOpen, setCommandOpen] = useState(false);
     const [commandMenuResetKey, setCommandMenuResetKey] = useState(0);
     const [showBlockNumbers, setShowBlockNumbers] = useState(true);
     const [showVariableNames, setShowVariableNames] = useState(true);
     const { resolvedTheme } = useTheme();
+    const [isParameterSidebarOpen, setParameterSidebarOpen] = useState(false);
+    const handleToggleParameterSidebar = useCallback(() => {
+        setParameterSidebarOpen((open) => !open);
+    }, []);
 
     // Initialize drawing cursor management
     useDrawingCursor();
@@ -192,30 +71,7 @@ function App() {
         drawingContext.setDrawingMode(!drawingContext.isDrawingMode);
     }, [drawingContext]);
 
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            const active = document.activeElement;
-            const isInput =
-                active &&
-                (
-                    active.tagName === 'INPUT' ||
-                    active.tagName === 'TEXTAREA' ||
-                    (active as HTMLElement).isContentEditable
-                );
-            if (!isInput && e.key === "/") {
-                e.preventDefault();
-                setCommandMenuResetKey(k => k + 1);
-                setCommandOpen(true);
-            }
-            // Toggle drawing mode with 'D' key
-            if (!isInput && e.key.toLowerCase() === 'd' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
-                e.preventDefault();
-                handleToggleDrawingMode();
-            }
-        };
-        window.addEventListener("keydown", onKeyDown);
-        return () => window.removeEventListener("keydown", onKeyDown);
-    }, [handleToggleDrawingMode]);
+    // Global keyboard shortcuts are now handled by the dedicated hook
 
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const edgesRef = useRef(edges);
@@ -228,6 +84,16 @@ function App() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [selectedEdges, setSelectedEdges] = useState<string[]>([]);
+
+    // Ensure nodes have correct 'selected' field based on selectedNodes
+    useEffect(() => {
+        setNodes(prevNodes =>
+            prevNodes.map(node => ({
+                ...node,
+                selected: selectedNodes.includes(node.id),
+            }))
+        );
+    }, [selectedNodes, setNodes]);
 
     useEffect(() => {
         const handler = (e: any) => {
@@ -250,6 +116,21 @@ function App() {
 
     // Group context menu state/handlers
     const { contextMenu, openGroupMenu, openCanvasMenu, closeMenu } = useGroupContextMenu();
+
+    // Compute node IDs with undefined parameter references
+    const nodesWithUndefinedParams = useMemo(() => {
+        const refCheck = parameterContext.checkNodeReferences(nodes);
+        const undefinedParamSet = new Set(refCheck.undefinedParams);
+        return nodes
+            .filter(node => {
+                // Check P1-P4 fields for undefined parameter references
+                return ['P1', 'P2', 'P3', 'P4'].some(key => {
+                    const val = node.data?.[key];
+                    return val && undefinedParamSet.has(val);
+                });
+            })
+            .map(node => node.id);
+    }, [nodes, parameterContext]);
 
     // Convert ReactFlow nodes and edges to searchable format
     const searchableNodes: SearchableNode[] = useMemo(() =>
@@ -326,27 +207,59 @@ function App() {
         nextNodeId.current = 1;
         drawingContext.clearDrawing();
         groupStateManager.resetGroupState();
-    }, [setNodes, setEdges, drawingContext, groupStateManager]);
+        parameterContext.clearParameters();
+    }, [setNodes, setEdges, drawingContext, groupStateManager, parameterContext]);
 
     const onConnect = useCallback((connection: Connection) => {
         setEdges(currentEdges => {
             const updatedEdges = addEdge(connection, currentEdges);
             setNodes(nodes => {
                 const incoming = updatedEdges.filter(e => e.target === connection.target);
-                const vinArray = incoming.map(e => {
-                    const src = nodes.find(n => n.id === e.source);
-                    if (src) {
-                        const data = src.data as Record<string, any>;
-                        return data.Vout;
-                    }
-                    return undefined;
-                }).filter(v => typeof v !== 'undefined');
-                const vinString = `[${vinArray.join(',')}]`;
-                return nodes.map(n =>
-                    n.id === connection.target
-                        ? { ...n, data: { ...n.data, Vin: vinString } }
-                        : n
-                );
+                const targetNode = nodes.find(n => n.id === connection.target);
+                const targetType = targetNode?.type;
+                const targetHandleId = connection.targetHandle;
+
+                // Special handling for ARITMETIC nodes with vin2 handle
+                if ((targetType === 'soma' || targetType === 'divsao' || targetType === 'multpl') && targetHandleId === 'vin2') {
+                    // For vin2 handle, store the value in Vin2 property
+                    const vin1Edges = incoming.filter(e => e.targetHandle !== 'vin2');
+                    const vin2Edges = incoming.filter(e => e.targetHandle === 'vin2');
+
+                    const vin1Array = vin1Edges.map(e => {
+                        const src = nodes.find(n => n.id === e.source);
+                        return src?.data?.Vout;
+                    }).filter(Boolean);
+
+                    const vin2Array = vin2Edges.map(e => {
+                        const src = nodes.find(n => n.id === e.source);
+                        return src?.data?.Vout;
+                    }).filter(Boolean);
+
+                    const vin1String = vin1Array.length > 0 ? `[${vin1Array.join(',')}]` : '';
+                    const vin2String = vin2Array.length > 0 ? vin2Array[0] : '';
+
+                    return nodes.map(n =>
+                        n.id === connection.target
+                            ? { ...n, data: { ...n.data, Vin: vin1String, Vin2: vin2String } }
+                            : n
+                    );
+                } else {
+                    // Standard handling for other nodes or handles
+                    const vinArray = incoming.map(e => {
+                        const src = nodes.find(n => n.id === e.source);
+                        if (src) {
+                            const data = src.data as Record<string, any>;
+                            return data.Vout;
+                        }
+                        return undefined;
+                    }).filter(v => typeof v !== 'undefined');
+                    const vinString = `[${vinArray.join(',')}]`;
+                    return nodes.map(n =>
+                        n.id === connection.target
+                            ? { ...n, data: { ...n.data, Vin: vinString } }
+                            : n
+                    );
+                }
             });
             return updatedEdges;
         });
@@ -447,77 +360,21 @@ function App() {
         );
     }, [setEdges]);
 
-    // Handle delete key
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            const active = document.activeElement;
-            const isInput =
-                active &&
-                (
-                    active.tagName === 'INPUT' ||
-                    active.tagName === 'TEXTAREA' ||
-                    (active as HTMLElement).isContentEditable
-                );
+    // Keyboard shortcuts moved to hook below
 
-            if ((event.key === 'Delete' || event.key === 'Backspace') && !isInput) {
-                if (selectedNodes.length > 0) {
-                    setNodes(nds => nds.filter(n => !selectedNodes.includes(n.id)));
-                    setEdges(eds => eds.filter(e => !selectedNodes.includes(e.source) && !selectedNodes.includes(e.target)));
-                }
-                if (selectedEdges.length > 0) {
-                    setEdges(eds => eds.filter(e => !selectedEdges.includes(e.id)));
-                }
-            }
-
-            // Split/Unsplit edges with 'S' key
-            if (event.key.toLowerCase() === 's' && !isInput && selectedEdges.length > 0) {
-                event.preventDefault();
-                selectedEdges.forEach(edgeId => {
-                    const edge = edges.find(e => e.id === edgeId);
-                    if (edge) {
-                        const currentSplit = edge.data?.split || false;
-                        handleSplitToggle(edgeId, !currentSplit);
-                    }
-                });
-            }
-
-            // Group selected nodes with Ctrl+G
-            if (event.key.toLowerCase() === 'g' && event.ctrlKey && !event.shiftKey && !isInput) {
-                event.preventDefault();
-                if (selectedNodes.length > 1) {
-                    const nodeIdsToGroup = selectedNodes.filter(
-                        nodeId => !groupStateManager.groupState.groups.some(g => g.nodeIds.includes(nodeId))
-                    );
-                    if (nodeIdsToGroup.length > 1) {
-                        groupStateManager.createGroup({ nodeIds: nodeIdsToGroup }, nodes);
-                        toast.success(`Grouped ${nodeIdsToGroup.length} nodes`);
-                    } else {
-                        toast.error('Selected nodes are already in groups');
-                    }
-                } else {
-                    toast.error('Select at least 2 nodes to create a group');
-                }
-            }
-
-            // Ungroup selected groups with Ctrl+Shift+G
-            if (event.key.toLowerCase() === 'g' && event.ctrlKey && event.shiftKey && !isInput) {
-                event.preventDefault();
-                const selectedGroups = groupStateManager.groupState.selectedGroupIds;
-                if (selectedGroups.length > 0) {
-                    selectedGroups.forEach(groupId => {
-                        groupStateManager.deleteGroup(groupId);
-                    });
-                    toast.success(`Ungrouped ${selectedGroups.length} group(s)`);
-                } else {
-                    toast.error('No groups selected to ungroup');
-                }
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodes, selectedEdges, setNodes, setEdges, edges, handleSplitToggle, groupStateManager, nodes]);
+    // Import the useParameter hook
+    // const parameterContext = useParameter(); // This line is removed as per the edit hint
 
     const exportNodes = useCallback(() => {
+        // Check for undefined parameter references
+        const nodeReferenceCheck = parameterContext.checkNodeReferences(nodes);
+
+        // If there are undefined parameters, show a warning
+        if (!nodeReferenceCheck.valid) {
+            const undefinedParamsStr = nodeReferenceCheck.undefinedParams.join(', ');
+            toast.warning(`Warning: Undefined parameters found: ${undefinedParamsStr}`);
+        }
+
         const exportData = {
             nodes: nodes.map(n => ({
                 id: n.id,
@@ -537,6 +394,8 @@ function App() {
             drawingData: drawingContext.exportDrawingData(),
             // Include group data in export
             groupData: groupStateManager.getGroupStateForPersistence(),
+            // Include parameters in export
+            parameters: parameterContext.exportParameters(),
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -549,7 +408,7 @@ function App() {
         URL.revokeObjectURL(url);
     }, [nodes, edges, drawingContext, groupStateManager]);
 
-    const updateConnectedVins = useCallback((changedNodeId: string) => {
+    const updateConnectedVins = useCallback((changedNodeId: string, handleId?: string) => {
         setNodes(nodes => {
             // Find all outgoing edges from changedNodeId
             const outgoingEdges = edgesRef.current.filter(e => e.source === changedNodeId);
@@ -559,11 +418,34 @@ function App() {
                 if (outgoingEdges.some(e => e.target === n.id)) {
                     // Find all incoming edges to this node
                     const incomingEdges = edgesRef.current.filter(e => e.target === n.id);
-                    const newVinArray = incomingEdges.map(e => {
-                        const src = nodes.find(node => node.id === e.source);
-                        return src?.data?.Vout;
-                    }).filter(Boolean);
-                    return { ...n, data: { ...n.data, Vin: `[${newVinArray.join(',')}]` } };
+
+                    // Special handling for ARITMETIC nodes
+                    if (n.type === 'soma' || n.type === 'divsao' || n.type === 'multpl') {
+                        const vin1Edges = incomingEdges.filter(e => e.targetHandle !== 'vin2');
+                        const vin2Edges = incomingEdges.filter(e => e.targetHandle === 'vin2');
+
+                        const vin1Array = vin1Edges.map(e => {
+                            const src = nodes.find(node => node.id === e.source);
+                            return src?.data?.Vout;
+                        }).filter(Boolean);
+
+                        const vin2Array = vin2Edges.map(e => {
+                            const src = nodes.find(node => node.id === e.source);
+                            return src?.data?.Vout;
+                        }).filter(Boolean);
+
+                        const vin1String = vin1Array.length > 0 ? `[${vin1Array.join(',')}]` : '';
+                        const vin2String = vin2Array.length > 0 ? vin2Array[0] : '';
+
+                        return { ...n, data: { ...n.data, Vin: vin1String, Vin2: vin2String } };
+                    } else {
+                        // Standard handling for other nodes
+                        const newVinArray = incomingEdges.map(e => {
+                            const src = nodes.find(node => node.id === e.source);
+                            return src?.data?.Vout;
+                        }).filter(Boolean);
+                        return { ...n, data: { ...n.data, Vin: `[${newVinArray.join(',')}]` } };
+                    }
                 }
                 return n;
             });
@@ -590,6 +472,16 @@ function App() {
         [edges, handleSplitToggle, getNodeVout]
     );
 
+    const nodesWithUndefinedParamsRef = useRef<Set<string>>(new Set());
+    useEffect(() => {
+        nodesWithUndefinedParamsRef.current = new Set(nodesWithUndefinedParams);
+    }, [nodesWithUndefinedParams]);
+
+    const searchStateRef = useRef(searchState);
+    useEffect(() => {
+        searchStateRef.current = searchState;
+    }, [searchState]);
+
     // Memoize node wrapper creation to prevent recreation on every render
     const createNodeWrapper = useCallback((Component: any) => {
         return (props: any) => {
@@ -609,21 +501,27 @@ function App() {
         };
     }, [updateConnectedVins, showBlockNumbers, showVariableNames, searchState.highlightedElements.nodes, searchState.isActive]);
 
-    // Create wrapped node types - memoized to prevent recreation
+    // Create wrapped node types - stable across renders
     const nodeTypes = useMemo(() => {
-        const wrappedTypes: any = {};
-        Object.keys(BASE_NODE_TYPES).forEach(key => {
-            wrappedTypes[key] = createNodeWrapper(BASE_NODE_TYPES[key as keyof typeof BASE_NODE_TYPES]);
-        });
-        return wrappedTypes;
+        const types: Record<string, any> = {};
+        for (const [key, Comp] of Object.entries(BASE_NODE_TYPES)) {
+            types[key] = createNodeWrapper((props: any) => (
+                <Comp
+                    {...props}
+                    isParamUndefined={nodesWithUndefinedParamsRef.current.has(props.id)}
+                />
+            ));
+        }
+        return types;
     }, [createNodeWrapper]);
 
-    // Create wrapped edge types with search highlighting - memoized to prevent recreation
+    // Create wrapped edge types with search highlighting - stable across renders
     const edgeTypes = useMemo(() => {
         return {
             default: (props: any) => {
-                const isHighlighted = searchState.highlightedElements.edges.includes(props.id);
-                const isDimmed = searchState.isActive && !isHighlighted;
+                const currentSearch = searchStateRef.current;
+                const isHighlighted = currentSearch.highlightedElements.edges.includes(props.id);
+                const isDimmed = currentSearch.isActive && !isHighlighted;
 
                 return (
                     <SearchHighlightEdge
@@ -634,7 +532,7 @@ function App() {
                 );
             }
         };
-    }, [searchState.highlightedElements.edges, searchState.isActive]);
+    }, []); // no deps
 
     function handleCreateNode(type: string) {
         if (!reactFlowInstance) return;
@@ -695,6 +593,14 @@ function App() {
                         } else {
                             // Clear group data if not present in loaded file
                             groupStateManager.resetGroupState();
+                        }
+
+                        // Import parameters if present
+                        if (data.parameters) {
+                            parameterContext.importParameters(data.parameters);
+                        } else {
+                            // Clear parameters if not present in loaded file
+                            parameterContext.clearParameters();
                         }
 
                         toast.success('Diagrama carregado com sucesso!');
@@ -1067,10 +973,6 @@ function App() {
         handleArrangementStrategyChange(currentArrangementStrategy);
     }, [currentArrangementStrategy, handleArrangementStrategyChange]);
 
-
-
-
-
     const handlePreview = useCallback(() => {
         setIsArrangementPreviewActive(!isArrangementPreviewActive);
         toast.info(isArrangementPreviewActive ? 'Preview cancelled' : 'Preview mode activated');
@@ -1170,6 +1072,21 @@ function App() {
 
     const proOptions = { hideAttribution: true };
 
+    // Install global keyboard shortcuts
+    useGlobalKeyboardShortcuts({
+        setCommandMenuResetKey,
+        setCommandOpen,
+        handleToggleDrawingMode,
+        selectedNodes,
+        selectedEdges,
+        setNodes,
+        setEdges,
+        edges,
+        handleSplitToggle,
+        groupStateManager,
+        nodes,
+    });
+
     return (
         <>
             <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onCreateNode={handleCreateNode} resetKey={commandMenuResetKey} />
@@ -1200,11 +1117,20 @@ function App() {
                         isArrangementPreviewActive={isArrangementPreviewActive}
                         canUndo={arrangementHistoryIndex >= 0}
                         canRedo={arrangementHistoryIndex < arrangementHistory.length - 1}
+                        onToggleParameterSidebar={handleToggleParameterSidebar}
+                        isParameterSidebarOpen={isParameterSidebarOpen}
                     />
-                    <div className="flex flex-1">
+                    <div className="flex flex-1" style={{ position: 'relative' }}>
                         <AppSidebar />
                         <SidebarInset>
-                            <div className="w-full h-full relative" ref={reactFlowWrapper}>
+                            <div
+                                className="w-full h-full relative"
+                                ref={reactFlowWrapper}
+                                style={{
+                                    transition: 'margin-right 0.3s',
+                                    marginRight: isParameterSidebarOpen ? 350 : 0,
+                                }}
+                            >
                                 <GroupCanvas
                                     nodes={nodes}
                                     groupStateManager={groupStateManager}
@@ -1257,7 +1183,7 @@ function App() {
                                             closeMenu={closeMenu}
                                             openGroupMenu={openGroupMenu}
                                         />
-                                        <Background gap={12} size={2} color={resolvedTheme === "dark" ? "#444" : "#aaa"} />
+                                        <Background gap={12} size={2} color={resolvedTheme === "dark" ? "#333" : "#aaa"} />
                                         <Controls position="top-right" />
                                         <MiniMap />
                                         <DrawingCanvasOverlay />
@@ -1283,6 +1209,7 @@ function App() {
                         </SidebarInset>
                     </div>
                 </SidebarProvider>
+                <ParameterSidebar isOpen={isParameterSidebarOpen} onToggle={handleToggleParameterSidebar} nodes={nodes} />
             </div>
         </>
     )

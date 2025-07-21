@@ -7,6 +7,7 @@
  */
 
 import type { Node, Edge } from 'reactflow';
+import type { Parameter } from '../contexts/ParameterContext';
 
 /**
  * Bounds interface for group positioning and sizing
@@ -77,6 +78,8 @@ export interface DiagramState {
   selectedNodeIds: string[];
   /** Selected edge IDs */
   selectedEdgeIds: string[];
+  /** Parameters for the diagram */
+  parameters: Parameter[];
 }
 
 /**

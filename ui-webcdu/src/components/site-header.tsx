@@ -1,4 +1,4 @@
-import { SidebarIcon, Brush } from "lucide-react"
+import { SidebarIcon, Brush, SlidersHorizontal } from "lucide-react"
 
 import { SearchComponent } from "@/components/SearchComponent"
 import { Button } from "@/components/ui/button"
@@ -56,7 +56,9 @@ export function SiteHeader({
   onArrangementRedo,
   isArrangementPreviewActive,
   canUndo,
-  canRedo
+  canRedo,
+  onToggleParameterSidebar,
+  isParameterSidebarOpen
 }: {
   onNew?: () => void,
   onExport?: () => void,
@@ -80,7 +82,9 @@ export function SiteHeader({
   onArrangementRedo?: () => void,
   isArrangementPreviewActive?: boolean,
   canUndo?: boolean,
-  canRedo?: boolean
+  canRedo?: boolean,
+  onToggleParameterSidebar?: () => void,
+  isParameterSidebarOpen?: boolean
 }) {
   const [open, setOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
@@ -289,6 +293,18 @@ export function SiteHeader({
               onClearSearch={onClearSearch}
               className="w-full sm:w-auto"
             />
+          )}
+          {onToggleParameterSidebar && (
+            <Button
+              className="h-8 w-8"
+              variant={isParameterSidebarOpen ? "default" : "ghost"}
+              size="icon"
+              onClick={onToggleParameterSidebar}
+              title={isParameterSidebarOpen ? "Hide Parameters" : "Show Parameters"}
+              aria-label={isParameterSidebarOpen ? "Hide Parameters" : "Show Parameters"}
+            >
+              <SlidersHorizontal />
+            </Button>
           )}
           <ThemeToggle />
         </div>

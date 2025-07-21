@@ -24,9 +24,11 @@ export function Placeholder(props : NodeProps & {
   updateConnectedVins?: (id: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
+  isParamUndefined?: boolean;
 }) {
     const isSelected = props.selected;
     const selectionStyles = isSelected ? "ring-4 ring-blue-500 ring-opacity-50 shadow-lg" : "";
+    const undefinedParamStyles = props.isParamUndefined ? "outline outline-2 outline-red-500" : "";
     const [open, setOpen] = useState(false);
     const nodeRef = useRef<HTMLDivElement>(null);
     const { setNodes, getNodes } = useReactFlow();
@@ -119,7 +121,8 @@ export function Placeholder(props : NodeProps & {
           <PopoverTrigger asChild>
             <div
               ref={nodeRef}
-              className={`bg-white rounded w-[180px] h-[110px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`relative bg-white rounded shadow-md p-2 ${selectionStyles} ${undefinedParamStyles}`}
+              style={{ minWidth: 120, minHeight: 60 }}
               onDoubleClick={handleDoubleClick}
             >
 <Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>

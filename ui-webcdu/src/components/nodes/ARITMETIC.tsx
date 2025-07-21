@@ -10,12 +10,13 @@ function padId(num: string | number) {
 
 const PARAMS = [
   { key: "id", label: "ID" },
-  { key: "Vin", label: "Vin" },
+  { key: "Vin", label: "Vin+" },
+  { key: "Vin2", label: "Vin-" },
   { key: "Vout", label: "Vout" },
 ];
 
 export function ARITIMETIC(props: NodeProps & {
-  updateConnectedVins?: (id: string) => void;
+  updateConnectedVins?: (id: string, handleId?: string) => void;
   showBlockNumbers?: boolean;
   showVariableNames?: boolean;
 }) {
@@ -101,10 +102,15 @@ export function ARITIMETIC(props: NodeProps & {
     }
     let idChanged = newId !== currentId;
     let voutChanged = newVout !== currentVout;
+    let vin2Changed = form.Vin2 !== props.data?.Vin2;
+
     setNodes(nodes => nodes.map(n => n.id === props.id ? { ...n, id: newId, data: { ...n.data, ...form, id: newId } } : n));
-    if ((idChanged || voutChanged) && typeof updateConnectedVins === 'function') {
+
+    if ((idChanged || voutChanged || vin2Changed) && typeof updateConnectedVins === 'function') {
+      // Update both inputs if needed
       updateConnectedVins(props.id);
     }
+
     setOpen(false);
   };
 
@@ -160,6 +166,7 @@ export function ARITIMETIC(props: NodeProps & {
                 {...(param.key === 'Stip' ? { disabled: true } : {})}
                 {...(param.key === 'id' ? { inputMode: 'numeric', pattern: '[0-9]*' } : {})}
                 {...(param.key === 'Vin' ? { disabled: true } : {})}
+                {...(param.key === 'Vin2' ? { disabled: true } : {})}
               />
             </div>
           ))}
