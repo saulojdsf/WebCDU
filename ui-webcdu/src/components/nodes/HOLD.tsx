@@ -123,14 +123,14 @@ export function HOLD(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <line x1="75" y1="150" x2="75" y2="100" stroke="#000" stroke-width="2" />
+            <line x1="75" y1="150" x2="75" y2="100" stroke="#000" strokeWidth="2" />
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
             
-            {props.type === "thold" && (<text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{"T/HOLD"}</text>)}
-            {props.type === "shold" && (<text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{"S/HOLD"}</text>)}
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {props.type === "thold" && (<text x="75" y="83" fontFamily="Arial" fontSize="25" fill="#000" textAnchor="middle">{"T/HOLD"}</text>)}
+            {props.type === "shold" && (<text x="75" y="83" fontFamily="Arial" fontSize="25" fill="#000" textAnchor="middle">{"S/HOLD"}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

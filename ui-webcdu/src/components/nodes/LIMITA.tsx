@@ -123,15 +123,15 @@ export function LIMITA(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black" />
 
           <svg className="w-[50px] h-[150px]">
-            <text x="25" y="15" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmax || "?")}</text>
-            <line x1="25" y1="131.25" x2="25" y2="18.75" stroke="#000" stroke-width="2" />
-            <line x1="25" y1="18.75" x2="50" y2="18.75" stroke="#000" stroke-width="2" />
-            <line x1="25" y1="131.25" x2="0" y2="131.25" stroke="#000" stroke-width="2" />
-            <text x="5" y="143" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmin || "?")}</text>
-            <rect x="1" y="37.5" width={48} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="25" y="78" font-family="Arial" font-size="10" fill="#000" textAnchor="middle">{props.type.toUpperCase()}</text>
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <text x="25" y="15" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmax || "?")}</text>
+            <line x1="25" y1="131.25" x2="25" y2="18.75" stroke="#000" strokeWidth="2" />
+            <line x1="25" y1="18.75" x2="50" y2="18.75" stroke="#000" strokeWidth="2" />
+            <line x1="25" y1="131.25" x2="0" y2="131.25" stroke="#000" strokeWidth="2" />
+            <text x="5" y="143" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmin || "?")}</text>
+            <rect x="1" y="37.5" width={48} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="25" y="78" fontFamily="Arial" fontSize="10" fill="#000" textAnchor="middle">{props.type.toUpperCase()}</text>
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
           </svg>
         </div>
 

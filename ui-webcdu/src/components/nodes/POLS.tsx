@@ -129,14 +129,14 @@ export function POLS(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[250px] h-[150px]">
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"POL(S)"}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"POL(S)"}</text>
 
-            <rect x="0" y="37.5" width={250} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="30" y="69.5" font-family="Arial" font-size="20" fill="#000">{"N3s³+N2s²+N1s+N0"}</text>
-            <line x1="20" y1="73.5" x2="230" y2="73.5" stroke="#000" stroke-width="2" />
-            <text x="30" y="92.5" font-family="Arial" font-size="20" fill="#000">{"D3s³+D2s²+D1s+D0"}</text>
-            {showVariableNames && (<text x="215" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="215" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <rect x="0" y="37.5" width={250} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="30" y="69.5" fontFamily="Arial" fontSize="20" fill="#000">{"N3s³+N2s²+N1s+N0"}</text>
+            <line x1="20" y1="73.5" x2="230" y2="73.5" stroke="#000" strokeWidth="2" />
+            <text x="30" y="92.5" fontFamily="Arial" fontSize="20" fill="#000">{"D3s³+D2s²+D1s+D0"}</text>
+            {showVariableNames && (<text x="215" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="215" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

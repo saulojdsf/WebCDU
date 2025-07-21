@@ -137,9 +137,9 @@ export function RAMPA(props: NodeProps & {
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
             </defs>
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{props.type.toUpperCase()}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
 
             
                 <line x1="40" x2="40" y1="90" y2="100" stroke="#ccc" />
@@ -153,17 +153,17 @@ export function RAMPA(props: NodeProps & {
                 <line x1="40" x2="100" y1="90" y2="60" stroke="black" />
                 <line x1="100" x2="120" y1="60" y2="60" stroke="black" />
                 
-                <text x="36" y="108" font-family="Arial" font-size="8" fill="#000">{"P1"}</text>
-                <text x="96" y="108" font-family="Arial" font-size="8" fill="#000">{"P3"}</text>
-                <text x="8" y="93" font-family="Arial" font-size="8" fill="#000">{"P2"}</text>
-                <text x="8" y="63" font-family="Arial" font-size="8" fill="#000">{"P4"}</text>
+                <text x="36" y="108" fontFamily="Arial" fontSize="8" fill="#000">{"P1"}</text>
+                <text x="96" y="108" fontFamily="Arial" fontSize="8" fill="#000">{"P3"}</text>
+                <text x="8" y="93" fontFamily="Arial" fontSize="8" fill="#000">{"P2"}</text>
+                <text x="8" y="63" fontFamily="Arial" fontSize="8" fill="#000">{"P4"}</text>
                 
                 
 
 
 
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

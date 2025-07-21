@@ -121,19 +121,19 @@ export function COMPAR(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !top-[75px] !-right-3 !w-3 !h-3 !border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"COMPAR"}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"COMPAR"}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            {props.type === "lt" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{"<"}</text>)}
-            {props.type === "le" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{"≤"}</text>)}
-            {props.type === "gt" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{">"}</text>)}
-            {props.type === "ge" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{"≥"}</text>)}
-            {props.type === "eq" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{"="}</text>)}
-            {props.type === "ne" && (<text x="75" y="100" font-family="Arial" font-size="70" fill="#000" textAnchor="middle">{"≠"}</text>)}
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            {props.type === "lt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"<"}</text>)}
+            {props.type === "le" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≤"}</text>)}
+            {props.type === "gt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{">"}</text>)}
+            {props.type === "ge" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≥"}</text>)}
+            {props.type === "eq" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"="}</text>)}
+            {props.type === "ne" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≠"}</text>)}
 
 
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

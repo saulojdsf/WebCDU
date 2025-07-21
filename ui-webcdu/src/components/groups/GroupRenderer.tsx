@@ -48,6 +48,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
     const handleTitleMouseDown = (e: React.MouseEvent) => {
         if (isEditing) return;
 
+
         e.stopPropagation();
         e.preventDefault();
         dragState.current = {
@@ -277,9 +278,6 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
             role="group"
             aria-describedby={`group-title-${group.id}`}
             tabIndex={0}
-            onClick={handleBackgroundClick}
-            onMouseDown={handleGroupMouseDown}
-            onContextMenu={handleContextMenu}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -298,6 +296,9 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                 style={borderStyle}
                 aria-hidden="true"
                 role="presentation"
+                onClick={handleBackgroundClick}
+                onMouseDown={handleGroupMouseDown}
+                onContextMenu={handleContextMenu}
             />
             {/* Hidden help text for screen readers */}
             <div
@@ -334,7 +335,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                     id={`group-title-${group.id}`}
                     style={{ ...titleStyle, pointerEvents: 'all', zIndex: 2 }}
                     onDoubleClick={handleTitleDoubleClick}
-                    onContextMenu={e => { e.preventDefault(); e.stopPropagation(); onContextMenu?.(e, group.id); }}
+                    onContextMenu={handleContextMenu}
                     role="button"
                     tabIndex={0}
                     onMouseDown={handleTitleMouseDown}

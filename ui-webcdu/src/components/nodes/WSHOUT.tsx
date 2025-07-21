@@ -126,27 +126,27 @@ export function WSHOUT(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{props.type.toUpperCase()}</text>
 
             {props.data.Vmax && (
               <>
-                <text x="85" y="15" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmax || "?")}</text>
+                <text x="85" y="15" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmax || "?")}</text>
 
-                <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" stroke-width="2" />
-                <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="2" />
-                <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" stroke-width="2" />
-                <text x="35" y="143" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmin || "?")}</text>
+                <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" strokeWidth="2" />
+                <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" strokeWidth="2" />
+                <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" strokeWidth="2" />
+                <text x="35" y="143" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmin || "?")}</text>
 
               </>
             )}
 
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="75" y="69.5" font-family="Arial" font-size="20" fill="#000" textAnchor="middle">{"sP1"}</text>
-            <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" stroke-width="2" />
-            <text x="75" y="92.5" font-family="Arial" font-size="20" fill="#000" textAnchor="middle">{"P2+sp3"}</text>
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="75" y="69.5" fontFamily="Arial" fontSize="20" fill="#000" textAnchor="middle">{"sP1"}</text>
+            <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" strokeWidth="2" />
+            <text x="75" y="92.5" fontFamily="Arial" fontSize="20" fill="#000" textAnchor="middle">{"P2+sp3"}</text>
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

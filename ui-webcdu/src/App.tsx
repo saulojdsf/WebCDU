@@ -74,7 +74,8 @@ import { SELET2 } from './components/nodes/SELET2';
 import { INTRES } from './components/nodes/INTRES';
 export const iframeHeight = "800px"
 
-const NODE_TYPES = {
+// Define node types outside component to prevent recreation
+const BASE_NODE_TYPES = {
     alerta: ALERTA,
     fimprg: FIMPRG,
     deriva: DERIVA,
@@ -160,11 +161,12 @@ const NODE_TYPES = {
     proin2: PROINT,
     selet2: SELET2,
     intres: INTRES,
-}
+} as const;
 
-const EDGE_TYPES = {
+// Define edge types outside component to prevent recreation
+const BASE_EDGE_TYPES = {
     default: DefaultEdge,
-}
+} as const;
 
 
 function padId(num: number) {
@@ -375,7 +377,7 @@ function App() {
         const id = padId(nextId);
         // Use the dragged type if it matches a registered node type, otherwise fallback to 'placeholder'
         const typeKey = typeof nodeData.type === 'string' ? nodeData.type.toLowerCase() : '';
-        const nodeType = typeKey in NODE_TYPES ? typeKey : 'placeholder';
+        const nodeType = typeKey in BASE_NODE_TYPES ? typeKey : 'placeholder';
         const newNode = {
             id,
             type: nodeType,
@@ -394,7 +396,6 @@ function App() {
         setSelectedEdges(edgeIds);
 
         // In a full implementation, this would update arrangement options
-        console.log('Selected nodes for arrangement:', nodeIds);
     }, []);
 
     // Handle node click with Ctrl+click for multi-selection
@@ -587,8 +588,8 @@ function App() {
         [edges, handleSplitToggle, getNodeVout]
     );
 
-    // Create wrapper components that receive the update functions and search highlighting state
-    const createNodeWrapper = (Component: any) => {
+    // Memoize node wrapper creation to prevent recreation on every render
+    const createNodeWrapper = useCallback((Component: any) => {
         return (props: any) => {
             const isHighlighted = searchState.highlightedElements.nodes.includes(props.id);
             const isDimmed = searchState.isActive && !isHighlighted;
@@ -604,19 +605,19 @@ function App() {
                 />
             );
         };
-    };
-
-    // Create wrapped node types
-    const NODE_TYPES_WITH_CALLBACKS = useMemo(() => {
-        const wrappedTypes: any = {};
-        Object.keys(NODE_TYPES).forEach(key => {
-            wrappedTypes[key] = createNodeWrapper(NODE_TYPES[key as keyof typeof NODE_TYPES]);
-        });
-        return wrappedTypes;
     }, [updateConnectedVins, showBlockNumbers, showVariableNames, searchState.highlightedElements.nodes, searchState.isActive]);
 
-    // Create wrapped edge types with search highlighting
-    const EDGE_TYPES_WITH_HIGHLIGHTING = useMemo(() => {
+    // Create wrapped node types - memoized to prevent recreation
+    const nodeTypes = useMemo(() => {
+        const wrappedTypes: any = {};
+        Object.keys(BASE_NODE_TYPES).forEach(key => {
+            wrappedTypes[key] = createNodeWrapper(BASE_NODE_TYPES[key as keyof typeof BASE_NODE_TYPES]);
+        });
+        return wrappedTypes;
+    }, [createNodeWrapper]);
+
+    // Create wrapped edge types with search highlighting - memoized to prevent recreation
+    const edgeTypes = useMemo(() => {
         return {
             default: (props: any) => {
                 const isHighlighted = searchState.highlightedElements.edges.includes(props.id);
@@ -1165,6 +1166,7 @@ function App() {
         return () => window.removeEventListener('move-group', handler);
     }, [groupStateManager, setNodes, nodes]);
 
+    const proOptions = { hideAttribution: true };
 
     return (
         <>
@@ -1207,9 +1209,9 @@ function App() {
                                     selectedNodes={selectedNodes}
                                 >
                                     <ReactFlow
-                                        nodeTypes={NODE_TYPES_WITH_CALLBACKS}
+                                        nodeTypes={nodeTypes}
                                         nodes={nodes}
-                                        edgeTypes={EDGE_TYPES_WITH_HIGHLIGHTING}
+                                        edgeTypes={edgeTypes}
                                         edges={edgesWithSplit}
                                         connectionMode={ConnectionMode.Strict}
                                         onConnect={drawingContext.isDrawingMode ? undefined : onConnect}
@@ -1241,6 +1243,7 @@ function App() {
                                         selectionKeyCode="Shift"
                                         panOnDrag={true}
                                         selectNodesOnDrag={false}
+                                        proOptions={proOptions}
                                     >
                                         <GroupLayer
                                             groups={groupStateManager.groupState.groups}

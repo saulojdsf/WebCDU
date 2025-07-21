@@ -117,17 +117,17 @@ export function GANHO(props: NodeProps & {
           className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
           onDoubleClick={handleDoubleClick}
         >
-          
-          <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
-          <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
+
+          <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black" />
+          <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black" />
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" fontFamily="Arial" font-size="10" fill="#000">{"GANHO"}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"GANHO"}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{(props.data.P1 || "?")}</text>
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="75" y="83" fontFamily="Arial" fontSize="25" fill="#000" textAnchor="middle">{(props.data.P1 || "?")}</text>
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

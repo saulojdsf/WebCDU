@@ -94,9 +94,9 @@ export function SAIDA(props: NodeProps & {
           <Handle id="vin" type="target" position={Position.Left} className="!absolute !-left-3 !w-3 !h-3 border-0 !bg-black"  />
           
           <svg className="w-[150px] h-[150px]">
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="75" y="83" font-family="Arial" font-size="25" fill="#000" textAnchor="middle">{"SAIDA"}</text>
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="75" y="83" fontFamily="Arial" fontSize="25" fill="#000" textAnchor="middle">{"SAIDA"}</text>
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
           </svg>
         </div>
 

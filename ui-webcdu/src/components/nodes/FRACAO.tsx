@@ -125,13 +125,13 @@ export function FRACAO(props: NodeProps & {
           <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black"/>
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"FRACAO"}</text>
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
-            <text x="40" y="69.5" font-family="Arial" font-size="20" fill="#000">{"P1+P2"}</text>
-            <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" stroke-width="2" />
-            <text x="40" y="92.5" font-family="Arial" font-size="20" fill="#000">{"P3+P4"}</text>
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"FRACAO"}</text>
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
+            <text x="40" y="69.5" fontFamily="Arial" fontSize="20" fill="#000">{"P1+P2"}</text>
+            <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" strokeWidth="2" />
+            <text x="40" y="92.5" fontFamily="Arial" fontSize="20" fill="#000">{"P3+P4"}</text>
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
           </svg>
         </div>
 

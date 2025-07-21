@@ -146,9 +146,9 @@ export function DLAYONOFF(props: NodeProps & {
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
             </defs>
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{props.type.toUpperCase()}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
 
             {props.type === "dlayon" && (
               <>
@@ -172,7 +172,7 @@ export function DLAYONOFF(props: NodeProps & {
 
                 <line x1="45" x2="33" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
                 <line x1="58" x2="76" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
-                <text x="45" y="95" font-family="Arial" font-size="10" fill="#000">{"P1"}</text>
+                <text x="45" y="95" fontFamily="Arial" fontSize="10" fill="#000">{"P1"}</text>
               </>
             )}
             {props.type === "dlayof" && (
@@ -200,15 +200,15 @@ export function DLAYONOFF(props: NodeProps & {
 
                 <line x1="68" x2="43" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
                 <line x1="85" x2="107" y1="91" y2="91" stroke="black" marker-end="url(#arrow2)" />
-                <text x="70" y="95" font-family="Arial" font-size="10" fill="#000">{"P1"}</text>
+                <text x="70" y="95" fontFamily="Arial" fontSize="10" fill="#000">{"P1"}</text>
               </>
             )}
 
 
 
 
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

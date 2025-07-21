@@ -136,28 +136,28 @@ export function SOBDES(props: NodeProps & {
               </marker>
             </defs>
 
-            <text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{props.type.toUpperCase()}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{props.type.toUpperCase()}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2" />
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
 
-            <line x1="55" x2="75" y1="95" y2="95" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="75" y1="95" y2="55" stroke="black" stroke-width="2"/>
-            <line x1="75" x2="95" y1="55" y2="55" stroke="black" stroke-width="2"/>
+            <line x1="55" x2="75" y1="95" y2="95" stroke="black" strokeWidth="2"/>
+            <line x1="75" x2="75" y1="95" y2="55" stroke="black" strokeWidth="2"/>
+            <line x1="75" x2="95" y1="55" y2="55" stroke="black" strokeWidth="2"/>
             {props.type === "subida" && (
              <>
-             <line x1="75" x2="75" y1="76" y2="74" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
+             <line x1="75" x2="75" y1="76" y2="74" stroke="black" strokeWidth="2" marker-end="url(#arrow2)"/>
              </>
               )}
             {props.type === "descid" && ( 
               <>
-              <line x1="75" x2="75" y1="74" y2="76" stroke="black" stroke-width="2" marker-end="url(#arrow2)"/>
+              <line x1="75" x2="75" y1="74" y2="76" stroke="black" strokeWidth="2" marker-end="url(#arrow2)"/>
               </>
               )}
 
 
 
-            {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" font-family="Arial" font-size="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

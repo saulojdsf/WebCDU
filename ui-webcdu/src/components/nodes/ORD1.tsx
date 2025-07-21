@@ -127,27 +127,27 @@ export function ORD1(props : NodeProps & {
 <Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
 
 <svg className="w-[150px] h-[150px]">
-<text x="5" y="35" font-family="Arial" font-size="10" fill="#000">{"ORD(1)"}</text>
+<text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"ORD(1)"}</text>
 
 {props.data.Vmax && (
   <>
-<text x="85" y="15" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmax || "?")}</text>
+<text x="85" y="15" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmax || "?")}</text>
 
-    <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" stroke-width="2"/>
-    <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" stroke-width="2"/>
-    <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" stroke-width="2"/>
-<text x="35" y="143" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vmin || "?")}</text>
+    <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" strokeWidth="2"/>
+    <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" strokeWidth="2"/>
+    <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" strokeWidth="2"/>
+<text x="35" y="143" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmin || "?")}</text>
 
     </>
 )}
 
 
-    <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" stroke-width="2"/>
-    <text x="40" y="69.5" font-family="Arial" font-size="20" fill="#000">{"P1+sP2"}</text>
-    <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" stroke-width="2"/>
-    <text x="40" y="92.5" font-family="Arial" font-size="20" fill="#000">{"P3+sP4"}</text>
-    {showVariableNames && (<text x="115" y="47.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-    {showBlockNumbers && (<text x="120" y="107.5" font-family="Arial" font-size="10" fill="#000">{(props.data?.id || "?")}</text>)}
+    <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2"/>
+    <text x="40" y="69.5" fontFamily="Arial" fontSize="20" fill="#000">{"P1+sP2"}</text>
+    <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" strokeWidth="2"/>
+    <text x="40" y="92.5" fontFamily="Arial" fontSize="20" fill="#000">{"P3+sP4"}</text>
+    {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
+    {showBlockNumbers && (<text x="120" y="107.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.id || "?")}</text>)}
     
 
 </svg>
