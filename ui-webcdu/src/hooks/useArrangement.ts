@@ -8,7 +8,10 @@ export const useArrangement = (
     nodes: Node[],
     edges: Edge[],
     setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void,
-    reactFlowInstance: ReactFlowInstance | null
+    reactFlowInstance: ReactFlowInstance | null,
+    groups?: import('../lib/group-types').NodeGroup[],
+    setGroups?: (groups: import('../lib/group-types').NodeGroup[] | ((groups: import('../lib/group-types').NodeGroup[]) => import('../lib/group-types').NodeGroup[])) => void,
+    groupAwareOptions?: Partial<import('../lib/group-types').GroupArrangementOptions>
 ) => {
     const [currentArrangementStrategy, setCurrentArrangementStrategy] = useState('hierarchical');
     const [isArrangementPreviewActive, setIsArrangementPreviewActive] = useState(false);
@@ -434,6 +437,85 @@ export const useArrangement = (
 
     const elk = useMemo(() => new ELK(), []);
 
+    // Group-aware arrangement functionality
+    const groupAwareArrangement = useMemo(() => {
+        if (groups && setGroups) {
+            // Import the hook dynamically to avoid circular dependencies
+            const { useGroupAwareArrangement } = require('./useGroupAwareArrangement');
+            return useGroupAwareArrangement({
+                nodes,
+                edges,
+                groups,
+                setNodes,
+                setGroups,
+                options: groupAwareOptions
+            });
+        }
+        return null;
+    }, [nodes, edges, groups, setNodes, setGroups, groupAwareOptions]);
+
+    const handleGroupAwareArrangementWithStrategy = useCallback(async (strategy: string) => {
+        if (!groupAwareArrangement) {
+            // Fall back to regular arrangement if no groups
+            return handleArrangementWithStrategy(strategy);
+        }
+
+        if (!reactFlowInstance) {
+            toast.error('Canvas not ready for arrangement');
+            return;
+        }
+
+        try {
+            // Store current positions for undo
+            const currentPositions = nodes.map(node => ({
+                id: node.id,
+                x: node.position.x,
+                y: node.position.y,
+                locked: lockedNodes.has(node.id),
+            }));
+
+            // Add to history
+            setArrangementHistory(prev => [...prev.slice(0, arrangementHistoryIndex + 1), {
+                positions: currentPositions,
+                strategy: strategy,
+                timestamp: Date.now(),
+            }]);
+            setArrangementHistoryIndex(prev => prev + 1);
+
+            // Map strategy names to group-aware equivalents
+            let groupAwareStrategy: 'hierarchical' | 'grid' | 'circular';
+            switch (strategy) {
+                case 'hierarchical':
+                case 'smart':
+                    groupAwareStrategy = 'hierarchical';
+                    break;
+                case 'grid':
+                    groupAwareStrategy = 'grid';
+                    break;
+                case 'circular':
+                    groupAwareStrategy = 'circular';
+                    break;
+                case 'force-directed':
+                    // Force-directed doesn't have a group-aware equivalent yet, fall back to hierarchical
+                    groupAwareStrategy = 'hierarchical';
+                    break;
+                default:
+                    groupAwareStrategy = 'hierarchical';
+            }
+
+            await groupAwareArrangement.handleGroupAwareArrangement(groupAwareStrategy);
+
+            // Fit view to show all nodes after arrangement
+            setTimeout(() => {
+                reactFlowInstance.fitView({ padding: 0.1, duration: 800 });
+            }, 100);
+
+        } catch (error) {
+            console.error('Group-aware arrangement failed:', error);
+            toast.error(`Failed to arrange nodes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }, [groupAwareArrangement, reactFlowInstance, nodes, lockedNodes, arrangementHistoryIndex, setArrangementHistory, setArrangementHistoryIndex, handleArrangementWithStrategy]);
+
     return {
         currentArrangementStrategy,
         isArrangementPreviewActive,
@@ -445,6 +527,9 @@ export const useArrangement = (
         handleUndo,
         handleRedo,
         handleToggleNodeLock,
-        elk
+        elk,
+        // Group-aware methods
+        groupAwareArrangement,
+        handleGroupAwareArrangementWithStrategy
     };
 };

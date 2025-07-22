@@ -163,3 +163,20 @@
     }
   }
 }
+
+/* Group dragging styles */
+.group-dragging {
+  cursor: grabbing !important;
+}
+
+.group-dragging * {
+  cursor: grabbing !important;
+}
+
+/* Prevent text selection during group drag */
+.group-dragging {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}

@@ -135,7 +135,7 @@ export interface GroupSelection {
 /**
  * Group interaction event types
  */
-export type GroupInteractionEvent = 
+export type GroupInteractionEvent =
   | 'group-select'
   | 'group-deselect'
   | 'group-drag-start'
@@ -286,7 +286,7 @@ export function isNodeGroup(obj: any): obj is NodeGroup {
   if (!obj || typeof obj !== 'object') {
     return false;
   }
-  
+
   return (
     typeof obj.id === 'string' &&
     typeof obj.title === 'string' &&
@@ -312,7 +312,7 @@ export function isGroupState(obj: any): obj is GroupState {
   if (!obj || typeof obj !== 'object') {
     return false;
   }
-  
+
   return (
     Array.isArray(obj.groups) &&
     Array.isArray(obj.selectedGroupIds) &&
@@ -329,3 +329,65 @@ export type GroupEventHandler = (params: GroupEventParams) => void;
  * Helper type for group state update functions
  */
 export type GroupStateUpdater = (prevState: GroupState) => GroupState;
+
+/**
+ * Arrangement group representation for group-aware arrangement
+ */
+export interface ArrangementGroup {
+  /** Group ID */
+  id: string;
+  /** Node IDs that belong to this group */
+  nodeIds: string[];
+  /** Current bounds of the group */
+  bounds: Bounds;
+  /** Whether to treat this group as a single unit during arrangement */
+  treatAsUnit: boolean;
+  /** Center point of the group for positioning calculations */
+  center: { x: number; y: number };
+  /** Priority for arrangement (higher numbers get arranged first) */
+  priority?: number;
+}
+
+/**
+ * Configuration options for group-aware arrangement
+ */
+export interface GroupArrangementOptions {
+  /** Whether to respect group boundaries during arrangement */
+  respectGroups: boolean;
+  /** Whether to arrange nodes within groups */
+  arrangeWithinGroups: boolean;
+  /** Whether to maintain group structure during arrangement */
+  maintainGroupStructure: boolean;
+  /** Minimum spacing between groups */
+  groupSpacing: number;
+  /** Whether to expand groups to fit rearranged nodes */
+  expandGroupsToFit: boolean;
+  /** Strategy for handling ungrouped nodes */
+  ungroupedNodeStrategy: 'ignore' | 'treat-as-individual-groups' | 'arrange-freely';
+}
+
+/**
+ * Result of group-aware arrangement operation
+ */
+export interface GroupArrangementResult {
+  /** Whether the arrangement was successful */
+  success: boolean;
+  /** Updated node positions */
+  nodePositions: Array<{ id: string; x: number; y: number }>;
+  /** Updated group bounds */
+  updatedGroups: NodeGroup[];
+  /** Error message if arrangement failed */
+  error?: string;
+}
+
+/**
+ * Default group arrangement options
+ */
+export const DEFAULT_GROUP_ARRANGEMENT_OPTIONS: GroupArrangementOptions = {
+  respectGroups: true,
+  arrangeWithinGroups: true,
+  maintainGroupStructure: true,
+  groupSpacing: 50,
+  expandGroupsToFit: true,
+  ungroupedNodeStrategy: 'treat-as-individual-groups',
+};

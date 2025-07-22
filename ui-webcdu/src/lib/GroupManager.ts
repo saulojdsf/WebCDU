@@ -9,16 +9,19 @@
  */
 
 import type { Node } from 'reactflow';
-import type { 
-  NodeGroup, 
-  CreateGroupParams, 
+import type {
+  NodeGroup,
+  CreateGroupParams,
   UpdateGroupParams,
   GroupOperationResult,
   Bounds,
   BoundsCalculationOptions,
-  GroupValidationResult
+  GroupValidationResult,
+  ArrangementGroup,
+  GroupArrangementOptions,
+  DEFAULT_GROUP_ARRANGEMENT_OPTIONS
 } from './group-types';
-import { DEFAULT_GROUP_STYLE, DEFAULT_BOUNDS_OPTIONS } from './group-types';
+import { DEFAULT_GROUP_STYLE, DEFAULT_BOUNDS_OPTIONS, DEFAULT_GROUP_ARRANGEMENT_OPTIONS } from './group-types';
 
 /**
  * GroupManager service class
@@ -40,10 +43,10 @@ export class GroupManager {
 
       // Generate unique group ID
       const groupId = this.generateGroupId();
-      
+
       // Generate default title if not provided
       const title = params.title || this.generateDefaultTitle(groupId);
-      
+
       // Create group style (merge with defaults)
       const style = {
         ...DEFAULT_GROUP_STYLE,
@@ -142,15 +145,15 @@ export class GroupManager {
    * Calculate bounds for a group based on its member nodes
    */
   calculateGroupBounds(
-    nodeIds: string[], 
-    nodes: Node[], 
+    nodeIds: string[],
+    nodes: Node[],
     options: Partial<BoundsCalculationOptions> = {}
   ): Bounds {
     const opts = { ...DEFAULT_BOUNDS_OPTIONS, ...options };
-    
+
     // Filter nodes to only include group members
     const groupNodes = nodes.filter(node => nodeIds.includes(node.id));
-    
+
     if (groupNodes.length === 0) {
       return {
         x: 0,
@@ -169,11 +172,11 @@ export class GroupManager {
     groupNodes.forEach(node => {
       const nodeX = node.position.x;
       const nodeY = node.position.y;
-      
+
       // Estimate node dimensions (default ReactFlow node size)
       const nodeWidth = (node.width || 150);
       const nodeHeight = (node.height || 40);
-      
+
       minX = Math.min(minX, nodeX);
       minY = Math.min(minY, nodeY);
       maxX = Math.max(maxX, nodeX + nodeWidth);
@@ -194,7 +197,7 @@ export class GroupManager {
    */
   updateGroupBounds(group: NodeGroup, nodes: Node[]): NodeGroup {
     const newBounds = this.calculateGroupBounds(group.nodeIds, nodes);
-    
+
     return {
       ...group,
       bounds: newBounds,
@@ -217,7 +220,7 @@ export class GroupManager {
 
       // Filter out nodes that are already in the group
       const newNodeIds = nodeIds.filter(id => !group.nodeIds.includes(id));
-      
+
       if (newNodeIds.length === 0) {
         return {
           success: false,
@@ -258,7 +261,7 @@ export class GroupManager {
 
       // Filter out nodes that are in the group
       const remainingNodeIds = group.nodeIds.filter(id => !nodeIds.includes(id));
-      
+
       // Check if group would become empty
       if (remainingNodeIds.length === 0) {
         return {
@@ -307,11 +310,11 @@ export class GroupManager {
       if (params.nodeIds.length < 2) {
         errors.push('Group must contain at least 2 nodes');
       }
-      
+
       if (params.nodeIds.some(id => typeof id !== 'string' || id.trim().length === 0)) {
         errors.push('All node IDs must be non-empty strings');
       }
-      
+
       // Check for duplicates
       const uniqueIds = new Set(params.nodeIds);
       if (uniqueIds.size !== params.nodeIds.length) {
@@ -362,19 +365,110 @@ export class GroupManager {
   }
 
   /**
+   * Check if a node position is within a group's bounds
+   */
+  isNodePositionWithinGroup(
+    nodeId: string,
+    position: { x: number, y: number },
+    nodeWidth: number,
+    nodeHeight: number,
+    group: NodeGroup,
+    padding: number = 10
+  ): boolean {
+    // Calculate the bounds of the node at the new position
+    const nodeRight = position.x + nodeWidth;
+    const nodeBottom = position.y + nodeHeight;
+
+    // Calculate the bounds of the group with padding
+    const groupLeft = group.bounds.x + padding;
+    const groupTop = group.bounds.y + padding;
+    const groupRight = group.bounds.x + group.bounds.width - padding;
+    const groupBottom = group.bounds.y + group.bounds.height - padding;
+
+    // Check if the node is completely within the group bounds
+    return (
+      position.x >= groupLeft &&
+      position.y >= groupTop &&
+      nodeRight <= groupRight &&
+      nodeBottom <= groupBottom
+    );
+  }
+
+  /**
+   * Constrain a node position to stay within a group's bounds
+   */
+  constrainNodePositionToGroup(
+    nodeId: string,
+    position: { x: number, y: number },
+    nodeWidth: number,
+    nodeHeight: number,
+    group: NodeGroup,
+    padding: number = 10
+  ): { x: number, y: number } {
+    // Calculate the bounds of the group with padding
+    const groupLeft = group.bounds.x + padding;
+    const groupTop = group.bounds.y + padding;
+    const groupRight = group.bounds.x + group.bounds.width - padding;
+    const groupBottom = group.bounds.y + group.bounds.height - padding;
+
+    // Constrain the position to stay within the group bounds
+    return {
+      x: Math.max(groupLeft, Math.min(position.x, groupRight - nodeWidth)),
+      y: Math.max(groupTop, Math.min(position.y, groupBottom - nodeHeight))
+    };
+  }
+
+  /**
+   * Expand a group to fit a node at a new position
+   */
+  expandGroupToFitNode(
+    group: NodeGroup,
+    nodeId: string,
+    position: { x: number, y: number },
+    nodeWidth: number,
+    nodeHeight: number,
+    padding: number = 20
+  ): NodeGroup {
+    // Calculate the current bounds of the group
+    let { x, y, width, height } = group.bounds;
+
+    // Calculate the bounds needed to include the node at its new position
+    const nodeRight = position.x + nodeWidth;
+    const nodeBottom = position.y + nodeHeight;
+
+    // Expand the bounds if necessary
+    const newX = Math.min(x, position.x - padding);
+    const newY = Math.min(y, position.y - padding);
+    const newWidth = Math.max(width, nodeRight - newX + padding);
+    const newHeight = Math.max(height, nodeBottom - newY + padding);
+
+    // Return updated group with new bounds
+    return {
+      ...group,
+      bounds: {
+        x: newX,
+        y: newY,
+        width: newWidth,
+        height: newHeight
+      },
+      updatedAt: Date.now()
+    };
+  }
+
+  /**
    * Validate that nodes exist in the provided node array
    */
   validateNodesExist(nodeIds: string[], nodes: Node[]): GroupValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     const existingNodeIds = new Set(nodes.map(node => node.id));
     const missingNodeIds = nodeIds.filter(id => !existingNodeIds.has(id));
-    
+
     if (missingNodeIds.length > 0) {
       errors.push(`Nodes not found: ${missingNodeIds.join(', ')}`);
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -388,28 +482,203 @@ export class GroupManager {
   validateNodesNotInOtherGroups(nodeIds: string[], existingGroups: NodeGroup[], excludeGroupId?: string): GroupValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     const conflictingNodes: string[] = [];
-    
+
     existingGroups.forEach(group => {
       if (excludeGroupId && group.id === excludeGroupId) {
         return; // Skip the group we're updating
       }
-      
+
       const conflicts = nodeIds.filter(nodeId => group.nodeIds.includes(nodeId));
       if (conflicts.length > 0) {
         conflictingNodes.push(...conflicts);
       }
     });
-    
+
     if (conflictingNodes.length > 0) {
       errors.push(`Nodes already in other groups: ${[...new Set(conflictingNodes)].join(', ')}`);
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
       warnings,
+    };
+  }
+
+  /**
+   * Find the group that contains a node
+   */
+  findGroupForNode(nodeId: string, groups: NodeGroup[]): NodeGroup | null {
+    for (const group of groups) {
+      if (group.nodeIds.includes(nodeId)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get groups formatted for arrangement operations
+   */
+  getGroupsForArrangement(
+    groups: NodeGroup[],
+    nodes: Node[],
+    options: Partial<GroupArrangementOptions> = {}
+  ): ArrangementGroup[] {
+    const opts = { ...DEFAULT_GROUP_ARRANGEMENT_OPTIONS, ...options };
+
+    return groups.map(group => {
+      // Calculate center point of the group
+      const center = {
+        x: group.bounds.x + group.bounds.width / 2,
+        y: group.bounds.y + group.bounds.height / 2
+      };
+
+      // Determine priority based on group size and connectivity
+      const groupNodes = nodes.filter(node => group.nodeIds.includes(node.id));
+      const priority = groupNodes.length; // Larger groups get higher priority
+
+      return {
+        id: group.id,
+        nodeIds: [...group.nodeIds], // Create a copy
+        bounds: { ...group.bounds }, // Create a copy
+        treatAsUnit: opts.respectGroups,
+        center,
+        priority
+      };
+    });
+  }
+
+  /**
+   * Create arrangement groups for ungrouped nodes
+   */
+  createArrangementGroupsForUngroupedNodes(
+    ungroupedNodes: Node[],
+    options: Partial<GroupArrangementOptions> = {}
+  ): ArrangementGroup[] {
+    const opts = { ...DEFAULT_GROUP_ARRANGEMENT_OPTIONS, ...options };
+
+    if (opts.ungroupedNodeStrategy === 'ignore') {
+      return [];
+    }
+
+    if (opts.ungroupedNodeStrategy === 'treat-as-individual-groups') {
+      return ungroupedNodes.map(node => ({
+        id: `temp-group-${node.id}`,
+        nodeIds: [node.id],
+        bounds: {
+          x: node.position.x,
+          y: node.position.y,
+          width: node.width || 150,
+          height: node.height || 40
+        },
+        treatAsUnit: false,
+        center: {
+          x: node.position.x + (node.width || 150) / 2,
+          y: node.position.y + (node.height || 40) / 2
+        },
+        priority: 1
+      }));
+    }
+
+    // For 'arrange-freely', return empty array (handled by arrangement algorithm)
+    return [];
+  }
+
+  /**
+   * Update group bounds after arrangement to ensure all nodes are contained
+   */
+  updateGroupBoundsAfterArrangement(
+    groups: NodeGroup[],
+    nodes: Node[],
+    options: Partial<BoundsCalculationOptions> = {}
+  ): NodeGroup[] {
+    return groups.map(group => {
+      // Get the current positions of nodes in this group
+      const groupNodes = nodes.filter(node => group.nodeIds.includes(node.id));
+
+      if (groupNodes.length === 0) {
+        return group; // Return unchanged if no nodes found
+      }
+
+      // Calculate new bounds based on current node positions
+      const newBounds = this.calculateGroupBounds(group.nodeIds, nodes, options);
+
+      return {
+        ...group,
+        bounds: newBounds,
+        updatedAt: Date.now()
+      };
+    });
+  }
+
+  /**
+   * Validate arrangement groups for consistency
+   */
+  validateArrangementGroups(
+    arrangementGroups: ArrangementGroup[],
+    nodes: Node[]
+  ): GroupValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    const allNodeIds = new Set(nodes.map(node => node.id));
+    const seenNodeIds = new Set<string>();
+
+    arrangementGroups.forEach((group, index) => {
+      // Check if group has valid structure
+      if (!group.id || typeof group.id !== 'string') {
+        errors.push(`Arrangement group at index ${index} has invalid ID`);
+      }
+
+      if (!Array.isArray(group.nodeIds) || group.nodeIds.length === 0) {
+        errors.push(`Arrangement group ${group.id} has no node IDs`);
+      }
+
+      // Check if all node IDs exist
+      group.nodeIds.forEach(nodeId => {
+        if (!allNodeIds.has(nodeId)) {
+          errors.push(`Node ${nodeId} in group ${group.id} does not exist`);
+        }
+
+        // Check for duplicate node assignments
+        if (seenNodeIds.has(nodeId)) {
+          errors.push(`Node ${nodeId} is assigned to multiple arrangement groups`);
+        }
+        seenNodeIds.add(nodeId);
+      });
+
+      // Validate bounds
+      if (!group.bounds || typeof group.bounds !== 'object') {
+        errors.push(`Arrangement group ${group.id} has invalid bounds`);
+      } else {
+        const { x, y, width, height } = group.bounds;
+        if (typeof x !== 'number' || typeof y !== 'number' ||
+          typeof width !== 'number' || typeof height !== 'number') {
+          errors.push(`Arrangement group ${group.id} has invalid bounds values`);
+        }
+        if (width <= 0 || height <= 0) {
+          warnings.push(`Arrangement group ${group.id} has zero or negative dimensions`);
+        }
+      }
+
+      // Validate center point
+      if (!group.center || typeof group.center !== 'object') {
+        errors.push(`Arrangement group ${group.id} has invalid center point`);
+      } else {
+        const { x, y } = group.center;
+        if (typeof x !== 'number' || typeof y !== 'number') {
+          errors.push(`Arrangement group ${group.id} has invalid center coordinates`);
+        }
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
     };
   }
 }

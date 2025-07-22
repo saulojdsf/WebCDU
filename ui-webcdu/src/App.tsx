@@ -28,9 +28,10 @@ import { useParameter } from "@/contexts/ParameterContext"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
 import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
 import { useGroupState } from "@/hooks/useGroupState"
-import { GroupCanvas } from "@/components/groups"
 import { GroupLayer, useGroupContextMenu } from "./components/groups/GroupLayer"
+import { GroupConstraintIndicator } from "./components/groups/GroupConstraintIndicator"
 import { useArrangement } from '@/hooks/useArrangement';
+import { useNodeDragConstraintIntegration } from '@/hooks/useNodeDragConstraintIntegration';
 import { BASE_NODE_TYPES } from '@/components/nodes/node-types';
 import { ParameterSidebar } from './components/parameter-sidebar';
 export const iframeHeight = "800px"
@@ -119,7 +120,14 @@ function App() {
     } = useArrangement(nodes, edges, setNodes, reactFlowInstance);
 
     // Group context menu state/handlers
-    const { contextMenu, openGroupMenu, openCanvasMenu, closeMenu } = useGroupContextMenu();
+    const { contextMenu, openGroupMenu, openCanvasMenu, openNodeMenu, closeMenu } = useGroupContextMenu();
+
+    // Node drag constraints integration
+    const constraintIntegration = useNodeDragConstraintIntegration(
+        nodes,
+        groupStateManager.groupState.groups,
+        false // expandGroups = false for now
+    );
 
     // Compute node IDs with undefined parameter references
     const nodesWithUndefinedParams = useMemo(() => {
@@ -292,6 +300,48 @@ function App() {
         // This will be handled by ReactFlow's built-in selection box
         console.log('Selection drag ended');
     }, []);
+
+    // Node drag handlers with constraint integration
+    const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node) => {
+        // Update node dimensions in the constraint system
+        const nodeElement = event.target as HTMLElement;
+        const nodeRect = nodeElement.getBoundingClientRect();
+        constraintIntegration.updateNodeDimensions(node.id, nodeRect.width || 150, nodeRect.height || 40);
+
+        // Call the integration hook's drag start handler
+        constraintIntegration.onNodeDragStart(event, node);
+    }, [constraintIntegration]);
+
+    const onNodeDrag = useCallback((event: React.MouseEvent, node: Node) => {
+        // During drag, we don't update the node position to avoid infinite loops
+        // ReactFlow handles the position updates internally during dragging
+        // We'll apply constraints only when dragging stops
+    }, []);
+
+    const onNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
+        // Apply final position constraints
+        const constrainedPosition = constraintIntegration.nodePositionChange(node, node.position);
+
+        // Update node position if it was constrained
+        if (constrainedPosition.x !== node.position.x || constrainedPosition.y !== node.position.y) {
+            setNodes(currentNodes => currentNodes.map(n =>
+                n.id === node.id
+                    ? { ...n, position: constrainedPosition }
+                    : n
+            ));
+        }
+
+        // Call the integration hook's drag stop handler
+        constraintIntegration.onNodeDragStop(event, node);
+
+        // Update group bounds after node movement (with a small delay to ensure state is updated)
+        const group = groupStateManager.groupState.groups.find(g => g.nodeIds.includes(node.id));
+        if (group) {
+            setTimeout(() => {
+                groupStateManager.updateGroupBounds(group.id, nodes);
+            }, 10);
+        }
+    }, [constraintIntegration, setNodes, groupStateManager, nodes]);
 
     // Callback to toggle split state
     const handleSplitToggle = useCallback((edgeId: string, split: boolean) => {
@@ -711,11 +761,7 @@ function App() {
                                     marginRight: isParameterSidebarOpen ? 350 : 0,
                                 }}
                             >
-                                <GroupCanvas
-                                    nodes={nodes}
-                                    groupStateManager={groupStateManager}
-                                    selectedNodes={selectedNodes}
-                                >
+                                <div className="relative w-full h-full">
                                     <ReactFlow
                                         nodeTypes={nodeTypes}
                                         nodes={nodes}
@@ -732,6 +778,9 @@ function App() {
                                         onNodeClick={drawingContext.isDrawingMode ? undefined : onNodeClick}
                                         onSelectionStart={drawingContext.isDrawingMode ? undefined : onSelectionStart}
                                         onSelectionEnd={drawingContext.isDrawingMode ? undefined : onSelectionEnd}
+                                        onNodeDragStart={drawingContext.isDrawingMode ? undefined : onNodeDragStart}
+                                        onNodeDrag={drawingContext.isDrawingMode ? undefined : onNodeDrag}
+                                        onNodeDragStop={drawingContext.isDrawingMode ? undefined : onNodeDragStop}
                                         onPaneClick={() => {
                                             // Clear group selection when clicking on empty canvas
                                             groupStateManager.clearSelection();
@@ -741,6 +790,19 @@ function App() {
                                             // Only show menu if multiple nodes are selected
                                             if (selectedNodes.length > 1) {
                                                 openCanvasMenu(event.clientX, event.clientY);
+                                            }
+                                        }}
+                                        onNodeContextMenu={(event, node) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+
+                                            // If the clicked node is already selected and part of a multi-selection
+                                            if (selectedNodes.includes(node.id) && selectedNodes.length > 1) {
+                                                // Show the context menu at the cursor position with all selected nodes
+                                                openNodeMenu(event.clientX, event.clientY, selectedNodes);
+                                            } else if (!selectedNodes.includes(node.id)) {
+                                                // If the node isn't selected, select it first
+                                                setSelectedNodes([node.id]);
                                             }
                                         }}
                                         defaultEdgeOptions={{ type: 'default', }}
@@ -768,8 +830,35 @@ function App() {
                                         <Controls position="top-right" />
                                         <MiniMap />
                                         <DrawingCanvasOverlay />
+
+                                        {/* Group Layer for rendering groups */}
+                                        <GroupLayer
+                                            groups={groupStateManager.groupState.groups}
+                                            selectedGroupIds={groupStateManager.groupState.selectedGroupIds}
+                                            nodes={nodes}
+                                            groupStateManager={groupStateManager}
+                                            selectedNodes={selectedNodes}
+                                            contextMenu={contextMenu}
+                                            closeMenu={closeMenu}
+                                            openGroupMenu={openGroupMenu}
+                                            setNodes={setNodes}
+                                            constraintIntegration={constraintIntegration}
+                                        />
+
+                                        {/* Constraint violation indicators */}
+                                        {constraintIntegration.constraintViolation && (() => {
+                                            const group = groupStateManager.groupState.groups.find(g => g.id === constraintIntegration.constraintViolation?.groupId);
+                                            return group ? (
+                                                <GroupConstraintIndicator
+                                                    group={group}
+                                                    direction={constraintIntegration.constraintViolation.direction}
+                                                    active={true}
+                                                    pulsing={true}
+                                                />
+                                            ) : null;
+                                        })()}
                                     </ReactFlow>
-                                </GroupCanvas>
+                                </div>
 
                                 {/* Drawing Mode Status Indicator */}
                                 {drawingContext.isDrawingMode && (

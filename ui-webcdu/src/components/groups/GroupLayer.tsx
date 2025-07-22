@@ -2,8 +2,12 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useReactFlow, useViewport } from 'reactflow';
 import type { Node } from 'reactflow';
 import { GroupRenderer } from './GroupRenderer';
+import { GroupConstraintIndicator } from './GroupConstraintIndicator';
+import { GroupConstraintIndicators } from './GroupConstraintIndicators';
 import type { NodeGroup } from '@/lib/group-types';
 import type { UseGroupStateReturn } from '@/hooks/useGroupState';
+import type { UseNodeDragConstraintsReturn } from '@/hooks/useNodeDragConstraints';
+import type { UseNodeDragConstraintIntegrationReturn } from '@/hooks/useNodeDragConstraintIntegration';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,11 +45,14 @@ interface GroupLayerProps {
         groupId: string | null;
         x: number;
         y: number;
-        type: 'group' | 'canvas';
+        type: 'group' | 'canvas' | 'node';
+        nodeIds?: string[];
     } | null;
     closeMenu: () => void;
     openGroupMenu: (x: number, y: number, groupId: string) => void;
     setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
+    nodeDragConstraints?: UseNodeDragConstraintsReturn;
+    constraintIntegration?: UseNodeDragConstraintIntegrationReturn;
 }
 
 /**
@@ -62,6 +69,8 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
     closeMenu,
     openGroupMenu,
     setNodes,
+    nodeDragConstraints,
+    constraintIntegration,
 }) => {
     const reactFlowInstance = useReactFlow();
     const viewport = useViewport();
@@ -255,7 +264,61 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
         groupStateManager.updateAllGroupBounds(nodes);
     }, [groupStateManager, nodes]);
 
-    // Handle group drag from GroupRenderer
+    // Handle group resize from GroupRenderer
+    const handleGroupResize = useCallback((groupId: string, newBounds: { x: number; y: number; width: number; height: number }) => {
+        const group = groupStateManager.groupState.groups.find(g => g.id === groupId);
+        if (!group) return;
+
+        // Check if any member nodes would be outside the new bounds
+        const memberNodes = nodes.filter(node => group.nodeIds.includes(node.id));
+        let needsNodeAdjustment = false;
+        const adjustedNodes: Node[] = [];
+
+        memberNodes.forEach(node => {
+            const nodeRight = node.position.x + (node.width || 150);
+            const nodeBottom = node.position.y + (node.height || 40);
+            const padding = 20;
+
+            // Check if node is outside new bounds
+            if (node.position.x < newBounds.x + padding ||
+                node.position.y < newBounds.y + padding ||
+                nodeRight > newBounds.x + newBounds.width - padding ||
+                nodeBottom > newBounds.y + newBounds.height - padding) {
+
+                needsNodeAdjustment = true;
+
+                // Constrain node position to new bounds
+                const constrainedX = Math.max(
+                    newBounds.x + padding,
+                    Math.min(node.position.x, newBounds.x + newBounds.width - padding - (node.width || 150))
+                );
+                const constrainedY = Math.max(
+                    newBounds.y + padding,
+                    Math.min(node.position.y, newBounds.y + newBounds.height - padding - (node.height || 40))
+                );
+
+                adjustedNodes.push({
+                    ...node,
+                    position: { x: constrainedX, y: constrainedY }
+                });
+            } else {
+                adjustedNodes.push(node);
+            }
+        });
+
+        // Update group bounds
+        groupStateManager.updateGroup(groupId, { bounds: newBounds });
+
+        // Update node positions if needed
+        if (needsNodeAdjustment) {
+            setNodes(currentNodes => currentNodes.map(node => {
+                const adjustedNode = adjustedNodes.find(adj => adj.id === node.id);
+                return adjustedNode || node;
+            }));
+        }
+    }, [groupStateManager, nodes, setNodes]);
+
+    // Handle group drag from GroupRenderer (supports multi-group dragging)
     const handleGroupDrag = useCallback((groupId: string, delta: { dx: number; dy: number }) => {
         const group = groupStateManager.groupState.groups.find(g => g.id === groupId);
         if (!group) return;
@@ -266,22 +329,38 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
             dy: delta.dy / viewport.zoom
         };
 
-        // Move all member nodes
+        // Determine which groups to move
+        const groupsToMove = selectedGroupIds.includes(groupId)
+            ? selectedGroupIds // If the dragged group is selected, move all selected groups
+            : [groupId]; // Otherwise, just move the dragged group
+
+        // Get all node IDs from groups to move
+        const nodeIdsToMove = new Set<string>();
+        groupsToMove.forEach(gId => {
+            const g = groupStateManager.groupState.groups.find(group => group.id === gId);
+            if (g) {
+                g.nodeIds.forEach(nodeId => nodeIdsToMove.add(nodeId));
+            }
+        });
+
+        // Move all member nodes from all groups being dragged
         setNodes(nodes => nodes.map(node =>
-            group.nodeIds.includes(node.id)
+            nodeIdsToMove.has(node.id)
                 ? { ...node, position: { x: node.position.x + adjustedDelta.dx, y: node.position.y + adjustedDelta.dy } }
                 : node
         ));
 
-        // Update group bounds after moving nodes
+        // Update bounds for all moved groups
         setTimeout(() => {
-            groupStateManager.updateGroupBounds(groupId, nodes.map(node =>
-                group.nodeIds.includes(node.id)
-                    ? { ...node, position: { x: node.position.x + adjustedDelta.dx, y: node.position.y + adjustedDelta.dy } }
-                    : node
-            ));
+            groupsToMove.forEach(gId => {
+                groupStateManager.updateGroupBounds(gId, nodes.map(node =>
+                    nodeIdsToMove.has(node.id)
+                        ? { ...node, position: { x: node.position.x + adjustedDelta.dx, y: node.position.y + adjustedDelta.dy } }
+                        : node
+                ));
+            });
         }, 0);
-    }, [groupStateManager, setNodes, nodes, viewport.zoom]);
+    }, [groupStateManager, setNodes, nodes, viewport.zoom, selectedGroupIds]);
 
     // Determine if we should show 'Group' or 'Ungroup' in the context menu
     const showGroupOption = selectedNodes && selectedNodes.length > 1 && selectedNodes.some(
@@ -370,8 +449,26 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
                     onTitleEdit={handleGroupTitleEdit}
                     onContextMenu={handleGroupContextMenu}
                     onGroupDrag={handleGroupDrag}
+                    onGroupResize={handleGroupResize}
+                    isMultiSelected={selectedGroupIds.length > 1}
+                    selectedGroupCount={selectedGroupIds.length}
+                    showResizeHandles={selectedGroupIds.length === 1} // Only show resize handles for single selection
                 />
             ))}
+            {/* Constraint indicators for visual feedback */}
+            {constraintIntegration ? (
+                <GroupConstraintIndicators
+                    groups={groups}
+                    constraintIntegration={constraintIntegration}
+                />
+            ) : nodeDragConstraints?.constraintViolation && (
+                <GroupConstraintIndicator
+                    group={groups.find(g => g.id === nodeDragConstraints.constraintViolation?.groupId) as NodeGroup}
+                    direction={nodeDragConstraints.constraintViolation.direction}
+                    active={true}
+                    pulsing={true}
+                />
+            )}
             {/* Context menu for group operations */}
             {contextMenu && (
                 <DropdownMenu open onOpenChange={(open) => { if (!open) closeMenu(); }}>
@@ -385,11 +482,14 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
                             zIndex: 9999,
                         }}
                     >
-                        {contextMenu.type === 'canvas' && selectedNodes && selectedNodes.length > 1 && (
-                            <DropdownMenuItem onClick={handleGroup}>
-                                Group
-                            </DropdownMenuItem>
-                        )}
+                        {/* Show Group option for canvas or node context menu when multiple nodes are selected */}
+                        {(contextMenu.type === 'canvas' || contextMenu.type === 'node') &&
+                            selectedNodes && selectedNodes.length > 1 && (
+                                <DropdownMenuItem onClick={handleGroup}>
+                                    Group
+                                </DropdownMenuItem>
+                            )}
+                        {/* Show Ungroup option for group context menu */}
                         {contextMenu.type === 'group' && contextMenu.groupId && (
                             <DropdownMenuItem onClick={handleUngroup}>
                                 Ungroup
@@ -408,18 +508,25 @@ export function useGroupContextMenu() {
         groupId: string | null;
         x: number;
         y: number;
-        type: 'group' | 'canvas';
+        type: 'group' | 'canvas' | 'node';
+        nodeIds?: string[];
     } | null>(null);
 
     const openGroupMenu = useCallback((x: number, y: number, groupId: string) => {
         setContextMenu({ groupId, x, y, type: 'group' });
     }, []);
+
     const openCanvasMenu = useCallback((x: number, y: number) => {
         setContextMenu({ groupId: null, x, y, type: 'canvas' });
     }, []);
+
+    const openNodeMenu = useCallback((x: number, y: number, nodeIds: string[]) => {
+        setContextMenu({ groupId: null, x, y, type: 'node', nodeIds });
+    }, []);
+
     const closeMenu = useCallback(() => setContextMenu(null), []);
 
-    return { contextMenu, openGroupMenu, openCanvasMenu, closeMenu };
+    return { contextMenu, openGroupMenu, openCanvasMenu, openNodeMenu, closeMenu };
 }
 
 export default GroupLayer;

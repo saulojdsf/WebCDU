@@ -1,0 +1,75 @@
+/**
+ * CSS for group constraint visual feedback
+ */
+
+.group-constraint-indicator {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.group-constraint-indicator.active {
+  opacity: 0.8;
+}
+
+.group-constraint-indicator.top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.7), rgba(239, 68, 68, 0));
+}
+
+.group-constraint-indicator.right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to left, rgba(239, 68, 68, 0.7), rgba(239, 68, 68, 0));
+}
+
+.group-constraint-indicator.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to top, rgba(239, 68, 68, 0.7), rgba(239, 68, 68, 0));
+}
+
+.group-constraint-indicator.left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to right, rgba(239, 68, 68, 0.7), rgba(239, 68, 68, 0));
+}
+
+/* Dark mode support */
+.dark .group-constraint-indicator.top {
+  background: linear-gradient(to bottom, rgba(248, 113, 113, 0.7), rgba(248, 113, 113, 0));
+}
+
+.dark .group-constraint-indicator.right {
+  background: linear-gradient(to left, rgba(248, 113, 113, 0.7), rgba(248, 113, 113, 0));
+}
+
+.dark .group-constraint-indicator.bottom {
+  background: linear-gradient(to top, rgba(248, 113, 113, 0.7), rgba(248, 113, 113, 0));
+}
+
+.dark .group-constraint-indicator.left {
+  background: linear-gradient(to right, rgba(248, 113, 113, 0.7), rgba(248, 113, 113, 0));
+}
+
+/* Animation for constraint violation */
+@keyframes constraint-pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { opacity: 0.8; }
+}
+
+.group-constraint-indicator.active.pulsing {
+  animation: constraint-pulse 0.8s ease-in-out infinite;
+}

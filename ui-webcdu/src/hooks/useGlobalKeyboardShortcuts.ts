@@ -106,10 +106,68 @@ export function useGlobalKeyboardShortcuts({
         e.preventDefault();
         const selectedGroups = groupStateManager.groupState.selectedGroupIds;
         if (selectedGroups.length) {
-          selectedGroups.forEach((groupId: string) => groupStateManager.deleteGroup(groupId));
-          toast.success(`Ungrouped ${selectedGroups.length} group(s)`);
+          // Show confirmation dialog before ungrouping
+          if (confirm(`Ungroup ${selectedGroups.length} group(s)? This will preserve all nodes but remove the group container.`)) {
+            selectedGroups.forEach((groupId: string) => groupStateManager.deleteGroup(groupId));
+            toast.success(`Ungrouped ${selectedGroups.length} group(s)`);
+          }
         } else {
           toast.error('No groups selected to ungroup');
+        }
+        return;
+      }
+
+      // Select all nodes in the selected groups (Ctrl+A when groups are selected)
+      if (e.key.toLowerCase() === 'a' && e.ctrlKey && !isInput) {
+        const selectedGroups = groupStateManager.groupState.selectedGroupIds;
+        if (selectedGroups.length) {
+          e.preventDefault(); // Prevent the default "select all" behavior
+
+          // Get all node IDs from the selected groups
+          const nodeIds = selectedGroups.flatMap((groupId: string) => {
+            const group = groupStateManager.getGroupById(groupId);
+            return group ? group.nodeIds : [];
+          });
+
+          // Select these nodes
+          if (nodeIds.length > 0) {
+            // Use the custom event to select nodes
+            if (typeof window !== 'undefined' && window.dispatchEvent) {
+              window.dispatchEvent(new CustomEvent('select-nodes', { detail: { nodeIds } }));
+              toast.success(`Selected ${nodeIds.length} nodes from ${selectedGroups.length} group(s)`);
+            }
+          }
+          return;
+        }
+      }
+
+      // Delete selected groups with confirmation (Delete key)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput) {
+        const selectedGroups = groupStateManager.groupState.selectedGroupIds;
+        if (selectedGroups.length) {
+          e.preventDefault();
+
+          // Show confirmation dialog before deleting groups and their nodes
+          if (confirm(`Delete ${selectedGroups.length} group(s) and all their nodes? This cannot be undone.`)) {
+            // For each group, get the node IDs and remove them
+            const nodeIdsToDelete = selectedGroups.flatMap((groupId: string) => {
+              const group = groupStateManager.getGroupById(groupId);
+              return group ? group.nodeIds : [];
+            });
+
+            // Delete the nodes
+            if (nodeIdsToDelete.length > 0) {
+              setNodes(nds => nds.filter(n => !nodeIdsToDelete.includes(n.id)));
+              setEdges(eds => eds.filter(e =>
+                !nodeIdsToDelete.includes(e.source) && !nodeIdsToDelete.includes(e.target)
+              ));
+            }
+
+            // Delete the groups
+            selectedGroups.forEach((groupId: string) => groupStateManager.deleteGroup(groupId));
+            toast.success(`Deleted ${selectedGroups.length} group(s) and ${nodeIdsToDelete.length} nodes`);
+          }
+          return;
         }
       }
     };
