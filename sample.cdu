@@ -1,0 +1,27 @@
+
+(
+( CDU GERADO PELO PROGRAMA DE CONVERSAO DE DIAGRAMAS DE CONTROLE VERSAO 2.0
+(
+(******************************************************************************)
+(**** CDU DO ESTABILIZADOR DA UHE SAO SALVADOR                           *****)
+(******************************************************************************)
+      1 PSSBR   DCDU
+DEFPAR K         0.0     GANHO DO ESTABILIZADOR
+DEFPAR T1        0.0     CONSTANTE DE TEMPO DO FILTRO
+DEFPAR T2        0.0     CONSTANTE DE TEMPO DO FILTRO
+DEFPAR T3        0.0     CONSTANTE DE TEMPO DO BLOCO DE AVANCO
+DEFPAR T4        0.0     CONSTANTE DE TEMPO DO BLOCO DE ATRASO
+DEFPAR T5        0.0     CONSTANTE DE TEMPO DO BLOCO DE AVANCO
+DEFPAR T6        0.0     CONSTANTE DE TEMPO DO BLOCO DE ATRASO
+DEFPAR VSMAX     0.0     LIMITE MAXIMO DA SAIDA
+DEFPAR VSMIN     0.0     LIMITE MINIMO DA SAIDA
+    100 IMPORT P        1 VELOCIDADE DA MAQUINA
+    101 IMPORT Pe       1 POTENCIA ELETRICA
+    102 EXPORT Vstab    1 SINAL DE SAIDA DO ESTABILIZADOR
+    103 ENTRAD Vref     0 TENSAO DE REFERENCIA
+      1 I SOMA   O      +     PE      VSTAB                -1.0
+                                      P                           1.0
+      2 I GANHO  O            ENT1    ENT2    K
+      3 I POL(S) O            ENT2    ENT3    T1       T2
+FIMCDU
+999999

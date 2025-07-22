@@ -1,0 +1,779 @@
+{
+    "nodes": [
+        {
+            "id": "0001",
+            "type": "entrad",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Entrad",
+                "id": "0001",
+                "Vout": "Vref",
+                "Vin": "",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0012",
+            "type": "entrad",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Entrad",
+                "id": "0012",
+                "Vout": "Se0",
+                "Vin": "",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0014",
+            "type": "entrad",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Entrad",
+                "id": "0014",
+                "Vout": "Qe0",
+                "Vin": "",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0002",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0002",
+                "Vout": "Vt",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "VTR"
+            }
+        },
+        {
+            "id": "0013",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0013",
+                "Vout": "Qe",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "QELE"
+            }
+        },
+        {
+            "id": "0030",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0030",
+                "Vout": "Id",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "ID"
+            }
+        },
+        {
+            "id": "0031",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0031",
+                "Vout": "Iq",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "IQ"
+            }
+        },
+        {
+            "id": "0032",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0032",
+                "Vout": "Vd",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "VD"
+            }
+        },
+        {
+            "id": "0033",
+            "type": "import",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Import",
+                "id": "0033",
+                "Vout": "Vq",
+                "Vin": "",
+                "P1": "",
+                "P2": "",
+                "stip": "VQ"
+            }
+        },
+        {
+            "id": "0003",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0003",
+                "Vout": "X3",
+                "Vin": "[Vref,Vt,X17,X11,X46]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0005",
+            "type": "ledlag",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ledlag",
+                "id": "0005",
+                "Vout": "X5",
+                "Vin": "X3",
+                "P1": "#Ka",
+                "P2": "0.0",
+                "Vmin": "Vamin",
+                "Vmax": "Vamax"
+            }
+        },
+        {
+            "id": "0006",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0006",
+                "Vout": "X6",
+                "Vin": "[X5,Se0,Se]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0007",
+            "type": "ledlag",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ledlag",
+                "id": "0007",
+                "Vout": "Efd",
+                "Vin": "X6",
+                "P1": "1.0",
+                "P2": "0.0",
+                "Vmin": "Kq1",
+                "Vmax": "Kq2"
+            }
+        },
+        {
+            "id": "0009",
+            "type": "exp",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Funcao",
+                "id": "0009",
+                "Vout": "Se",
+                "Vin": "Efd",
+                "P1": "#Aex",
+                "P2": "#Bex",
+                "stip": "EXP"
+            }
+        },
+        {
+            "id": "0010",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0010",
+                "Vout": "X10",
+                "Vin": "Efd",
+                "P1": "#us",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0011",
+            "type": "wshout",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Wshout",
+                "id": "0011",
+                "Vout": "X11",
+                "Vin": "X10",
+                "P1": "#Tse",
+                "P2": "1.0"
+            }
+        },
+        {
+            "id": "0015",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0015",
+                "Vout": "X15",
+                "Vin": "[Qe,Qe0]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0016",
+            "type": "divsao",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Divsao",
+                "id": "0016",
+                "Vout": "X16",
+                "Vin": "[X15,Vt]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0017",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0017",
+                "Vout": "X17",
+                "Vin": "X16",
+                "P1": "#B7",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0034",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0034",
+                "Vout": "X34",
+                "Vin": "[Id,X36]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0035",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0035",
+                "Vout": "X35",
+                "Vin": "[Iq,X37]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0036",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0036",
+                "Vout": "X36",
+                "Vin": "Vq",
+                "P1": "#B8",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0037",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0037",
+                "Vout": "X37",
+                "Vin": "Vd",
+                "P1": "#B8",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0038",
+            "type": "x2",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Funcao",
+                "id": "0038",
+                "Vout": "X38",
+                "Vin": "X34",
+                "P1": "",
+                "P2": "",
+                "stip": "X**2"
+            }
+        },
+        {
+            "id": "0039",
+            "type": "x2",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Funcao",
+                "id": "0039",
+                "Vout": "X39",
+                "Vin": "X35",
+                "P1": "",
+                "P2": "",
+                "stip": "X**2"
+            }
+        },
+        {
+            "id": "0040",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0040",
+                "Vout": "X40",
+                "Vin": "[X38,X39]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0041",
+            "type": "sqrt",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Funcao",
+                "id": "0041",
+                "Vout": "X41",
+                "Vin": "X40",
+                "P1": "",
+                "P2": "",
+                "stip": "SQRT"
+            }
+        },
+        {
+            "id": "0042",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0042",
+                "Vout": "X42",
+                "Vin": "Vt",
+                "P1": "#B9",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0043",
+            "type": "soma",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Soma",
+                "id": "0043",
+                "Vout": "X43",
+                "Vin": "[X41,X42]",
+                "P1": "",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0044",
+            "type": "reta",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Funcao",
+                "id": "0044",
+                "Vout": "X44",
+                "Vin": "X43",
+                "P1": "1.00",
+                "P2": "#B3",
+                "stip": "RETA"
+            }
+        },
+        {
+            "id": "0045",
+            "type": "ganho",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Ganho",
+                "id": "0045",
+                "Vout": "X45",
+                "Vin": "X44",
+                "P1": "#B4",
+                "P2": ""
+            }
+        },
+        {
+            "id": "0046",
+            "type": "limita",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Limita",
+                "id": "0046",
+                "Vout": "X46",
+                "Vin": "X45",
+                "P1": "",
+                "P2": "",
+                "Vmin": "B5",
+                "Vmax": "B6"
+            }
+        },
+        {
+            "id": "0008",
+            "type": "export",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "data": {
+                "label": "Export",
+                "id": "0008",
+                "Vout": "",
+                "Vin": "Efd",
+                "P1": "",
+                "P2": "",
+                "stip": "EFD"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "reactflow__edge-0001vout-0003vin",
+            "source": "0001",
+            "target": "0003",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0002vout-0003vin2",
+            "source": "0002",
+            "target": "0003",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0017vout-0003vin3",
+            "source": "0017",
+            "target": "0003",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0011vout-0003vin4",
+            "source": "0011",
+            "target": "0003",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0046vout-0003vin5",
+            "source": "0046",
+            "target": "0003",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0003vout-0005vin",
+            "source": "0003",
+            "target": "0005",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0005vout-0006vin",
+            "source": "0005",
+            "target": "0006",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0012vout-0006vin2",
+            "source": "0012",
+            "target": "0006",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0009vout-0006vin3",
+            "source": "0009",
+            "target": "0006",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0006vout-0007vin",
+            "source": "0006",
+            "target": "0007",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0007vout-0009vin",
+            "source": "0007",
+            "target": "0009",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0007vout-0010vin",
+            "source": "0007",
+            "target": "0010",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0010vout-0011vin",
+            "source": "0010",
+            "target": "0011",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0013vout-0015vin",
+            "source": "0013",
+            "target": "0015",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0014vout-0015vin2",
+            "source": "0014",
+            "target": "0015",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0015vout-0016vin",
+            "source": "0015",
+            "target": "0016",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0002vout-0016vin2",
+            "source": "0002",
+            "target": "0016",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0016vout-0017vin",
+            "source": "0016",
+            "target": "0017",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0030vout-0034vin",
+            "source": "0030",
+            "target": "0034",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0036vout-0034vin2",
+            "source": "0036",
+            "target": "0034",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0031vout-0035vin",
+            "source": "0031",
+            "target": "0035",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0037vout-0035vin2",
+            "source": "0037",
+            "target": "0035",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0033vout-0036vin",
+            "source": "0033",
+            "target": "0036",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0032vout-0037vin",
+            "source": "0032",
+            "target": "0037",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0034vout-0038vin",
+            "source": "0034",
+            "target": "0038",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0035vout-0039vin",
+            "source": "0035",
+            "target": "0039",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0038vout-0040vin",
+            "source": "0038",
+            "target": "0040",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0039vout-0040vin2",
+            "source": "0039",
+            "target": "0040",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0040vout-0041vin",
+            "source": "0040",
+            "target": "0041",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0002vout-0042vin",
+            "source": "0002",
+            "target": "0042",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0041vout-0043vin",
+            "source": "0041",
+            "target": "0043",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0042vout-0043vin2",
+            "source": "0042",
+            "target": "0043",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0043vout-0044vin",
+            "source": "0043",
+            "target": "0044",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0044vout-0045vin",
+            "source": "0044",
+            "target": "0045",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0045vout-0046vin",
+            "source": "0045",
+            "target": "0046",
+            "type": "default"
+        },
+        {
+            "id": "reactflow__edge-0007vout-0008vin",
+            "source": "0007",
+            "target": "0008",
+            "type": "default"
+        }
+    ],
+    "drawingData": {
+        "version": "1.0.0",
+        "strokes": [],
+        "shapes": []
+    },
+    "groupData": {
+        "groups": [],
+        "selectedGroupIds": [],
+        "groupCounter": []
+    },
+    "parameters": []
+}

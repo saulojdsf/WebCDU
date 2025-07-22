@@ -45,6 +45,7 @@ interface GroupLayerProps {
     } | null;
     closeMenu: () => void;
     openGroupMenu: (x: number, y: number, groupId: string) => void;
+    setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
 }
 
 /**
@@ -60,6 +61,7 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
     contextMenu,
     closeMenu,
     openGroupMenu,
+    setNodes,
 }) => {
     const reactFlowInstance = useReactFlow();
     const viewport = useViewport();
@@ -197,17 +199,14 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
             const nodeIds = getGroupNodeIds(pendingDeleteGroupId);
             // Remove nodes
             if (nodeIds.length > 0) {
-                // Remove nodes from the main diagram (requires setNodes from parent)
-                if (typeof window !== 'undefined' && window.dispatchEvent) {
-                    window.dispatchEvent(new CustomEvent('delete-nodes', { detail: { nodeIds } }));
-                }
+                setNodes(nodes => nodes.filter(n => !nodeIds.includes(n.id)));
             }
             // Remove group
             groupStateManager.deleteGroup(pendingDeleteGroupId);
         }
         setShowDeleteDialog(false);
         setPendingDeleteGroupId(null);
-    }, [pendingDeleteGroupId, groupStateManager]);
+    }, [pendingDeleteGroupId, groupStateManager, setNodes]);
 
     // Handle ungroup only (from dialog)
     const handleUngroupOnly = useCallback(() => {
@@ -258,7 +257,8 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
 
     // Handle group drag from GroupRenderer
     const handleGroupDrag = useCallback((groupId: string, delta: { dx: number; dy: number }) => {
-
+        const group = groupStateManager.groupState.groups.find(g => g.id === groupId);
+        if (!group) return;
 
         // Adjust delta for current zoom level
         const adjustedDelta = {
@@ -266,11 +266,22 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
             dy: delta.dy / viewport.zoom
         };
 
-        // Emit a custom event to parent (App.tsx) to update node positions and group bounds
-        if (typeof window !== 'undefined' && window.dispatchEvent) {
-            window.dispatchEvent(new CustomEvent('move-group', { detail: { groupId, delta: adjustedDelta } }));
-        }
-    }, [viewport.zoom]);
+        // Move all member nodes
+        setNodes(nodes => nodes.map(node =>
+            group.nodeIds.includes(node.id)
+                ? { ...node, position: { x: node.position.x + adjustedDelta.dx, y: node.position.y + adjustedDelta.dy } }
+                : node
+        ));
+
+        // Update group bounds after moving nodes
+        setTimeout(() => {
+            groupStateManager.updateGroupBounds(groupId, nodes.map(node =>
+                group.nodeIds.includes(node.id)
+                    ? { ...node, position: { x: node.position.x + adjustedDelta.dx, y: node.position.y + adjustedDelta.dy } }
+                    : node
+            ));
+        }, 0);
+    }, [groupStateManager, setNodes, nodes, viewport.zoom]);
 
     // Determine if we should show 'Group' or 'Ungroup' in the context menu
     const showGroupOption = selectedNodes && selectedNodes.length > 1 && selectedNodes.some(
@@ -285,8 +296,16 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        pointerEvents: 'none', // Allow clicks to pass through to ReactFlow
-        zIndex: -1, // Render behind nodes
+        // Keep pointer events disabled for the overall layer so clicks on empty
+        // canvas areas continue to reach ReactFlow. Individual interactive
+        // elements (like the group borders) explicitly enable pointer events.
+        pointerEvents: 'none',
+        // The layer must share the stacking context with nodes so the interactive
+        // borders (which sit at z-index 0+) are reachable. Keeping this at 0
+        // ensures the background of the group remains behind nodes (because the
+        // background rectangles have pointer-events:none) while the borders are
+        // still clickable.
+        zIndex: 0,
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
         transformOrigin: '0 0',
     };

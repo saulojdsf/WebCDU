@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 function padId(num: string | number) {
   return num.toString().padStart(4, '0');
@@ -30,6 +31,8 @@ export function ORD1(props : NodeProps & {
     const [open, setOpen] = useState(false);
     const nodeRef = useRef<HTMLDivElement>(null);
     const { setNodes, getNodes } = useReactFlow();
+    const { resolvedTheme } = useTheme();
+    const isDarkMode = resolvedTheme === "dark";
     const [form, setForm] = useState(() => {
       // Default values or from node data
       return PARAMS.reduce((acc, param) => {
@@ -119,35 +122,35 @@ export function ORD1(props : NodeProps & {
           <PopoverTrigger asChild>
             <div
               ref={nodeRef}
-              className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles} ${isDarkMode ? "text-white" : "text-black"}`}
               onDoubleClick={handleDoubleClick}
             >
-<Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
+<Handle id="vout" type="source" position={Position.Right} className={`-right-3 w-3 h-3 border-0 ${isDarkMode ? "bg-white" : "bg-black"}`} style={{ width: '10px', height: '10px' }}/>
 
-<Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
+<Handle id="vin" type="target" position={Position.Left} className={`-left-3 w-3 h-3 border-0 ${isDarkMode ? "bg-white" : "bg-black"}`} style={{ width: '10px', height: '10px' }}/>
 
 <svg className="w-[150px] h-[150px]">
-<text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"ORD(1)"}</text>
+<text x="5" y="35" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{"ORD(1)"}</text>
 
 {props.data.Vmax && (
   <>
-<text x="85" y="15" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmax || "?")}</text>
+<text x="85" y="15" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.Vmax || "?")}</text>
 
-    <line x1="75" y1="131.25" x2="75" y2="18.75" stroke="#000" strokeWidth="2"/>
-    <line x1="75" y1="18.75" x2="120" y2="18.75" stroke="#000" strokeWidth="2"/>
-    <line x1="75" y1="131.25" x2="30" y2="131.25" stroke="#000" strokeWidth="2"/>
-<text x="35" y="143" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vmin || "?")}</text>
+    <line x1="75" y1="131.25" x2="75" y2="18.75" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2"/>
+    <line x1="75" y1="18.75" x2="120" y2="18.75" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2"/>
+    <line x1="75" y1="131.25" x2="30" y2="131.25" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2"/>
+<text x="35" y="143" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.Vmin || "?")}</text>
 
     </>
 )}
 
 
-    <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2"/>
-    <text x="40" y="69.5" fontFamily="Arial" fontSize="20" fill="#000">{"P1+sP2"}</text>
-    <line x1="30" y1="73.5" x2="120" y2="73.5" stroke="#000" strokeWidth="2"/>
-    <text x="40" y="92.5" fontFamily="Arial" fontSize="20" fill="#000">{"P3+sP4"}</text>
-    {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-    {showBlockNumbers && (<text x="120" y="107.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.id || "?")}</text>)}
+    <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill={isDarkMode ? "#333" : "#fff"} stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2"/>
+    <text x="40" y="69.5" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"P1+sP2"}</text>
+    <line x1="30" y1="73.5" x2="120" y2="73.5" stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2"/>
+    <text x="40" y="92.5" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"P3+sP4"}</text>
+    {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.Vout || "?")}</text>)}
+    {showBlockNumbers && (<text x="120" y="107.5" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.id || "?")}</text>)}
     
 
 </svg>

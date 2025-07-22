@@ -12,7 +12,7 @@ The Parameter Sidebar feature will add a collapsible sidebar on the right side o
 
 #### Acceptance Criteria
 
-1. WHEN the application loads THEN the system SHALL display a collapsible parameter sidebar on the right side of the interface.
+1. WHEN the application loads the sidebar will be hidden. When the user clicks on the button on the topbar THEN the system SHALL display a collapsible parameter sidebar on the right side of the interface.
 2. WHEN the user clicks the collapse/expand button THEN the system SHALL toggle the visibility of the parameter sidebar.
 3. WHEN the parameter sidebar is visible THEN the system SHALL display a data table with columns for Name, Value, and Description.
 4. WHEN the user adds a new parameter THEN the system SHALL validate that the name starts with "#" and has exactly 6 characters total.

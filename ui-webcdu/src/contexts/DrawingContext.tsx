@@ -15,14 +15,14 @@ import { LayerManager } from '../lib/LayerManager';
 const defaultToolSettings: ToolSettings = {
     pen: {
         size: 2,
-        color: '#000000',
+        color: '#FF0000',
         opacity: 1,
     },
     eraser: {
         size: 10,
     },
     shapes: {
-        strokeColor: '#000000',
+        strokeColor: '#FF0000',
         fillColor: '#ffffff',
         strokeWidth: 2,
         filled: false,

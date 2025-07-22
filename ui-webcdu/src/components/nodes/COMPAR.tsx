@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 function padId(num: string | number) {
   return num.toString().padStart(4, '0');
@@ -24,6 +25,8 @@ export function COMPAR(props: NodeProps & {
   const [open, setOpen] = useState(false);
   const nodeRef = useRef<HTMLDivElement>(null);
   const { setNodes, getNodes } = useReactFlow();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const [form, setForm] = useState(() => {
     // Default values or from node data
     return PARAMS.reduce((acc, param) => {
@@ -113,27 +116,27 @@ export function COMPAR(props: NodeProps & {
       <PopoverTrigger asChild>
         <div
           ref={nodeRef}
-          className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+          className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles} ${isDarkMode ? "text-white" : "text-black"}`}
           onDoubleClick={handleDoubleClick}
         >
-          <Handle id="vin1" type="target" position={Position.Left} className="!absolute !top-[45px] !-left-3 !w-3 !h-3 !border-0 !bg-black"  />
-          <Handle id="vin2" type="target" position={Position.Left} className="!absolute !top-[105px] !-left-3 !w-3 !h-3 !border-0 !bg-black"/>
-          <Handle id="vout" type="source" position={Position.Right} className="!absolute !top-[75px] !-right-3 !w-3 !h-3 !border-0 !bg-black"/>
+          <Handle id="vin1" type="target" position={Position.Left} className={`!absolute !top-[45px] !-left-3 !w-3 !h-3 !border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`}  />
+          <Handle id="vin2" type="target" position={Position.Left} className={`!absolute !top-[105px] !-left-3 !w-3 !h-3 !border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`}/>
+          <Handle id="vout" type="source" position={Position.Right} className={`!absolute !top-[75px] !-right-3 !w-3 !h-3 !border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`}/>
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"COMPAR"}</text>
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{"COMPAR"}</text>
 
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
-            {props.type === "lt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"<"}</text>)}
-            {props.type === "le" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≤"}</text>)}
-            {props.type === "gt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{">"}</text>)}
-            {props.type === "ge" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≥"}</text>)}
-            {props.type === "eq" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"="}</text>)}
-            {props.type === "ne" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill="#000" textAnchor="middle">{"≠"}</text>)}
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill={isDarkMode ? "#333" : "#fff"} stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" />
+            {props.type === "lt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{"<"}</text>)}
+            {props.type === "le" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{"≤"}</text>)}
+            {props.type === "gt" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{">"}</text>)}
+            {props.type === "ge" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{"≥"}</text>)}
+            {props.type === "eq" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{"="}</text>)}
+            {props.type === "ne" && (<text x="75" y="100" fontFamily="Arial" fontSize="70" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">{"≠"}</text>)}
 
 
-            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
-            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.Vout || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{"(" + (props.data?.id + ")" || "?")}</text>)}
 
 
           </svg>

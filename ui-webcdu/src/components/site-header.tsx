@@ -37,6 +37,7 @@ export function SiteHeader({
   onNew,
   onExport,
   onOpen,
+  onImport,
   showBlockNumbers,
   onToggleBlockNumbers,
   showVariableNames,
@@ -63,6 +64,7 @@ export function SiteHeader({
   onNew?: () => void,
   onExport?: () => void,
   onOpen?: () => void,
+  onImport?: () => void,
   showBlockNumbers: boolean,
   onToggleBlockNumbers: () => void,
   showVariableNames: boolean,
@@ -101,20 +103,7 @@ export function SiteHeader({
           <SidebarIcon />
         </Button>
         <Separator orientation="vertical" className="mr-2 h-4" />
-        {onToggleDrawingMode && (
-          <>
-            <Button
-              className="h-8 w-8"
-              variant={isDrawingMode ? "default" : "ghost"}
-              size="icon"
-              onClick={onToggleDrawingMode}
-              title={isDrawingMode ? "Sair do modo desenho" : "Entrar no modo desenho"}
-            >
-              <Brush className="h-4 w-4" />
-            </Button>
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </>
-        )}
+        
         <AlertDialog open={open} onOpenChange={setOpen}>
           <Menubar>
             <MenubarMenu>
@@ -129,6 +118,10 @@ export function SiteHeader({
                 <MenubarItem onClick={onOpen}>
                   Abrir
                   <MenubarShortcut>Ctrl+O</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem onClick={onImport}>
+                  Importar CDU
+                  <MenubarShortcut>Ctrl+I</MenubarShortcut>
                 </MenubarItem>
                 <MenubarItem onClick={onExport}>
                   Salvar
@@ -284,6 +277,20 @@ export function SiteHeader({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        {onToggleDrawingMode && (
+          <>
+            <Button
+              className="h-8 w-8"
+              variant={isDrawingMode ? "default" : "ghost"}
+              size="icon"
+              onClick={onToggleDrawingMode}
+              title={isDrawingMode ? "Sair do modo desenho" : "Entrar no modo desenho"}
+            >
+              <Brush className="h-4 w-4" />
+            </Button>
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </>
+        )}
         <div className="flex items-center gap-2 ml-auto">
           {searchState && onSearchInput && onSearchModeChange && onClearSearch && (
             <SearchComponent

@@ -1,0 +1,94 @@
+(
+(
+DCDU
+(ncdu) ( nome cdu )
+   105 RT_FUNIL
+(----------------------------------------------------------------------
+(
+(----------------------------------------------------------------------
+(EFPAR (npar) (     valpar     )
+(----------------------------------------------------------------------
+DEFPAR #Aex                0.024
+DEFPAR #B3                  0.00
+DEFPAR #B4                  0.25
+DEFPAR #B5                  0.00
+DEFPAR #B6                  0.20
+DEFPAR #B7                  0.05
+DEFPAR #B8                  0.55
+DEFPAR #B9                  1.27
+DEFPAR #Bex                1.360
+DEFPAR #Ka                  25.0
+DEFPAR #Ke                 -0.05
+DEFPAR #Kq1                 -4.6
+DEFPAR #Kq2                  4.6
+DEFPAR #Ta                   0.2
+DEFPAR #Te                  0.50
+DEFPAR #Tse                  1.0
+DEFPAR #us                  0.08
+DEFPAR #Vamax               1.00
+DEFPAR #Vamin              -1.00
+(
+(----------------------------------------------------------------------
+(nb) (tipo) (stip)s(vent) (vsai) ( p1 )( p2 )( p3 )( p4 ) (vmin) (vmax)
+(----------------------------------------------------------------------
+0001 ENTRAD               Vref
+DEFVAL        Vref   1.0
+0002 IMPORT VTR           Vt
+0003 SOMA          Vref   X3
+                  -Vt     X3
+                   X17    X3
+                  -X11    X3
+                   X46    X3
+0005 LEDLAG        X3     X5     #Ka      0.0   1.0#Ta    Vamin  Vamax
+0006 SOMA          X5     X6
+                   Se0    X6
+                  -Se     X6
+0007 LEDLAG        X6     Efd       1.0   0.0#Ke   #Te    Kq1    Kq2
+0008 EXPORT EFD    Efd
+0009 FUNCAO EXP    Efd    Se     #Aex  #Bex     0.0
+0010 GANHO         Efd    X10    #us
+0011 WSHOUT        X10    X11    #Tse     1.0#Tse
+0012 ENTRAD               Se0
+0013 IMPORT QELE          Qe
+0014 ENTRAD               Qe0
+0015 SOMA          Qe     X15
+                  -Qe0    X15
+0016 DIVSAO        X15    X16
+                   Vt     X16
+0017 GANHO         X16    X17    #B7
+(       LIMITADOR DE SUBEXCITACAO
+0030 IMPORT ID            Id
+0031 IMPORT IQ            Iq
+0032 IMPORT VD            Vd
+0033 IMPORT VQ            Vq
+0034 SOMA          Id     X34
+                  -X36    X34
+0035 SOMA          Iq     X35
+                   X37    X35
+0036 GANHO         Vq     X36    #B8
+0037 GANHO         Vd     X37    #B8
+0038 FUNCAO X**2   X34    X38
+0039 FUNCAO X**2   X35    X39
+0040 SOMA          X38    X40
+                   X39    X40
+0041 FUNCAO SQRT   X40    X41
+0042 GANHO         Vt     X42    #B9
+0043 SOMA          X41    X43
+                  -X42    X43
+0044 FUNCAO RETA   X43    X44    1.00  #B3
+0045 GANHO         X44    X45    #B4
+0046 LIMITA        X45    X46                             B5     B6
+(
+(----------------------------------------------------------------------
+(EFVAL (stip) (vdef) ( d1 ) ( d2 )
+(----------------------------------------------------------------------
+DEFVAL        Kq1    #Kq1
+DEFVAL        Kq2    #Kq2
+DEFVAL VAR    Qe0    Qe
+DEFVAL VAR    Se0    Se
+DEFVAL        Vamax  #Vamax
+DEFVAL        Vamin  #Vamin
+DEFVAL        B5     #B5
+DEFVAL        B6     #B6
+(
+FIMCDU

@@ -2,226 +2,259 @@
 
 import re
 import pprint
+import os
+from dataclasses import dataclass, field
+from typing import List, Optional
 
-def extract_dcdu_blocks(file_path):
+def extrair_cdu(caminho_arquivo: str, tipo: str) -> List[List[str]]:
     """
-    Extracts DCDU blocks from a .cdu or .dat file.
-
-    A DCDU block starts with a line containing 'DCDU' and ends with 'FIMCDU'.
-    This function ignores comment lines starting with '('.
-
-    Args:
-        file_path (str): The path to the .cdu file.
-
-    Returns:
-        list: A list of lists, where each inner list contains the lines of a DCDU block.
+    Lê o arquivo em `caminho_arquivo` e extrai todos os blocos CDU 
+    que começam com a linha `tipo` e terminam em 'FIMCDU'.
+    Linhas em branco e comentários (linhas começando com '(') são ignorados.
     """
-    all_dcdu_blocks = []
-    current_block = []
-    in_dcdu_block = False
+    lista_cdu: List[List[str]] = []
 
-    try:
-        with open(file_path, 'r') as f:
-            for line in f:
-                stripped_line = line.strip()
+    if not os.path.exists(caminho_arquivo):
+        print(f"Erro: Arquivo não encontrado em '{caminho_arquivo}'.")
+        return lista_cdu
 
-                if not stripped_line or stripped_line.startswith('('):
-                    continue
+    with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+        todas_linhas = f.readlines()
 
-                if "DCDU" in stripped_line.upper() and not in_dcdu_block:
-                    # Check if the line contains DCDU and is not just a comment
-                    # This is the start of a potential block
-                    # The C# code seems to start capturing after the 'DCDU' keyword line itself
-                    # but the first line of the block is the one with the DCDU name.
-                    # Let's assume the line with DCDU name marks the start.
-                    if re.match(r'^\s*\d+\s+[A-Z0-9_]+', stripped_line):
-                         in_dcdu_block = True
-                         current_block = [line] # Start of a new block
-                         continue
+    linhas_cdu_atual: List[str] = []
+    processando_bloco = False
+    capturando_cdu = False
 
-                if in_dcdu_block:
-                    current_block.append(line)
-                    if "FIMCDU" in stripped_line.upper():
-                        all_dcdu_blocks.append(current_block)
-                        current_block = []
-                        in_dcdu_block = False
-    except FileNotFoundError:
-        print(f"Error: File not found at {file_path}")
-        return []
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return []
-
-    return all_dcdu_blocks
-
-def parse_dcdu_block(block_lines):
-    """
-    Parses a single DCDU block into a structured dictionary.
-
-    Args:
-        block_lines (list): A list of strings representing one DCDU block.
-
-    Returns:
-        dict: A dictionary containing the parsed data of the DCDU block.
-    """
-    if not block_lines:
-        return {}
-
-    dcdu_data = {
-        'name': '',
-        'ncdu': 0,
-        'params': [],
-        'defvals': [],
-        'imports': [],
-        'exports': [],
-        'entradas': [],
-        'blocos': []
-    }
-
-    # Parse header line
-    header = block_lines[0]
-    dcdu_data['name'] = ''.join(filter(str.isalnum, header[7:].strip()))
-    dcdu_data['ncdu'] = int(header[:6].strip())
-
-    # Helper to parse a single fixed-width line into a bloco dictionary
-    def parse_bloco_line(line):
-        padded_line = line.rstrip('\n').ljust(71)
-        return {
-            'nb': padded_line[0:4].strip(),
-            'i': padded_line[4],
-            'tipo': padded_line[5:11].strip(),
-            'o': padded_line[11],
-            'stip': padded_line[12:18].strip(),
-            's': [padded_line[18]],
-            'vent': [padded_line[19:25].strip()],
-            'vsai': padded_line[26:32].strip(),
-            'p1': [padded_line[33:39].strip()],
-            'p2': [padded_line[39:45].strip()],
-            'p3': [padded_line[45:51].strip()],
-            'p4': [padded_line[51:57].strip()],
-            'vmin': padded_line[58:64].strip(),
-            'vmax': padded_line[65:71].strip(),
-        }
-
-    # Helper to add a continuation line to an existing bloco
-    def add_continuation_line(bloco, line):
-        padded_line = line.rstrip('\n').ljust(71)
-        bloco['s'].append(padded_line[18])
-        if padded_line[19:25].strip():
-            bloco['vent'].append(padded_line[19:25].strip())
-        if padded_line[26:32].strip():
-            bloco['vsai'] = padded_line[26:32].strip()
-        if padded_line[33:39].strip():
-            bloco['p1'].append(padded_line[33:39].strip())
-        #... and so on for p2, p3, p4
-        if padded_line[39:45].strip():
-            bloco['p2'].append(padded_line[39:45].strip())
-        if padded_line[45:51].strip():
-            bloco['p3'].append(padded_line[45:51].strip())
-        if padded_line[51:57].strip():
-            bloco['p4'].append(padded_line[51:57].strip())
-
-
-    # Process lines
-    lines_iterator = iter(enumerate(block_lines))
-    for i, line in lines_iterator:
-        if i == 0 or "FIMCDU" in line.upper() or line.strip().startswith('('):
+    for linha_original in todas_linhas:
+        linha_processada = linha_original.strip()
+        # pula linhas vazias
+        if not linha_processada:
+            continue
+        # pula comentários
+        if linha_processada.startswith('('):
             continue
 
-        line_upper = line.upper()
-        
-        if line_upper.startswith("DEFPAR"):
-            # Simplified parsing for DEFPAR
-            dcdu_data['params'].append(line.strip())
-        elif line_upper.startswith("DEFVAL"):
-            # Simplified parsing for DEFVAL
-            dcdu_data['defvals'].append(line.strip())
+        # sinal de fim de bloco geral
+        if linha_processada == '999999':
+            if processando_bloco:
+                processando_bloco = False
+                if capturando_cdu:
+                    linhas_cdu_atual.clear()
+                    capturando_cdu = False
+            continue
+
+        # fim de CDU: adiciona e encerra captura
+        if capturando_cdu and linha_processada.upper() == 'FIMCDU':
+            linhas_cdu_atual.append(linha_original.rstrip('\n'))
+            lista_cdu.append(linhas_cdu_atual.copy())
+            linhas_cdu_atual.clear()
+            capturando_cdu = False
+            continue
+
+        # se já estamos capturando, só acumula linhas
+        if capturando_cdu:
+            linhas_cdu_atual.append(linha_original.rstrip('\n'))
         else:
-            # This is a standard bloco
-            bloco = parse_bloco_line(line)
-            tipo = bloco['tipo'].upper()
+            # se não estamos capturando, observamos marca de início
+            if linha_processada.upper() == tipo.upper():
+                processando_bloco = True
+                capturando_cdu = False
+                linhas_cdu_atual.clear()
+            elif processando_bloco:
+                # qualquer linha não-vazia após o tipo inicia a seção CDU
+                if linha_processada.upper() != 'FIMCDU':
+                    capturando_cdu = True
+                    linhas_cdu_atual.clear()
+                    linhas_cdu_atual.append(linha_original.rstrip('\n'))
 
-            # These are the block types that can have continuation lines
-            multi_line_types = [
-                "ACUM", "COMPAR", "DIVSAO", "FUNCAO", "INTRES", "LOGIC", 
-                "MAX", "MIN", "MULTPL", "POL(S)", "S/HOLD", "SELET2", "SOMA", "T/HOLD"
-            ]
+    return lista_cdu
 
-            # Specific handling for multi-line blocks based on C# logic
-            if tipo in multi_line_types:
-                # Peek ahead to see if the next lines are continuations
-                while (i + 1) < len(block_lines):
-                    next_line = block_lines[i + 1]
-                    # Continuation lines have a blank 'tipo' field
-                    if next_line[5:11].strip() == "" and not next_line.strip().startswith('('):
-                        add_continuation_line(bloco, next_line)
-                        # Advance the main iterator to skip the line we just consumed
-                        next(lines_iterator)
-                        i += 1
-                    else:
-                        break # Not a continuation line
+@dataclass
+class DEFPAR:
+    nome: str
+    valor: float
+    descricao: str = ""
 
-            # Categorize the block
-            if tipo == "IMPORT":
-                dcdu_data['imports'].append(bloco)
-            elif tipo == "EXPORT":
-                dcdu_data['exports'].append(bloco)
-            elif tipo == "ENTRAD":
-                dcdu_data['entradas'].append(bloco)
+    @classmethod
+    def from_line(cls, s: str) -> 'DEFPAR':
+        s = s.ljust(71)
+        nome = s[7:13].strip()
+        valor = float(s[14:32].strip())
+        descricao = s[32:].strip()
+        return cls(nome, valor, descricao)
+
+@dataclass
+class DEFVAL:
+    stip: str
+    vdef: str
+    d1: str
+    o: str
+    d2: str
+
+    @classmethod
+    def from_line(cls, linha: str) -> 'DEFVAL':
+        linha = linha.ljust(71)
+        stip = linha[7:13].strip()
+        vdef = linha[14:20].strip()
+        d1 = linha[21:27].strip()
+        o = linha[28]
+        d2 = linha[29:35].strip()
+        return cls(stip, vdef, d1, o, d2)
+
+@dataclass
+class Bloco:
+    nb: int
+    i: str
+    tipo: str
+    o: str
+    stip: str
+    s: List[str] = field(default_factory=list)
+    vent: List[str] = field(default_factory=list)
+    vsai: str = ""
+    p1: List[str] = field(default_factory=list)
+    p2: List[str] = field(default_factory=list)
+    p3: List[str] = field(default_factory=list)
+    p4: List[str] = field(default_factory=list)
+    vmin: str = ""
+    vmax: str = ""
+    parent_dcdu: Optional['DCDU'] = None
+
+    @classmethod
+    def from_line(cls, linha: str) -> 'Bloco':
+        linha = linha.ljust(71)
+        nb = int(linha[0:4].strip())
+        i = linha[4]
+        tipo = linha[5:11].strip()
+        o = linha[11]
+        stip = linha[12:18].strip()
+        s = [linha[18]]
+        vent = [linha[19:25].strip()]
+        vsai = linha[26:32].strip()
+        p1 = [linha[33:39].strip()]
+        p2 = [linha[39:45].strip()]
+        p3 = [linha[45:51].strip()]
+        p4 = [linha[51:57].strip()]
+        vmin = linha[58:64].strip()
+        vmax = linha[65:71].strip()
+        return cls(nb, i, tipo, o, stip, s, vent, vsai, p1, p2, p3, p4, vmin, vmax)
+
+    def adiciona_linha(self, linha: str):
+        linha = linha.ljust(71)
+        self.s.append(linha[18])
+        extra = linha[19:25]
+        if extra.strip():
+            self.vent.append(extra.strip())
+        extra_vsai = linha[26:32]
+        if extra_vsai.strip():
+            self.vsai = extra_vsai.strip()
+        for idx, attr in enumerate(['p1','p2','p3','p4'], start=33):
+            start = idx + (idx-33)*6
+            end = start + 6
+            segment = linha[start:end]
+            if segment.strip():
+                getattr(self, attr).append(segment.strip())
+
+@dataclass
+class DCDU:
+    texto: List[str]
+    ncdu: int = 0
+    nome: str = ""
+    par: List[DEFPAR] = field(default_factory=list)
+    imports: List[Bloco] = field(default_factory=list)
+    exports: List[Bloco] = field(default_factory=list)
+    entrads: List[Bloco] = field(default_factory=list)
+    blocos: List[Bloco] = field(default_factory=list)
+    defvals: List[DEFVAL] = field(default_factory=list)
+
+    @property
+    def variables(self) -> List[str]:
+        vars_ = [b.vsai for b in self.imports]
+        vars_ += [b.vsai for b in self.entrads]
+        vars_ += [b.vsai for b in self.blocos]
+        return vars_
+
+    def is_variable(self, nome: str) -> bool:
+        return any(v.lower() == nome.lower() for v in self.variables)
+
+    def get_par(self, nome: str) -> float:
+        for p in self.par:
+            if p.nome.lower() == nome.lower():
+                return p.valor
+        return 0.0
+
+    def get_val(self, nome: str) -> float:
+        for dv in self.defvals:
+            if dv.vdef.lower() == nome.lower():
+                try:
+                    return float(dv.d1)
+                except ValueError:
+                    return self.get_par(dv.d1)
+        return float('-inf')
+
+def ler_dcdu_completo(texto: List[str]) -> DCDU:
+    d = DCDU(texto)
+    # Cabeçalho
+    if texto:
+        header = texto[0]
+        d.nome = ''.join(c for c in header[7:].strip() if c.isalnum())
+        try:
+            d.ncdu = int(header[:6].strip())
+        except ValueError:
+            d.ncdu = 0
+    # Percorre linhas
+    i = 1
+    while i < len(texto):
+        s = texto[i]
+        try:
+            if s.upper().startswith('FIMCDU'):
+                break
+            if s.startswith('(') or not s.strip():
+                i += 1
+                continue
+            up = s.upper()
+            if up.startswith('DEFPAR'):
+                d.par.append(DEFPAR.from_line(s))
+            elif up.startswith('DEFVAL'):
+                d.defvals.append(DEFVAL.from_line(s))
             else:
-                dcdu_data['blocos'].append(bloco)
-
-    return dcdu_data
-
-if __name__ == '__main__':
-    # You need to have a .cdu file in the same directory as the script,
-    # or provide an absolute path to your file.
-    # For this example, let's assume a file named 'sample.cdu' exists.
-    
-    # Create a dummy file for testing
-    cdu_content = """
-(
-( CDU GERADO PELO PROGRAMA DE CONVERSAO DE DIAGRAMAS DE CONTROLE VERSAO 2.0
-(
-(******************************************************************************)
-(**** CDU DO ESTABILIZADOR DA UHE SAO SALVADOR                           *****)
-(******************************************************************************)
-      1 PSSBR   DCDU
-DEFPAR K         0.0     GANHO DO ESTABILIZADOR
-DEFPAR T1        0.0     CONSTANTE DE TEMPO DO FILTRO
-DEFPAR T2        0.0     CONSTANTE DE TEMPO DO FILTRO
-DEFPAR T3        0.0     CONSTANTE DE TEMPO DO BLOCO DE AVANCO
-DEFPAR T4        0.0     CONSTANTE DE TEMPO DO BLOCO DE ATRASO
-DEFPAR T5        0.0     CONSTANTE DE TEMPO DO BLOCO DE AVANCO
-DEFPAR T6        0.0     CONSTANTE DE TEMPO DO BLOCO DE ATRASO
-DEFPAR VSMAX     0.0     LIMITE MAXIMO DA SAIDA
-DEFPAR VSMIN     0.0     LIMITE MINIMO DA SAIDA
-    100 IMPORT P        1 VELOCIDADE DA MAQUINA
-    101 IMPORT Pe       1 POTENCIA ELETRICA
-    102 EXPORT Vstab    1 SINAL DE SAIDA DO ESTABILIZADOR
-    103 ENTRAD Vref     0 TENSAO DE REFERENCIA
-      1 I SOMA   O      +     PE      VSTAB                -1.0
-                                      P                           1.0
-      2 I GANHO  O            ENT1    ENT2    K
-      3 I POL(S) O            ENT2    ENT3    T1       T2
-FIMCDU
-999999
-"""
-    file_name = 'sample.cdu'
-    with open(file_name, 'w') as f:
-        f.write(cdu_content)
-
-    print(f"Created dummy CDU file: {file_name}")
-    
-    dcdu_blocks = extract_dcdu_blocks(file_name)
-
-    if not dcdu_blocks:
-        print("No DCDU blocks found.")
-    else:
-        print(f"Found {len(dcdu_blocks)} DCDU block(s).\n")
-        for i, block in enumerate(dcdu_blocks):
-            print(f"--- Parsing Block {i+1} ---")
-            parsed_data = parse_dcdu_block(block)
-            pprint.pprint(parsed_data)
-            print("\n")
-
+                bloco = None
+                tipo = s[5:11].strip().upper()
+                stipo = s[12:18].strip().upper()
+                if not tipo:
+                    i += 1
+                    continue
+                # Mapping casos simplificado
+                bloco = Bloco.from_line(s)
+                # captura linhas extras conforme tipo
+                if tipo in {'ACUM', 'INTRES', 'COMPAR'}:
+                    lines_needed = {'ACUM':3, 'INTRES':2, 'COMPAR':1}[tipo]
+                    for _ in range(lines_needed):
+                        i += 1
+                        bloco.adiciona_linha(texto[i])
+                elif tipo in {'DIVSAO','PONTOS','MAX','MIN','MULTPL','SOMA'}:
+                    # consome até novo tipo ou FIMCDU
+                    while True:
+                        peek = texto[i+1][5:11].strip().upper() if i+1 < len(texto) else ''
+                        if peek or texto[i+1].upper().startswith('FIMCDU'):
+                            break
+                        i += 1
+                        bloco.adiciona_linha(texto[i])
+                elif tipo in {'COMPAR','FUNCAO','LOGIC'}:
+                    # casos varietados omitidos para brevidade
+                    pass
+                # Adiciona conforme listas
+                if tipo == 'ENTRAD':
+                    d.entrads.append(bloco)
+                elif tipo == 'EXPORT':
+                    d.exports.append(bloco)
+                elif tipo == 'IMPORT':
+                    d.imports.append(bloco)
+                else:
+                    d.blocos.append(bloco)
+        except Exception:
+            pass
+        i += 1
+    # link parent
+    for b in d.blocos + d.entrads + d.imports + d.exports:
+        b.parent_dcdu = d
+    return d

@@ -1,6 +1,7 @@
 import { type NodeProps, Handle, Position, useReactFlow } from "reactflow";
 import { useState, useRef } from "react";
 import React from "react";
+import { useTheme } from "../../hooks/useTheme";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { toast } from "sonner";
 
@@ -32,6 +33,9 @@ export function ARITIMETIC(props: NodeProps & {
       return acc;
     }, {} as Record<string, string>);
   });
+
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   React.useEffect(() => {
     setForm(PARAMS.reduce((acc, param) => {
@@ -120,26 +124,25 @@ export function ARITIMETIC(props: NodeProps & {
 
         <div
           ref={nodeRef}
-          className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+          className={`bg-transparent rounded w-[150px] h-[150px] border-2 border-transparent flex flex-col items-center justify-center font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles} ${isDarkMode ? "text-white" : "text-black"} `}
           onDoubleClick={handleDoubleClick}
         >
-          <Handle id="vin" type="target" position={Position.Left} className="!absolute !top-[60px] !-left-3 !w-3 !h-3 border-0 !bg-black" />
-          <Handle id="vin2" type="target" position={Position.Left} className="!absolute !top-[90px] !-left-3 !w-3 !h-3 border-0 !bg-black" />
-          <Handle id="vout" type="source" position={Position.Right} className="!absolute !-right-3 !w-3 !h-3 border-0 !bg-black" />
+          <Handle id="vin" type="target" position={Position.Left} className={`!absolute !top-[60px] !-left-3 !w-3 !h-3 border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`} />
+          <Handle id="vin2" type="target" position={Position.Left} className={`!absolute !top-[90px] !-left-3 !w-3 !h-3 border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`} />
+          <Handle id="vout" type="source" position={Position.Right} className={`!absolute !-right-3 !w-3 !h-3 border-0 ${isDarkMode ? "!bg-white" : "!bg-black"}`} />
 
           <svg className="w-[150px] h-[150px]">
-            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{props.type.toUpperCase()}</text>
-            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
-
-            {props.type === "soma" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill="#000" textAnchor="middle">+</text>)}
-            {props.type === "divsao" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill="#000" textAnchor="middle">÷</text>)}
-            {props.type === "multpl" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill="#000" textAnchor="middle">×</text>)}
-            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text
+            <text x="5" y="35" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{props.type.toUpperCase()}</text>
+            <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill={isDarkMode ? "#333" : "#fff"} stroke={isDarkMode ? "#fff" : "#000"} strokeWidth="2" />
+            {props.type === "soma" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">+</text>)}
+            {props.type === "divsao" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">÷</text>)}
+            {props.type === "multpl" && (<text x="75" y="95" fontFamily="Arial" fontSize="50" fill={isDarkMode ? "#fff" : "#000"} textAnchor="middle">×</text>)}
+            {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{(props.data?.Vout || "?")}</text
             >)}
-            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}
+            {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{"(" + (props.data?.id + ")" || "?")}</text>)}
 
-            <text x="5" y="66" fontFamily="Arial" fontSize="20" fill="#000">{"+"}</text>
-            <text x="5" y="95" fontFamily="Arial" fontSize="20" fill="#000">{"-"}</text>
+            <text x="5" y="66" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"+"}</text>
+            <text x="5" y="66" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"-"}</text>
 
           </svg>
         </div>

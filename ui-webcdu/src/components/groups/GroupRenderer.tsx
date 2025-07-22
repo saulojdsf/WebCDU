@@ -115,8 +115,8 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         if (wasDragging && !hasMoved && dragType === 'group') {
             // Create a synthetic event for the selection
             const syntheticEvent = {
-                ctrlKey: false,
-                metaKey: false,
+                ctrlKey: e.ctrlKey,
+                metaKey: e.metaKey,
                 stopPropagation: () => { },
                 preventDefault: () => { }
             } as React.MouseEvent;
@@ -223,7 +223,11 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         height: group.bounds.height,
         backgroundColor: colors.backgroundColor,
         borderRadius: `${group.style.borderRadius}px`,
-        zIndex: group.zIndex,
+        // Ensure the group is rendered within the normal stacking context so the
+        // interactive border (defined below) can receive pointer events. A
+        // negative z-index would place the whole group behind the nodes and
+        // make it non-interactive. We clamp it to at least 0.
+        zIndex: Math.max(group.zIndex, 0),
         pointerEvents: 'none', // Always allow panning
         transition: 'border-color 0.2s ease, background-color 0.2s ease',
     };

@@ -13,6 +13,7 @@
  * ```
  */
 
+import { debounce } from './debounce';
 import type { ReactFlowInstance } from 'reactflow';
 import type { 
   IVisualizationController, 
@@ -61,6 +62,7 @@ export class VisualizationController implements IVisualizationController {
   private highlightedEdgeIds: Set<string> = new Set();
   private originalStyles: Map<string, any> = new Map();
   private isHighlightingActive: boolean = false;
+  private debouncedCenterView: (nodes: SearchableNode[]) => void;
 
   constructor(
     reactFlowInstance: ReactFlowInstance | null = null,
@@ -68,6 +70,7 @@ export class VisualizationController implements IVisualizationController {
   ) {
     this.reactFlowInstance = reactFlowInstance;
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.debouncedCenterView = debounce(this.centerViewOnNodes.bind(this), 300);
   }
 
   /**
@@ -139,6 +142,14 @@ export class VisualizationController implements IVisualizationController {
     } catch (error) {
       console.warn('Failed to center view on nodes:', error);
     }
+  }
+
+  /**
+   * Debounced version of centerViewOnNodes
+   * @param nodes - Nodes to center the view on
+   */
+  debouncedCenterOnNodes(nodes: SearchableNode[]): void {
+    this.debouncedCenterView(nodes);
   }
 
   /**

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { useParameter } from '../contexts/ParameterContext';
 import type { Node } from 'reactflow';
 
@@ -9,6 +10,7 @@ export interface ParameterSidebarProps {
 }
 
 function ParameterTable() {
+  const { theme } = useTheme();
   const {
     parameters,
     validationErrors,
@@ -23,16 +25,31 @@ function ParameterTable() {
     }
   };
 
+  const tableStyles = {
+    dark: {
+      backgroundColor: '#1a1a1a',
+      color: '#ffffff',
+      borderColor: '#444444'
+    },
+    light: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      borderColor: '#cccccc'
+    }
+  };
+
+  const currentStyle = theme === 'dark' ? tableStyles.dark : tableStyles.light;
+
   return (
     <div>
       <button
-        style={{ marginBottom: 12, width: '100%' }}
+        style={{ marginBottom: 12, width: '100%', color: currentStyle.color, backgroundColor: currentStyle.backgroundColor, border: `1px solid ${currentStyle.borderColor}` }}
         onClick={addParameter}
         data-testid="add-parameter"
       >
         + Adicionar Parâmetro
       </button>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', color: currentStyle.color }}>
         <thead>
           <tr>
             <th style={{ textAlign: 'left', padding: 4 }}>Nome</th>
@@ -48,9 +65,11 @@ function ParameterTable() {
                 <input
                   style={{
                     width: '90%',
-                    border: validationErrors[param.id]?.name ? '1px solid red' : '1px solid #ccc',
+                    border: validationErrors[param.id]?.name ? '1px solid red' : `1px solid ${currentStyle.borderColor}`,
                     borderRadius: 4,
                     padding: 2,
+                    backgroundColor: currentStyle.backgroundColor,
+                    color: currentStyle.color
                   }}
                   value={param.name}
                   onChange={e => updateParameter(param.id, 'name', e.target.value)}
@@ -66,9 +85,11 @@ function ParameterTable() {
                 <input
                   style={{
                     width: '90%',
-                    border: validationErrors[param.id]?.value ? '1px solid red' : '1px solid #ccc',
+                    border: validationErrors[param.id]?.value ? '1px solid red' : `1px solid ${currentStyle.borderColor}`,
                     borderRadius: 4,
                     padding: 2,
+                    backgroundColor: currentStyle.backgroundColor,
+                    color: currentStyle.color
                   }}
                   value={param.value}
                   onChange={e => updateParameter(param.id, 'value', e.target.value)}
@@ -82,7 +103,7 @@ function ParameterTable() {
               </td>
               <td style={{ padding: 4 }}>
                 <input
-                  style={{ width: '90%', border: '1px solid #ccc', borderRadius: 4, padding: 2 }}
+                  style={{ width: '90%', border: `1px solid ${currentStyle.borderColor}`, borderRadius: 4, padding: 2, backgroundColor: currentStyle.backgroundColor, color: currentStyle.color }}
                   value={param.description}
                   onChange={e => updateParameter(param.id, 'description', e.target.value)}
                   data-testid={`description-input-${param.id}`}
@@ -107,10 +128,26 @@ function ParameterTable() {
 }
 
 export function ParameterSidebar({ isOpen, onToggle, nodes }: ParameterSidebarProps) {
+  const { theme } = useTheme();
   const { checkNodeReferences } = useParameter();
   const [showWarning, setShowWarning] = useState(false);
   const refCheck = checkNodeReferences(nodes);
   const hasUndefined = !refCheck.valid && refCheck.undefinedParams.length > 0;
+
+  const sidebarStyles = {
+    dark: {
+      backgroundColor: '#1a1a1a',
+      color: '#ffffff',
+      borderColor: '#444444'
+    },
+    light: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      borderColor: '#eeeeee'
+    }
+  };
+
+  const currentStyle = theme === 'dark' ? sidebarStyles.dark : sidebarStyles.light;
 
   return (
     <aside
@@ -120,7 +157,8 @@ export function ParameterSidebar({ isOpen, onToggle, nodes }: ParameterSidebarPr
         right: isOpen ? 0 : -350,
         width: 350,
         height: '100%',
-        background: '#fff',
+        background: currentStyle.backgroundColor,
+        color: currentStyle.color,
         boxShadow: '-2px 0 8px rgba(0,0,0,0.08)',
         transition: 'right 0.3s',
         zIndex: 100,
@@ -129,7 +167,7 @@ export function ParameterSidebar({ isOpen, onToggle, nodes }: ParameterSidebarPr
       }}
       aria-label="Parameter Sidebar"
     >
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid #eee' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderBottom: `1px solid ${currentStyle.borderColor}` }}>
         <h2 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>
           Parâmetros
           {hasUndefined && (
@@ -143,12 +181,12 @@ export function ParameterSidebar({ isOpen, onToggle, nodes }: ParameterSidebarPr
             </span>
           )}
         </h2>
-        <button onClick={onToggle} aria-label={isOpen ? 'Fechar barra de parâmetros' : 'Abrir barra de parâmetros'}>
+        <button onClick={onToggle} aria-label={isOpen ? 'Fechar barra de parâmetros' : 'Abrir barra de parâmetros'} style={{ color: currentStyle.color, background: 'none', border: 'none' }}>
           {isOpen ? '→' : '←'}
         </button>
       </header>
       {showWarning && hasUndefined && (
-        <div style={{ background: '#fffbe6', color: '#ad6800', padding: '0.75rem 1rem', borderBottom: '1px solid #ffe58f' }}>
+        <div style={{ background: '#fffbe6', color: '#ad6800', padding: '0.75rem 1rem', borderBottom: `1px solid ${currentStyle.borderColor}` }}>
           <strong>Parâmetros não definidos:</strong>
           <ul style={{ margin: '0.5rem 0 0 1rem', padding: 0 }}>
             {refCheck.undefinedParams.map(param => (

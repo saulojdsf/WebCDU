@@ -1,8 +1,9 @@
-import {type NodeProps, Handle, Position, useReactFlow} from "reactflow";
+import { type NodeProps, Handle, Position, useReactFlow } from "reactflow";
 import { useState, useRef } from "react";
 import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 function padId(num: string | number) {
   return num.toString().padStart(4, '0');
@@ -24,6 +25,8 @@ export function SOMA(props : NodeProps & {
     const [open, setOpen] = useState(false);
     const nodeRef = useRef<HTMLDivElement>(null);
     const { setNodes, getNodes } = useReactFlow();
+    const { resolvedTheme } = useTheme();
+    const isDarkMode = resolvedTheme === "dark";
     const [form, setForm] = useState(() => {
       // Default values or from node data
       return PARAMS.reduce((acc, param) => {
@@ -117,24 +120,24 @@ export function SOMA(props : NodeProps & {
           <PopoverTrigger asChild>
             <div
               ref={nodeRef}
-              className={`bg-white rounded w-[150px] h-[75px] border-2 border-black flex flex-col items-center justify-center text-black font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles}`}
+              className={`bg-white rounded w-[150px] h-[75px] border-2 flex flex-col items-center justify-center font-bold relative cursor-pointer transition-all duration-200 ${selectionStyles} ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-black"}`}
               onDoubleClick={handleDoubleClick}
             >
-<Handle id="vout" type="source" position={Position.Right} className="-right-3 w-3 h-3 border-0 bg-black" style={{ width: '10px', height: '10px' }}/>
+<Handle id="vout" type="source" position={Position.Right} className={`-right-3 w-3 h-3 border-0 ${isDarkMode ? "bg-white" : "bg-black"}`} style={{ width: '10px', height: '10px' }}/>
 
-              <Handle id="vin" type="target" position={Position.Left} className="-left-3 w-3 h-3 border-0 bg-black" style={{height: '50px', backgroundColor: 'red'}}/>
+              <Handle id="vin" type="target" position={Position.Left} className={`-left-3 w-3 h-3 border-0 ${isDarkMode ? "bg-white" : "bg-black"}`} style={{height: '50px'}}/>
               <div className="text-center w-full">
-<div className="text-xl mb-1">{"∑"}</div>
+<div className="text-xl mb-1" style={{color: isDarkMode ? "#fff" : "#000"}}>{"∑"}</div>
 
                 
               </div>
 {showBlockNumbers && (
-  <div className="absolute bottom-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
+  <div className={`absolute bottom-0 right-1 text-[10px] font-bold ${isDarkMode ? "text-white bg-gray-800" : "text-black bg-white"} bg-opacity-80 px-0 rounded`}>
       {padId(props.data?.id || "-")}
   </div>
 )}
 {showVariableNames && (
-  <div className="absolute top-0 right-1 text-[10px] font-bold text-black bg-white bg-opacity-80 px-0 rounded">
+  <div className={`absolute top-0 right-1 text-[10px] font-bold ${isDarkMode ? "text-white bg-gray-800" : "text-black bg-white"} bg-opacity-80 px-0 rounded`}>
       {(props.data?.Vout || "?")}
   </div>
 )}

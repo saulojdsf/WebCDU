@@ -136,7 +136,7 @@ interface DiagramState {
 
 2. **Value Validation**:
    - Must not be empty
-   - Should be a valid number (optional, depending on requirements)
+   - Must be a valid number
 
 3. **Error Display**:
    - Validation errors will be displayed inline in the table cells
