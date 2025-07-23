@@ -1,6 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import type { NodeGroup } from '@/lib/group-types';
+import { GroupHoverIndicator } from './GroupHoverIndicator';
+import { GroupDragFeedback } from './GroupDragFeedback';
+import { GroupTooltip } from './GroupTooltip';
+import { GroupHelpIndicator } from './GroupHelpIndicator';
+import { useGroupCursor } from '@/hooks/useGroupCursor';
+import { useGroupDragFeedback } from '@/hooks/useGroupDragFeedback';
+import { useGroupTooltip } from '@/hooks/useGroupTooltip';
 
 interface GroupRendererProps {
     group: NodeGroup;
@@ -36,6 +43,76 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
     const [editValue, setEditValue] = useState(group.title);
     const inputRef = useRef<HTMLInputElement>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [hoverRegion, setHoverRegion] = useState<'border' | 'background' | 'title' | 'none'>('none');
+
+    // Visual drag feedback state
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Resize state
+    const [isResizing, setIsResizing] = useState(false);
+
+    // Cursor management
+    const { cursorType, cursorValue, cursorClassName } = useGroupCursor({
+        isHovered,
+        isSelected,
+        isDragging,
+        isResizing,
+        canDrag: true,
+        canResize: showResizeHandles && isSelected && !isMultiSelected,
+        canSelect: true,
+    });
+
+    // Drag feedback management
+    const {
+        isDragging: feedbackDragging,
+        dragOffset: feedbackOffset,
+        isValidDrop,
+        startDragFeedback,
+        updateDragFeedback,
+        endDragFeedback,
+        isSignificantDrag,
+    } = useGroupDragFeedback({
+        onDragStart: () => {
+            // Add visual feedback when drag starts
+            document.documentElement.classList.add('group-dragging');
+        },
+        onDragEnd: () => {
+            // Remove visual feedback when drag ends
+            document.documentElement.classList.remove('group-dragging');
+        },
+        validateDrop: (offset) => {
+            // Simple validation - could be enhanced with boundary checking
+            return Math.abs(offset.x) < 2000 && Math.abs(offset.y) < 2000;
+        },
+    });
+
+    // Tooltip management
+    const {
+        tooltipState,
+        showTooltip,
+        hideTooltip,
+        showTooltipImmediate,
+        hideTooltipImmediate,
+    } = useGroupTooltip({
+        delay: 800,
+        hideDelay: 200,
+    });
+
+    // Help indicator state
+    const [showHelp, setShowHelp] = useState(false);
+    const [helpPosition, setHelpPosition] = useState({ x: 0, y: 0 });
+
+    // Define keyboard shortcuts for help
+    const keyboardShortcuts = [
+        { key: 'Enter', description: 'Select group' },
+        { key: 'Space', description: 'Select group' },
+        { key: 'Del', description: 'Delete group' },
+        { key: 'F2', description: 'Rename group' },
+        { key: 'Ctrl+G', description: 'Group selected nodes' },
+        { key: 'Ctrl+Shift+G', description: 'Ungroup' },
+        { key: 'Ctrl+D', description: 'Duplicate group' },
+        { key: '?', description: 'Show help' },
+    ];
 
     // Drag state for group
     const dragState = useRef<{
@@ -54,11 +131,6 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         initialGroupPosition: null
     });
 
-    // Visual drag feedback state
-    const [isDragging, setIsDragging] = useState(false);
-
-    // Resize state
-    const [isResizing, setIsResizing] = useState(false);
     const resizeState = useRef<{
         handle: string | null;
         startX: number;
@@ -91,6 +163,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
 
         // Set visual drag state
         setIsDragging(true);
+        startDragFeedback();
 
         // Add event listeners with proper options
         window.addEventListener('mousemove', handleMouseMove, { passive: false });
@@ -124,6 +197,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
 
         // Set visual drag state
         setIsDragging(true);
+        startDragFeedback();
 
         // Add global event listeners for drag tracking with passive: false for preventDefault
         window.addEventListener('mousemove', handleMouseMove, { passive: false });
@@ -144,6 +218,9 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         const dx = e.clientX - dragState.current.startX;
         const dy = e.clientY - dragState.current.startY;
 
+        // Update drag feedback
+        updateDragFeedback({ x: dx, y: dy });
+
         // Only start dragging if we've moved more than a threshold
         const threshold = 3;
         if (!dragState.current.hasMoved && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) {
@@ -163,7 +240,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
 
             onGroupDrag(group.id, { dx: totalDx, dy: totalDy });
         }
-    }, [group.id, onGroupDrag]);
+    }, [group.id, onGroupDrag, updateDragFeedback]);
 
     // Mouse up handler
     const handleMouseUp = useCallback((e: MouseEvent) => {
@@ -183,6 +260,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
 
         // Reset visual drag state
         setIsDragging(false);
+        endDragFeedback();
 
         // Reset cursor and user selection
         document.body.style.cursor = '';
@@ -203,7 +281,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
             } as React.MouseEvent;
             onSelect(group.id, syntheticEvent);
         }
-    }, [handleMouseMove, onSelect, group.id]);
+    }, [handleMouseMove, onSelect, group.id, endDragFeedback]);
 
     // Handle theme-aware styling
     const getThemeColors = useCallback(() => {
@@ -247,6 +325,45 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
 
     const colors = getThemeColors();
 
+    // Enhanced hover handlers for different regions
+    const handleBorderHover = useCallback((entering: boolean, event?: React.MouseEvent) => {
+        setIsHovered(entering);
+        setHoverRegion(entering ? 'border' : 'none');
+
+        if (entering && event) {
+            const tooltipContent = isSelected
+                ? `Group "${group.title}" (selected)${isMultiSelected ? ` - ${selectedGroupCount} groups selected` : ''}`
+                : `Group "${group.title}" - Click to select`;
+            showTooltip(tooltipContent, { x: event.clientX, y: event.clientY });
+        } else {
+            hideTooltip();
+        }
+    }, [group.title, isSelected, isMultiSelected, selectedGroupCount, showTooltip, hideTooltip]);
+
+    const handleBackgroundHover = useCallback((entering: boolean, event?: React.MouseEvent) => {
+        setIsHovered(entering);
+        setHoverRegion(entering ? 'background' : 'none');
+
+        if (entering && event) {
+            const tooltipContent = `Group "${group.title}" - ${group.nodeIds.length} nodes`;
+            showTooltip(tooltipContent, { x: event.clientX, y: event.clientY });
+        } else {
+            hideTooltip();
+        }
+    }, [group.title, group.nodeIds.length, showTooltip, hideTooltip]);
+
+    const handleTitleHover = useCallback((entering: boolean, event?: React.MouseEvent) => {
+        setIsHovered(entering);
+        setHoverRegion(entering ? 'title' : 'none');
+
+        if (entering && event) {
+            const tooltipContent = `"${group.title}" - Double-click to edit`;
+            showTooltip(tooltipContent, { x: event.clientX, y: event.clientY }, 'help');
+        } else {
+            hideTooltip();
+        }
+    }, [group.title, showTooltip, hideTooltip]);
+
     // Handle group background click
     const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
         // Only handle clicks if we're not in the middle of a drag operation
@@ -285,12 +402,38 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
     // Handle title edit save
     const handleTitleSave = useCallback(() => {
         const trimmedValue = editValue.trim();
-        if (trimmedValue && trimmedValue !== group.title) {
-            onTitleEdit(group.id, trimmedValue);
+
+        if (!trimmedValue) {
+            // Show error tooltip for empty title
+            const rect = inputRef.current?.getBoundingClientRect();
+            if (rect) {
+                showTooltipImmediate(
+                    'Group title cannot be empty',
+                    { x: rect.left + rect.width / 2, y: rect.top },
+                    'error'
+                );
+                setTimeout(() => hideTooltipImmediate(), 2000);
+            }
+            return;
         }
+
+        if (trimmedValue !== group.title) {
+            onTitleEdit(group.id, trimmedValue);
+            // Show success feedback
+            const rect = inputRef.current?.getBoundingClientRect();
+            if (rect) {
+                showTooltipImmediate(
+                    'Group renamed successfully',
+                    { x: rect.left + rect.width / 2, y: rect.top },
+                    'success'
+                );
+                setTimeout(() => hideTooltipImmediate(), 1500);
+            }
+        }
+
         setIsEditing(false);
         onTitleEditEnd?.(group.id);
-    }, [editValue, group.id, group.title, onTitleEdit, onTitleEditEnd]);
+    }, [editValue, group.id, group.title, onTitleEdit, onTitleEditEnd, showTooltipImmediate, hideTooltipImmediate]);
 
     // Handle title edit cancel
     const handleTitleCancel = useCallback(() => {
@@ -524,7 +667,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         border: `${isDragging ? 4 : isSelected ? 3 : isHovered ? 2.5 : 2}px solid ${colors.borderColor}`,
         borderRadius: `${group.style.borderRadius}px`,
         pointerEvents: 'all',
-        cursor: isDragging ? 'grabbing' : isHovered ? 'grab' : 'pointer',
+        cursor: cursorValue,
         boxSizing: 'border-box',
         zIndex: 1,
         background: 'transparent',
@@ -532,6 +675,8 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
             ? `${colors.selectionGlow}, 0 4px 12px rgba(0, 0, 0, 0.15)`
             : colors.selectionGlow,
         transition: isDragging ? 'none' : 'border-color 0.2s ease, border-width 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease',
+        // Add subtle animation for hover state
+        animation: isHovered && !isSelected && !isDragging ? 'groupSelectionPulse 2s ease-in-out infinite' : 'none',
     };
 
     const titleStyle: React.CSSProperties = {
@@ -609,6 +754,28 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                     }
                 }
 
+                // F2 to start editing title
+                if (e.key === 'F2') {
+                    e.preventDefault();
+                    setIsEditing(true);
+                    setEditValue(group.title);
+                    onTitleEditStart?.(group.id);
+                }
+
+                // Show/hide help with ? key
+                if (e.key === '?' || e.key === 'F1') {
+                    e.preventDefault();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHelpPosition({ x: rect.right + 10, y: rect.top });
+                    setShowHelp(!showHelp);
+                }
+
+                // Hide help with Escape
+                if (e.key === 'Escape' && showHelp) {
+                    e.preventDefault();
+                    setShowHelp(false);
+                }
+
                 // Delete/Backspace for group deletion (handled globally)
                 // Ctrl+G for grouping (handled globally)
                 // Ctrl+Shift+G for ungrouping (handled globally)
@@ -619,11 +786,53 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                 style={borderStyle}
                 aria-hidden="true"
                 role="presentation"
+                className={cursorClassName}
                 onClick={handleBackgroundClick}
                 onMouseDown={handleGroupMouseDown}
                 onContextMenu={handleContextMenu}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                onMouseEnter={(e) => handleBorderHover(true, e)}
+                onMouseLeave={(e) => handleBorderHover(false, e)}
+            />
+
+            {/* Hover indicator overlay */}
+            <GroupHoverIndicator
+                isHovered={isHovered}
+                isSelected={isSelected}
+                isDragging={isDragging}
+                isResizing={isResizing}
+                bounds={group.bounds}
+                borderRadius={group.style.borderRadius}
+                interactionType={cursorType}
+            />
+
+            {/* Drag feedback overlay */}
+            <GroupDragFeedback
+                isDragging={feedbackDragging || isDragging}
+                isSelected={isSelected}
+                isMultiSelected={isMultiSelected}
+                selectedGroupCount={selectedGroupCount}
+                bounds={group.bounds}
+                borderRadius={group.style.borderRadius}
+                dragOffset={feedbackOffset}
+                isValidDrop={isValidDrop}
+            />
+
+            {/* Tooltip overlay */}
+            <GroupTooltip
+                isVisible={tooltipState.isVisible}
+                content={tooltipState.content}
+                position={tooltipState.position}
+                type={tooltipState.type}
+                placement="auto"
+                showArrow={true}
+            />
+
+            {/* Help indicator */}
+            <GroupHelpIndicator
+                isVisible={showHelp}
+                shortcuts={keyboardShortcuts}
+                position={helpPosition}
+                groupId={group.id}
             />
             {/* Hidden help text for screen readers */}
             <div
@@ -664,6 +873,8 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                     role="button"
                     tabIndex={0}
                     onMouseDown={handleTitleMouseDown}
+                    onMouseEnter={(e) => handleTitleHover(true, e)}
+                    onMouseLeave={(e) => handleTitleHover(false, e)}
                     data-testid={`group-title-${group.id}`}
                     aria-label={`Group title: ${group.title}. Double-click to edit.`}
                     onKeyDown={(e) => {

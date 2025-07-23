@@ -62,7 +62,7 @@ export const useGroupAwareArrangement = ({
                 sourceGroups.forEach((group, index) => {
                     groupPositions.set(group.id, {
                         x: 50,
-                        y: 50 + index * (group.bounds.height + options.groupSpacing || 50)
+                        y: 50 + index * (group.bounds.height + (options.groupSpacing ?? 50))
                     });
                     processedGroups.add(group.id);
                 });
@@ -92,7 +92,7 @@ export const useGroupAwareArrangement = ({
                     remainingGroups.forEach((group, index) => {
                         groupPositions.set(group.id, {
                             x: 50 + currentLayer * 300,
-                            y: 50 + index * (group.bounds.height + options.groupSpacing || 50)
+                            y: 50 + index * (group.bounds.height + (options.groupSpacing ?? 50))
                         });
                         processedGroups.add(group.id);
                     });
@@ -102,7 +102,7 @@ export const useGroupAwareArrangement = ({
                 currentLayerGroups.forEach((group, index) => {
                     groupPositions.set(group.id, {
                         x: 50 + currentLayer * 300,
-                        y: 50 + index * (group.bounds.height + options.groupSpacing || 50)
+                        y: 50 + index * (group.bounds.height + (options.groupSpacing ?? 50))
                     });
                     processedGroups.add(group.id);
                 });
@@ -157,7 +157,7 @@ export const useGroupAwareArrangement = ({
             const startY = Math.max(
                 ...positions.map(p => p.y),
                 ...arrangementGroups.map(g => g.bounds.y + g.bounds.height)
-            ) + (options.groupSpacing || 50);
+            ) + (options.groupSpacing ?? 50);
 
             ungroupedNodes.forEach((node, index) => {
                 positions.push({
@@ -183,7 +183,7 @@ export const useGroupAwareArrangement = ({
         // Arrange groups in a grid
         const totalGroups = arrangementGroups.length + (ungroupedNodes.length > 0 ? 1 : 0);
         const gridSize = Math.ceil(Math.sqrt(totalGroups));
-        const groupSpacing = options.groupSpacing || 50;
+        const groupSpacing = options.groupSpacing ?? 50;
 
         let groupIndex = 0;
 
@@ -385,8 +385,7 @@ export const useGroupAwareArrangement = ({
                 {
                     onlyUpdateChanged: true,
                     validateIntegrity: true,
-                    collectMetrics: false,
-                    expandGroupsToFit: options.expandGroupsToFit
+                    collectMetrics: false
                 }
             );
 

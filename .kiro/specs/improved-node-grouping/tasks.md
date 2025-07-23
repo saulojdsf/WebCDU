@@ -134,19 +134,30 @@
 
 
 
-  - [ ] 6.1 Add hover states and indicators
+
+
+
+
+
+  - [x] 6.1 Add hover states and indicators
+
+
     - Implement hover effects for group borders and backgrounds
     - Add cursor changes to indicate interactive elements
     - Create visual indicators for different interaction states
     - _Requirements: 5.1, 5.3_
 
-  - [ ] 6.2 Improve drag and selection feedback
+  - [x] 6.2 Improve drag and selection feedback
+
+
     - Add visual feedback during group dragging
     - Implement clear indicators for selection state
     - Create visual cues for valid/invalid operations
     - _Requirements: 5.2, 5.3, 5.4_
 
-  - [ ] 6.3 Add tooltips and help indicators
+  - [x] 6.3 Add tooltips and help indicators
+
+
     - Implement tooltips for group operations
     - Add help text for keyboard shortcuts
     - Create informative messages for error states

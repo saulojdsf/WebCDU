@@ -180,3 +180,232 @@
   -moz-user-select: none !important;
   -ms-user-select: none !important;
 }
+
+/* Group hover animations */
+@keyframes groupHoverPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.002);
+  }
+}
+
+@keyframes groupCornerPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes groupDragFeedback {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.01) rotate(0.5deg);
+  }
+  75% {
+    transform: scale(1.01) rotate(-0.5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes groupSelectionPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Group interaction states */
+.group-dragging {
+  cursor: grabbing !important;
+}
+
+.group-dragging * {
+  cursor: grabbing !important;
+}
+
+.group-resizing {
+  cursor: nw-resize !important;
+}
+
+.group-resizing * {
+  cursor: inherit !important;
+}
+
+/* Group hover cursor states */
+.group-hover-selectable {
+  cursor: pointer;
+}
+
+.group-hover-draggable {
+  cursor: grab;
+}
+
+.group-hover-resizable {
+  cursor: nw-resize;
+}
+
+/* Group interaction feedback */
+.group-invalid-operation {
+  animation: groupInvalidShake 0.3s ease-in-out;
+}
+
+@keyframes groupInvalidShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}/* Enhanc
+ed group selection feedback */
+@keyframes groupSelectionGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes groupMultiSelectionGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(147, 51, 234, 0.1);
+  }
+}
+
+/* Drag state indicators */
+@keyframes groupDragPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+@keyframes groupInvalidDrop {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.8);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 1);
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* Selection state classes */
+.group-selected {
+  animation: groupSelectionGlow 2s ease-in-out infinite;
+}
+
+.group-multi-selected {
+  animation: groupMultiSelectionGlow 2s ease-in-out infinite;
+}
+
+.group-drag-active {
+  animation: groupDragPulse 0.8s ease-in-out infinite;
+}
+
+.group-invalid-drop {
+  animation: groupInvalidDrop 0.5s ease-in-out infinite;
+}/* Tooltip
+ animations */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tooltipFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+}
+
+/* Help indicator animations */
+@keyframes helpIndicatorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Error state animations */
+@keyframes errorPulse {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.8);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 1);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* Success state animations */
+@keyframes successPulse {
+  0%, 100% {
+    border-color: rgba(34, 197, 94, 0.8);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    border-color: rgba(34, 197, 94, 1);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  }
+}
+
+/* Warning state animations */
+@keyframes warningPulse {
+  0%, 100% {
+    border-color: rgba(245, 158, 11, 0.8);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    border-color: rgba(245, 158, 11, 1);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+  }
+}
+
+/* Group state classes for feedback */
+.group-error-state {
+  animation: errorPulse 1s ease-in-out infinite;
+}
+
+.group-success-state {
+  animation: successPulse 1s ease-in-out infinite;
+}
+
+.group-warning-state {
+  animation: warningPulse 1s ease-in-out infinite;
+}

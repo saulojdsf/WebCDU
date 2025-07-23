@@ -18,8 +18,7 @@ import type {
   BoundsCalculationOptions,
   GroupValidationResult,
   ArrangementGroup,
-  GroupArrangementOptions,
-  DEFAULT_GROUP_ARRANGEMENT_OPTIONS
+  GroupArrangementOptions
 } from './group-types';
 import { DEFAULT_GROUP_STYLE, DEFAULT_BOUNDS_OPTIONS, DEFAULT_GROUP_ARRANGEMENT_OPTIONS } from './group-types';
 
