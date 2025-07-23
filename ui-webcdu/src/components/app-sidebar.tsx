@@ -302,10 +302,10 @@ const data = {
                 title: "SQRT",
                 url: "#"
             }, {
-                title: "X**2",
+                title: "X2",
                 url: "#"
             }, {
-                title: "X**K",
+                title: "XK",
                 url: "#"
             }, {
                 title: "EXP",

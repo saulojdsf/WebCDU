@@ -124,7 +124,7 @@ export function X2(props: NodeProps & {
             <text x="5" y="35" fontFamily="Arial" fontSize="10" fill="#000">{"FUNCAO"}</text>
 
             <rect x="0" y="37.5" width={150} height={75} rx={10} ry={10} fill="#fff" stroke="#000" strokeWidth="2" />
-            <text x="95" y="70" fontFamily="Arial" fontSize="15" fill="#000" textAnchor="middle">2</text>
+            <text x="86" y="70" fontFamily="Arial" fontSize="15" fill="#000" textAnchor="middle">2</text>
             <text x="75" y="83" fontFamily="Arial" fontSize="25" fill="#000" textAnchor="middle">x</text>
             {showVariableNames && (<text x="115" y="47.5" fontFamily="Arial" fontSize="10" fill="#000">{(props.data?.Vout || "?")}</text>)}
             {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill="#000">{"(" + (props.data?.id + ")" || "?")}</text>)}

@@ -1,3 +1,5 @@
+# Run with: python -m uvicorn main:app --reload
+
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware

@@ -142,7 +142,7 @@ export function ARITIMETIC(props: NodeProps & {
             {showBlockNumbers && (<text x="115" y="125" fontFamily="Arial" fontSize="10" fill={isDarkMode ? "#fff" : "#000"}>{"(" + (props.data?.id + ")" || "?")}</text>)}
 
             <text x="5" y="66" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"+"}</text>
-            <text x="5" y="66" fontFamily="Arial" fontSize="20" fill={isDarkMode ? "#fff" : "#000"}>{"-"}</text>
+            <text x="7" y="95" fontFamily="Arial" fontSize="25" fill={isDarkMode ? "#fff" : "#000"}>{"-"}</text>
 
           </svg>
         </div>
