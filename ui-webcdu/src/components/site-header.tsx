@@ -126,21 +126,16 @@ export function SiteHeader({
                   Abrir
                   <MenubarShortcut>Ctrl+O</MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem onClick={onImport}>
-                  Importar CDU
-                  <MenubarShortcut>Ctrl+I</MenubarShortcut>
-                </MenubarItem>
+
                 <MenubarItem onClick={onExport}>
                   Salvar
                   <MenubarShortcut>Ctrl+S</MenubarShortcut>
                 </MenubarItem>
-
-                <MenubarItem>
-                  Salvar como...
-                  <MenubarShortcut>Ctrl+Alt+S</MenubarShortcut>
-                </MenubarItem>
-
                 <MenubarSeparator />
+                <MenubarItem onClick={onImport}>
+                  Importar
+                  <MenubarShortcut>Ctrl+I</MenubarShortcut>
+                </MenubarItem>
                 <MenubarSub>
                   <MenubarSubTrigger>Exportar</MenubarSubTrigger>
                   <MenubarSubContent>
@@ -236,9 +231,8 @@ export function SiteHeader({
                   </MenubarSubContent>
                 </MenubarSub>
                 <MenubarSeparator />
-                <MenubarItem>Cortar</MenubarItem>
-                <MenubarItem>Copiar</MenubarItem>
-                <MenubarItem>Colar</MenubarItem>
+                <MenubarItem onClick={onCopy}>Copiar</MenubarItem>
+                <MenubarItem onClick={onPaste}>Colar</MenubarItem>
               </MenubarContent>
             </MenubarMenu>
             <MenubarMenu>
@@ -318,29 +312,6 @@ export function SiteHeader({
               aria-label={isParameterSidebarOpen ? "Hide Parameters" : "Show Parameters"}
             >
               <SlidersHorizontal />
-            </Button>
-          )}
-          {/* Temporary test buttons for copy/paste */}
-          {onCopy && (
-            <Button
-              className="h-8"
-              variant="outline"
-              size="sm"
-              onClick={onCopy}
-              title="Test Copy (Ctrl+C)"
-            >
-              Copy
-            </Button>
-          )}
-          {onPaste && (
-            <Button
-              className="h-8"
-              variant="outline"
-              size="sm"
-              onClick={onPaste}
-              title="Test Paste (Ctrl+V)"
-            >
-              Paste
             </Button>
           )}
           <ThemeToggle />

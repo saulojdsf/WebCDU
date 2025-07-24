@@ -18,13 +18,13 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle className="text-xl">Sobre o Control Loop Designer</DialogTitle>
+                    <DialogTitle className="text-xl">Sobre</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                     <div className="text-center space-y-2">
-                        <h3 className="text-lg font-semibold">Control Loop Designer Webapp</h3>
+                        <h3 className="text-lg font-semibold">Webcdu</h3>
                         <span className="inline-block px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded-md">
-                            Versão 1.0.0
+                            Versão 0.1.0
                         </span>
                     </div>
 
@@ -41,14 +41,14 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
                         <div className="space-y-2">
                             <h4 className="font-medium text-sm">Desenvolvido por</h4>
                             <p className="text-sm text-muted-foreground">
-                                Equipe de Desenvolvimento
+                                Saulo José da Silva Filho
                             </p>
                         </div>
 
                         <div className="space-y-2">
                             <h4 className="font-medium text-sm">Copyright</h4>
                             <p className="text-sm text-muted-foreground">
-                                © 2025 Control Loop Designer
+                                © 2025 Webcdu
                             </p>
                         </div>
                     </div>
@@ -78,7 +78,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
                     <div className="space-y-3">
                         <h4 className="font-medium text-base">Público-alvo</h4>
                         <div className="text-sm text-muted-foreground space-y-1">
-                            <p>• Engenheiros elétricos</p>
+                            <p>• Engenheiros eletricistas</p>
                             <p>• Analistas de estabilidade de sistemas de potência</p>
                             <p>• Desenvolvedores de modelos ANATEM</p>
                             <p>• Pesquisadores em sistemas de controle</p>
