@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Keyboard Test</title>
+</head>
+<body>
+    <h1>Keyboard Shortcut Test</h1>
+    <p>Press Ctrl+C or Ctrl+V to test</p>
+    <div id="output"></div>
+    
+    <script>
+        document.addEventListener('keydown', (e) => {
+            const output = document.getElementById('output');
+            if (e.ctrlKey && (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'v')) {
+                e.preventDefault();
+                output.innerHTML += `<p>Detected: Ctrl+${e.key.toUpperCase()}</p>`;
+                console.log('Keyboard shortcut detected:', e.key);
+            }
+        });
+    </script>
+</body>
+</html>

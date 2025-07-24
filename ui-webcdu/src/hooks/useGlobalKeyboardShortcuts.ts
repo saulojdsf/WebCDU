@@ -14,6 +14,8 @@ interface Params {
   handleSplitToggle: (edgeId: string, split: boolean) => void;
   groupStateManager: any; // keep as any to avoid deep typing here
   nodes: Node[];
+  copyNodes?: () => void;
+  pasteNodes?: () => void;
 }
 
 /**
@@ -32,6 +34,8 @@ export function useGlobalKeyboardShortcuts({
   handleSplitToggle,
   groupStateManager,
   nodes,
+  copyNodes,
+  pasteNodes,
 }: Params) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -41,6 +45,35 @@ export function useGlobalKeyboardShortcuts({
         active.tagName === 'TEXTAREA' ||
         active.isContentEditable
       );
+
+      // Handle copy/paste first to ensure they have priority
+      // Copy nodes (Ctrl+C)
+      if (e.key.toLowerCase() === 'c' && e.ctrlKey && !isInput) {
+        console.log('Copy shortcut detected!');
+        e.preventDefault();
+        e.stopPropagation();
+        if (copyNodes) {
+          console.log('Calling copyNodes function');
+          copyNodes();
+        } else {
+          console.log('copyNodes function not available');
+        }
+        return;
+      }
+
+      // Paste nodes (Ctrl+V)
+      if (e.key.toLowerCase() === 'v' && e.ctrlKey && !isInput) {
+        console.log('Paste shortcut detected!');
+        e.preventDefault();
+        e.stopPropagation();
+        if (pasteNodes) {
+          console.log('Calling pasteNodes function');
+          pasteNodes();
+        } else {
+          console.log('pasteNodes function not available');
+        }
+        return;
+      }
 
       // Quick-open command menu ("/")
       if (!isInput && e.key === '/') {
@@ -141,6 +174,8 @@ export function useGlobalKeyboardShortcuts({
         }
       }
 
+
+
       // Delete selected groups with confirmation (Delete key)
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput) {
         const selectedGroups = groupStateManager.groupState.selectedGroupIds;
@@ -172,8 +207,8 @@ export function useGlobalKeyboardShortcuts({
       }
     };
 
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', handler, true); // Use capture mode for priority
+    return () => window.removeEventListener('keydown', handler, true);
   }, [
     setCommandMenuResetKey,
     setCommandOpen,
@@ -186,5 +221,7 @@ export function useGlobalKeyboardShortcuts({
     handleSplitToggle,
     groupStateManager,
     nodes,
+    copyNodes,
+    pasteNodes,
   ]);
 } 

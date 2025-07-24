@@ -11,6 +11,7 @@ interface DrawingCanvasProps {
     offset?: Point;
     className?: string;
     onViewportSync?: () => void;
+    isPanning?: boolean; // Add isPanning to props
 }
 
 export function DrawingCanvas({
@@ -19,13 +20,16 @@ export function DrawingCanvas({
     scale = 1,
     offset = { x: 0, y: 0 },
     className = '',
-    onViewportSync
+    onViewportSync,
+    isPanning = false // Destructure isPanning with a default value
 }: DrawingCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const drawingEngineRef = useRef<DrawingEngine | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point | null>(null);
     const [isShiftPressed, setIsShiftPressed] = useState(false);
+    const [isInteracting, setIsInteracting] = useState(false); // To track drawing interaction
+
 
     const {
         isDrawingMode,
@@ -173,10 +177,12 @@ export function DrawingCanvas({
 
     // Handle mouse down - start drawing
     const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+        // If not in drawing mode, do nothing and let the event propagate
         if (!isDrawingMode || !drawingEngineRef.current || layerState.locked) {
             return;
         }
 
+        // Prevent default behavior (e.g., text selection) and stop propagation to other elements
         event.preventDefault();
         event.stopPropagation();
 
@@ -188,13 +194,11 @@ export function DrawingCanvas({
         const point = getMousePosition(event);
 
         setIsDrawing(true);
+        setIsInteracting(true); // Start interaction
 
         if (currentTool === 'pen' || currentTool === 'eraser') {
             // For pen and eraser, start drawing immediately
-            // Use the new method that expects canvas-relative coordinates
             const canvasPoint = drawingEngineRef.current.canvasRelativeToCanvas(point);
-            const viewportState = drawingEngineRef.current.getViewportState();
-            console.log('Drawing start - Original point:', point, 'Canvas point:', canvasPoint, 'Viewport:', viewportState);
             drawingEngineRef.current.startDrawingWithCanvasPoint(canvasPoint, currentTool, toolSettings);
         } else if (['rectangle', 'circle', 'line'].includes(currentTool)) {
             // For shapes, just store the start point
@@ -204,7 +208,7 @@ export function DrawingCanvas({
 
     // Handle mouse move - continue drawing or show shape preview
     const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !drawingEngineRef.current || layerState.locked) {
+        if (!isInteracting || !isDrawing || !drawingEngineRef.current || layerState.locked) {
             return;
         }
 
@@ -233,11 +237,11 @@ export function DrawingCanvas({
                 toolSettings.shapes
             );
         }
-    }, [isDrawing, currentTool, getMousePosition, startPoint, applyShapeConstraints, toolSettings.shapes, layerState]);
+    }, [isInteracting, isDrawing, currentTool, getMousePosition, startPoint, applyShapeConstraints, toolSettings.shapes, layerState]);
 
     // Handle mouse up - end drawing
     const handleMouseUp = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !drawingEngineRef.current || layerState.locked) {
+        if (!isInteracting || !isDrawing || !drawingEngineRef.current || layerState.locked) {
             return;
         }
 
@@ -266,11 +270,12 @@ export function DrawingCanvas({
 
         setIsDrawing(false);
         setStartPoint(null);
+        setIsInteracting(false); // End interaction
 
         // Export the updated drawing data and sync with context
         const updatedData = drawingEngineRef.current.exportData();
         importDrawingData(updatedData);
-    }, [isDrawing, currentTool, startPoint, applyShapeConstraints, toolSettings.shapes, getMousePosition, importDrawingData]);
+    }, [isInteracting, isDrawing, currentTool, startPoint, applyShapeConstraints, toolSettings.shapes, getMousePosition, importDrawingData]);
 
     // Handle mouse leave - end drawing if in progress
     const handleMouseLeave = useCallback(() => {
@@ -325,7 +330,7 @@ export function DrawingCanvas({
             ref={canvasRef}
             width={width}
             height={height}
-            className={`absolute top-0 left-0 pointer-events-auto drawing-canvas drawing-canvas-${currentTool} ${layerState.locked ? 'drawing-canvas-locked' : ''} ${className}`}
+            className={`absolute top-0 left-0 drawing-canvas drawing-canvas-${currentTool} ${layerState.locked ? 'drawing-canvas-locked' : ''} ${isDrawingMode ? 'drawing-canvas-interactive' : ''} ${className}`}
             style={{
                 width: `${width}px`,
                 height: `${height}px`,

@@ -41,7 +41,11 @@ Engenheiros elétricos, analistas de estudos de estabilidade, desenvolvedores de
 
 ### 2.5 Aparência e Interação
 - Suporte a **modo claro e escuro**.
-- Shortcuts comuns (CTRL+C, CTRL+V, DELETE, CTRL+Z, etc).
+- Shortcuts comuns:
+  - **CTRL+C**: Copiar nós selecionados
+  - **CTRL+V**: Colar nós copiados (com IDs únicos)
+  - **DELETE**: Deletar nós/conexões selecionados
+  - **CTRL+Z**: Desfazer (onde aplicável)
 - Botões de zoom e centralizar visualização.
 - Interface responsiva e moderna (usando Tailwind + Shadcn + React Flow).
 
@@ -69,7 +73,8 @@ Engenheiros elétricos, analistas de estudos de estabilidade, desenvolvedores de
 3. Conecta os blocos.
 4. Clica em cada bloco e define parâmetros.
 5. Renomeia o `vout` do bloco Gain; o `vin` do próximo bloco é atualizado.
-6. Exporta o arquivo CDU.
+6. **Copia e cola blocos** usando CTRL+C/CTRL+V para duplicar configurações (IDs são automaticamente únicos).
+7. Exporta o arquivo CDU.
 
 ---
 

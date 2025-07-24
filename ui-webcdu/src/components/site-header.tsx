@@ -32,6 +32,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
 import { useState } from "react";
+import { AboutDialog } from "@/components/AboutDialog";
 
 export function SiteHeader({
   onNew,
@@ -59,7 +60,9 @@ export function SiteHeader({
   canUndo,
   canRedo,
   onToggleParameterSidebar,
-  isParameterSidebarOpen
+  isParameterSidebarOpen,
+  onCopy,
+  onPaste
 }: {
   onNew?: () => void,
   onExport?: () => void,
@@ -86,9 +89,13 @@ export function SiteHeader({
   canUndo?: boolean,
   canRedo?: boolean,
   onToggleParameterSidebar?: () => void,
-  isParameterSidebarOpen?: boolean
+  isParameterSidebarOpen?: boolean,
+  // Copy/paste functions for testing
+  onCopy?: () => void,
+  onPaste?: () => void
 }) {
   const [open, setOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -103,7 +110,7 @@ export function SiteHeader({
           <SidebarIcon />
         </Button>
         <Separator orientation="vertical" className="mr-2 h-4" />
-        
+
         <AlertDialog open={open} onOpenChange={setOpen}>
           <Menubar>
             <MenubarMenu>
@@ -260,7 +267,7 @@ export function SiteHeader({
             <MenubarMenu>
               <MenubarTrigger>Ajuda</MenubarTrigger>
               <MenubarContent>
-                <MenubarItem>Sobre</MenubarItem>
+                <MenubarItem onClick={() => setAboutOpen(true)}>Sobre</MenubarItem>
               </MenubarContent>
             </MenubarMenu>
           </Menubar>
@@ -313,9 +320,33 @@ export function SiteHeader({
               <SlidersHorizontal />
             </Button>
           )}
+          {/* Temporary test buttons for copy/paste */}
+          {onCopy && (
+            <Button
+              className="h-8"
+              variant="outline"
+              size="sm"
+              onClick={onCopy}
+              title="Test Copy (Ctrl+C)"
+            >
+              Copy
+            </Button>
+          )}
+          {onPaste && (
+            <Button
+              className="h-8"
+              variant="outline"
+              size="sm"
+              onClick={onPaste}
+              title="Test Paste (Ctrl+V)"
+            >
+              Paste
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </div>
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </header>
   )
 }

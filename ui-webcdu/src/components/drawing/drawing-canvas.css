@@ -3,6 +3,11 @@
 .drawing-canvas {
   /* Use transparent background to allow the ReactFlow background to show through */
   background-color: transparent;
+  pointer-events: none; /* Disable pointer events by default */
+}
+
+.drawing-canvas-interactive {
+    pointer-events: auto; /* Enable pointer events when in drawing mode */
 }
 
 /* Cursor styles for different drawing tools */

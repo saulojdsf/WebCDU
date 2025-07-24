@@ -23,6 +23,7 @@ import {
 import { CommandMenu } from "@/components/command-menu"
 import { useDrawingCursor } from "@/hooks/useDrawingCursor"
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts"
+import { useCopyPaste } from "@/hooks/useCopyPaste"
 import { useDrawing } from "@/contexts/DrawingContext"
 import { useParameter } from "@/contexts/ParameterContext"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
@@ -121,6 +122,14 @@ function App() {
 
     // Group context menu state/handlers
     const { contextMenu, openGroupMenu, openCanvasMenu, openNodeMenu, closeMenu } = useGroupContextMenu();
+
+    // Copy/paste functionality
+    const { copyNodes, pasteNodes } = useCopyPaste({
+        nodes,
+        setNodes,
+        selectedNodes,
+        reactFlowInstance
+    });
 
     // Node drag constraints integration
     const constraintIntegration = useNodeDragConstraintIntegration(
@@ -714,6 +723,8 @@ function App() {
         handleSplitToggle,
         groupStateManager,
         nodes,
+        copyNodes,
+        pasteNodes,
     });
 
     return (
@@ -747,6 +758,9 @@ function App() {
                         isArrangementPreviewActive={isArrangementPreviewActive}
                         canUndo={arrangementHistoryIndex >= 0}
                         canRedo={arrangementHistoryIndex < arrangementHistory.length - 1}
+                        // Copy/paste functions for testing
+                        onCopy={copyNodes}
+                        onPaste={pasteNodes}
                         onToggleParameterSidebar={handleToggleParameterSidebar}
                         isParameterSidebarOpen={isParameterSidebarOpen}
                     />
@@ -829,7 +843,7 @@ function App() {
                                         <Background gap={12} size={2} color={resolvedTheme === "dark" ? "#333" : "#aaa"} />
                                         <Controls position="top-right" />
                                         <MiniMap />
-                                        <DrawingCanvasOverlay />
+
 
                                         {/* Group Layer for rendering groups */}
                                         <GroupLayer
@@ -844,7 +858,7 @@ function App() {
                                             setNodes={setNodes}
                                             constraintIntegration={constraintIntegration}
                                         />
-
+                                        <DrawingCanvasOverlay />
                                         {/* Constraint violation indicators */}
                                         {constraintIntegration.constraintViolation && (() => {
                                             const group = groupStateManager.groupState.groups.find(g => g.id === constraintIntegration.constraintViolation?.groupId);
