@@ -42,12 +42,12 @@ export function useCopyPaste({ nodes, setNodes, selectedNodes, reactFlowInstance
 
     const pasteNodes = useCallback(() => {
         if (copiedNodesRef.current.length === 0) {
-            toast.error('No nodes to paste');
+            toast.error('Sem blocos para colar');
             return;
         }
 
         if (!reactFlowInstance) {
-            toast.error('Canvas not ready for pasting');
+            toast.error('Canvas não pronto');
             return;
         }
 
@@ -75,7 +75,7 @@ export function useCopyPaste({ nodes, setNodes, selectedNodes, reactFlowInstance
             }
 
             if (nextId > 9999) {
-                toast.error('Cannot paste: Maximum number of nodes reached (9999)');
+                toast.error('Erro: Número mácimo de blocos  alcançado (9999)');
                 return;
             }
 

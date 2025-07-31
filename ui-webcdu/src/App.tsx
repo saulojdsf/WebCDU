@@ -33,6 +33,9 @@ import { GroupLayer, useGroupContextMenu } from "./components/groups/GroupLayer"
 import { GroupConstraintIndicator } from "./components/groups/GroupConstraintIndicator"
 import { useArrangement } from '@/hooks/useArrangement';
 import { useNodeDragConstraintIntegration } from '@/hooks/useNodeDragConstraintIntegration';
+import { useGridSnap } from '@/hooks/useGridSnap';
+import { useGridSnapDragPreview } from '@/hooks/useGridSnapDragPreview';
+import { GridSnapPreview } from '@/components/grid/GridSnapPreview';
 import { BASE_NODE_TYPES } from '@/components/nodes/node-types';
 import { ParameterSidebar } from './components/parameter-sidebar';
 export const iframeHeight = "800px"
@@ -119,6 +122,13 @@ function App() {
         handleUndo,
         handleRedo,
     } = useArrangement(nodes, edges, setNodes, reactFlowInstance);
+
+    // Grid snapping functionality
+    const gridSnap = useGridSnap();
+    const gridSnapDragPreview = useGridSnapDragPreview(
+        gridSnap.positionManager,
+        gridSnap.isEnabled
+    );
 
     // Group context menu state/handlers
     const { contextMenu, openGroupMenu, openCanvasMenu, openNodeMenu, closeMenu } = useGroupContextMenu();
@@ -240,10 +250,17 @@ function App() {
         } catch {
             nodeData = { type: raw, label: raw };
         }
-        const position = reactFlowInstance.screenToFlowPosition({
+        let position = reactFlowInstance.screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
         });
+
+        // Apply grid snapping if enabled
+        if (gridSnap.isEnabled) {
+            const snappedPosition = gridSnap.positionManager.snapToGrid(position);
+            position = { x: snappedPosition.x, y: snappedPosition.y };
+        }
+
         // Find the lowest available ID from 0001 to 9999
         const usedIds = new Set(nodes.map(n => parseInt(n.data?.id, 10)));
         let nextId = 1;
@@ -261,7 +278,7 @@ function App() {
             data: { label: nodeData.label, id, Vout: `X${id}` },
         };
         setNodes(nds => nds.concat(newNode));
-    }, [reactFlowInstance, setNodes, nodes]);
+    }, [reactFlowInstance, setNodes, nodes, gridSnap]);
 
     // Handle selection with multi-node support
     const onSelectionChange = useCallback(({ nodes, edges }: { nodes: Node[]; edges: any[] }) => {
@@ -317,21 +334,34 @@ function App() {
         const nodeRect = nodeElement.getBoundingClientRect();
         constraintIntegration.updateNodeDimensions(node.id, nodeRect.width || 150, nodeRect.height || 40);
 
+        // Initialize grid snap drag preview
+        gridSnapDragPreview.onDragStart(event, node);
+
         // Call the integration hook's drag start handler
         constraintIntegration.onNodeDragStart(event, node);
-    }, [constraintIntegration]);
+    }, [constraintIntegration, gridSnapDragPreview]);
 
     const onNodeDrag = useCallback((event: React.MouseEvent, node: Node) => {
+        // Update grid snap drag preview
+        gridSnapDragPreview.onDrag(event, node);
+
         // During drag, we don't update the node position to avoid infinite loops
         // ReactFlow handles the position updates internally during dragging
         // We'll apply constraints only when dragging stops
-    }, []);
+    }, [gridSnapDragPreview]);
 
     const onNodeDragStop = useCallback((event: React.MouseEvent, node: Node) => {
-        // Apply final position constraints
-        const constrainedPosition = constraintIntegration.nodePositionChange(node, node.position);
+        // Apply grid snapping first if enabled
+        let finalPosition = node.position;
+        if (gridSnap.isEnabled) {
+            const snappedPosition = gridSnap.positionManager.snapToGrid(node.position);
+            finalPosition = { x: snappedPosition.x, y: snappedPosition.y };
+        }
 
-        // Update node position if it was constrained
+        // Apply final position constraints after grid snapping
+        const constrainedPosition = constraintIntegration.nodePositionChange(node, finalPosition);
+
+        // Update node position if it was constrained or snapped
         if (constrainedPosition.x !== node.position.x || constrainedPosition.y !== node.position.y) {
             setNodes(currentNodes => currentNodes.map(n =>
                 n.id === node.id
@@ -339,6 +369,9 @@ function App() {
                     : n
             ));
         }
+
+        // Clear grid snap drag preview
+        gridSnapDragPreview.onDragStop(event, node);
 
         // Call the integration hook's drag stop handler
         constraintIntegration.onNodeDragStop(event, node);
@@ -350,7 +383,7 @@ function App() {
                 groupStateManager.updateGroupBounds(group.id, nodes);
             }, 10);
         }
-    }, [constraintIntegration, setNodes, groupStateManager, nodes]);
+    }, [constraintIntegration, setNodes, groupStateManager, nodes, gridSnap, gridSnapDragPreview]);
 
     // Callback to toggle split state
     const handleSplitToggle = useCallback((edgeId: string, split: boolean) => {
@@ -542,10 +575,17 @@ function App() {
         }
         const id = padId(nextId);
         // Center of viewport
-        const center = reactFlowInstance.screenToFlowPosition({
+        let center = reactFlowInstance.screenToFlowPosition({
             x: (reactFlowWrapper.current?.getBoundingClientRect().width ?? 800) / 2,
             y: (reactFlowWrapper.current?.getBoundingClientRect().height ?? 600) / 2,
         });
+
+        // Apply grid snapping if enabled
+        if (gridSnap.isEnabled) {
+            const snappedPosition = gridSnap.positionManager.snapToGrid(center);
+            center = { x: snappedPosition.x, y: snappedPosition.y };
+        }
+
         const newNode = {
             id,
             type,
@@ -871,6 +911,12 @@ function App() {
                                                 />
                                             ) : null;
                                         })()}
+
+                                        {/* Grid snap preview during drag operations */}
+                                        <GridSnapPreview
+                                            dragPreview={gridSnapDragPreview.dragPreview}
+                                            gridSize={gridSnap.gridSize}
+                                        />
                                     </ReactFlow>
                                 </div>
 
