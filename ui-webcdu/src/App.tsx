@@ -26,6 +26,7 @@ import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts"
 import { useCopyPaste } from "@/hooks/useCopyPaste"
 import { useDrawing } from "@/contexts/DrawingContext"
 import { useParameter } from "@/contexts/ParameterContext"
+import { useUndoRedo } from "@/hooks/useUndoRedo"
 import { DrawingCanvasOverlay } from "@/components/drawing/DrawingCanvasOverlay"
 import { DrawingToolbar } from "@/components/drawing/DrawingToolbar"
 import { useGroupState } from "@/hooks/useGroupState"
@@ -141,6 +142,17 @@ function App() {
         reactFlowInstance
     });
 
+    // Undo/redo functionality
+    const { undo, redo, canUndo, canRedo, executeDeleteNodes, executeAddNode, executeAddEdge, executeDeleteEdges, executeClearAll } = useUndoRedo({
+        nodes,
+        edges,
+        setNodes,
+        setEdges,
+        drawingContext,
+        groupStateManager,
+        parameterContext,
+    });
+
     // Node drag constraints integration
     const constraintIntegration = useNodeDragConstraintIntegration(
         nodes,
@@ -173,68 +185,72 @@ function App() {
     } = useSearchLogic(nodes, edges, reactFlowInstance);
 
     const clearAll = useCallback(() => {
-        setNodes([]);
-        setEdges([]);
+        executeClearAll();
         nextNodeId.current = 1;
-        drawingContext.clearDrawing();
-        groupStateManager.resetGroupState();
-        parameterContext.clearParameters();
-    }, [setNodes, setEdges, drawingContext, groupStateManager, parameterContext]);
+    }, [executeClearAll]);
 
     const onConnect = useCallback((connection: Connection) => {
-        setEdges(currentEdges => {
-            const updatedEdges = addEdge(connection, currentEdges);
-            setNodes(nodes => {
-                const incoming = updatedEdges.filter(e => e.target === connection.target);
-                const targetNode = nodes.find(n => n.id === connection.target);
-                const targetType = targetNode?.type;
-                const targetHandleId = connection.targetHandle;
+        // Create the edge with a unique ID
+        const newEdge = {
+            ...connection,
+            id: `${connection.source}-${connection.target}`,
+        };
 
-                // Special handling for ARITMETIC nodes with vin2 handle
-                if ((targetType === 'soma' || targetType === 'divsao' || targetType === 'multpl') && targetHandleId === 'vin2') {
-                    // For vin2 handle, store the value in Vin2 property
-                    const vin1Edges = incoming.filter(e => e.targetHandle !== 'vin2');
-                    const vin2Edges = incoming.filter(e => e.targetHandle === 'vin2');
+        // Add the edge using undo system
+        executeAddEdge(newEdge);
 
-                    const vin1Array = vin1Edges.map(e => {
-                        const src = nodes.find(n => n.id === e.source);
-                        return src?.data?.Vout;
-                    }).filter(Boolean);
+        // Update connected node Vin values (this will be handled separately for now)
+        // We can enhance this later to be part of the undo system as well
+        const updatedEdges = [...edges, newEdge];
+        setNodes(nodes => {
+            const incoming = updatedEdges.filter(e => e.target === connection.target);
+            const targetNode = nodes.find(n => n.id === connection.target);
+            const targetType = targetNode?.type;
+            const targetHandleId = connection.targetHandle;
 
-                    const vin2Array = vin2Edges.map(e => {
-                        const src = nodes.find(n => n.id === e.source);
-                        return src?.data?.Vout;
-                    }).filter(Boolean);
+            // Special handling for ARITMETIC nodes with vin2 handle
+            if ((targetType === 'soma' || targetType === 'divsao' || targetType === 'multpl') && targetHandleId === 'vin2') {
+                // For vin2 handle, store the value in Vin2 property
+                const vin1Edges = incoming.filter(e => e.targetHandle !== 'vin2');
+                const vin2Edges = incoming.filter(e => e.targetHandle === 'vin2');
 
-                    const vin1String = vin1Array.length > 0 ? `[${vin1Array.join(',')}]` : '';
-                    const vin2String = vin2Array.length > 0 ? vin2Array[0] : '';
+                const vin1Array = vin1Edges.map(e => {
+                    const src = nodes.find(n => n.id === e.source);
+                    return src?.data?.Vout;
+                }).filter(Boolean);
 
-                    return nodes.map(n =>
-                        n.id === connection.target
-                            ? { ...n, data: { ...n.data, Vin: vin1String, Vin2: vin2String } }
-                            : n
-                    );
-                } else {
-                    // Standard handling for other nodes or handles
-                    const vinArray = incoming.map(e => {
-                        const src = nodes.find(n => n.id === e.source);
-                        if (src) {
-                            const data = src.data as Record<string, any>;
-                            return data.Vout;
-                        }
-                        return undefined;
-                    }).filter(v => typeof v !== 'undefined');
-                    const vinString = `[${vinArray.join(',')}]`;
-                    return nodes.map(n =>
-                        n.id === connection.target
-                            ? { ...n, data: { ...n.data, Vin: vinString } }
-                            : n
-                    );
-                }
-            });
-            return updatedEdges;
+                const vin2Array = vin2Edges.map(e => {
+                    const src = nodes.find(n => n.id === e.source);
+                    return src?.data?.Vout;
+                }).filter(Boolean);
+
+                const vin1String = vin1Array.length > 0 ? `[${vin1Array.join(',')}]` : '';
+                const vin2String = vin2Array.length > 0 ? vin2Array[0] : '';
+
+                return nodes.map(n =>
+                    n.id === connection.target
+                        ? { ...n, data: { ...n.data, Vin: vin1String, Vin2: vin2String } }
+                        : n
+                );
+            } else {
+                // Standard handling for other nodes or handles
+                const vinArray = incoming.map(e => {
+                    const src = nodes.find(n => n.id === e.source);
+                    if (src) {
+                        const data = src.data as Record<string, any>;
+                        return data.Vout;
+                    }
+                    return undefined;
+                }).filter(v => typeof v !== 'undefined');
+                const vinString = `[${vinArray.join(',')}]`;
+                return nodes.map(n =>
+                    n.id === connection.target
+                        ? { ...n, data: { ...n.data, Vin: vinString } }
+                        : n
+                );
+            }
         });
-    }, [setEdges, setNodes]);
+    }, [executeAddEdge, edges, setNodes]);
     const onDragOver = useCallback((event: React.DragEvent) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
@@ -277,8 +293,8 @@ function App() {
             position,
             data: { label: nodeData.label, id, Vout: `X${id}` },
         };
-        setNodes(nds => nds.concat(newNode));
-    }, [reactFlowInstance, setNodes, nodes, gridSnap]);
+        executeAddNode(newNode);
+    }, [reactFlowInstance, setNodes, nodes, gridSnap, executeAddNode]);
 
     // Handle selection with multi-node support
     const onSelectionChange = useCallback(({ nodes, edges }: { nodes: Node[]; edges: any[] }) => {
@@ -594,7 +610,7 @@ function App() {
             position: center,
             data: { label: type.charAt(0).toUpperCase() + type.slice(1), id, Vout: `X${id}` },
         };
-        setNodes(nds => nds.concat(newNode));
+        executeAddNode(newNode);
     }
 
 
@@ -767,6 +783,10 @@ function App() {
         nodes,
         copyNodes,
         pasteNodes,
+        undo,
+        redo,
+        executeDeleteNodes,
+        executeDeleteEdges,
     });
 
     return (
