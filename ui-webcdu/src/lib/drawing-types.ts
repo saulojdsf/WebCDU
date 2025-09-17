@@ -2,7 +2,7 @@
  * Core types and interfaces for the drawing system
  */
 
-export type DrawingTool = 'pen' | 'eraser' | 'rectangle' | 'circle' | 'line';
+export type DrawingTool = 'pen' | 'eraser' | 'rectangle' | 'circle' | 'line' | 'text';
 
 export interface Point {
   x: number;
@@ -24,6 +24,13 @@ export interface ToolSettings {
     fillColor: string;
     strokeWidth: number;
     filled: boolean;
+  };
+  text: {
+    fontSize: number;
+    fontFamily: string;
+    color: string;
+    bold: boolean;
+    italic: boolean;
   };
 }
 
@@ -57,10 +64,25 @@ export interface Shape {
   timestamp: number;
 }
 
+export interface TextElement {
+  id: string;
+  text: string;
+  position: Point;
+  settings: {
+    fontSize: number;
+    fontFamily: string;
+    color: string;
+    bold: boolean;
+    italic: boolean;
+  };
+  timestamp: number;
+}
+
 export interface DrawingData {
   version: string;
   strokes: Stroke[];
   shapes: Shape[];
+  texts: TextElement[];
 }
 
 export interface LayerState {
@@ -86,6 +108,7 @@ export interface DrawingContextActions {
   updateToolSettings: (tool: DrawingTool, settings: any) => void;
   addStroke: (stroke: Stroke) => void;
   addShape: (shape: Shape) => void;
+  addText: (text: TextElement) => void;
   clearDrawing: () => void;
   setVisibility: (visible: boolean) => void;
   setCanvasRef: (ref: React.RefObject<HTMLCanvasElement>) => void;

@@ -1,4 +1,4 @@
-import type { Point, DrawingTool, DrawingData, Stroke, Shape, ToolSettings } from './drawing-types';
+import type { Point, DrawingTool, DrawingData, Stroke, Shape, TextElement, ToolSettings } from './drawing-types';
 import { calculateDistance, smoothPath } from './drawing-utils';
 import {
   startFrameTimer,
@@ -36,6 +36,7 @@ export class DrawingEngine {
       version: '1.0.0',
       strokes: [],
       shapes: [],
+      texts: [],
     };
     this.setupCanvas();
   }
@@ -160,6 +161,13 @@ export class DrawingEngine {
     for (const shape of this.drawingData.shapes) {
       if (this.isShapeVisible(shape, visibleBounds)) {
         this.drawShape2D(shape);
+      }
+    }
+
+    // Draw text elements
+    for (const text of this.drawingData.texts) {
+      if (this.isTextVisible(text, visibleBounds)) {
+        this.drawText(text);
       }
     }
 
@@ -469,6 +477,7 @@ export class DrawingEngine {
     // Find strokes that intersect with the eraser
     const strokesToRemove: string[] = [];
     const shapesToRemove: string[] = [];
+    const textsToRemove: string[] = [];
 
     // Check strokes for intersection
     for (const stroke of this.drawingData.strokes) {
@@ -484,7 +493,14 @@ export class DrawingEngine {
       }
     }
 
-    console.log('Strokes to remove:', strokesToRemove.length, 'Shapes to remove:', shapesToRemove.length);
+    // Check text elements for intersection
+    for (const text of this.drawingData.texts) {
+      if (this.textIntersectsWithEraser(text, canvasPoint, eraseRadius)) {
+        textsToRemove.push(text.id);
+      }
+    }
+
+    console.log('Strokes to remove:', strokesToRemove.length, 'Shapes to remove:', shapesToRemove.length, 'Texts to remove:', textsToRemove.length);
 
     // Remove intersecting strokes and shapes
     this.drawingData.strokes = this.drawingData.strokes.filter(
@@ -495,7 +511,11 @@ export class DrawingEngine {
       shape => !shapesToRemove.includes(shape.id)
     );
 
-    console.log('Remaining strokes:', this.drawingData.strokes.length);
+    this.drawingData.texts = this.drawingData.texts.filter(
+      text => !textsToRemove.includes(text.id)
+    );
+
+    console.log('Remaining strokes:', this.drawingData.strokes.length, 'Remaining shapes:', this.drawingData.shapes.length, 'Remaining texts:', this.drawingData.texts.length);
 
     // Redraw the canvas
     this.redraw();
@@ -510,6 +530,7 @@ export class DrawingEngine {
     // Find strokes that intersect with the eraser
     const strokesToRemove: string[] = [];
     const shapesToRemove: string[] = [];
+    const textsToRemove: string[] = [];
 
     // Check strokes for intersection
     for (const stroke of this.drawingData.strokes) {
@@ -525,6 +546,13 @@ export class DrawingEngine {
       }
     }
 
+    // Check text elements for intersection
+    for (const text of this.drawingData.texts) {
+      if (this.textIntersectsWithEraser(text, canvasPoint, eraseRadius)) {
+        textsToRemove.push(text.id);
+      }
+    }
+
     // Remove intersecting strokes and shapes
     this.drawingData.strokes = this.drawingData.strokes.filter(
       stroke => !strokesToRemove.includes(stroke.id)
@@ -532,6 +560,10 @@ export class DrawingEngine {
 
     this.drawingData.shapes = this.drawingData.shapes.filter(
       shape => !shapesToRemove.includes(shape.id)
+    );
+
+    this.drawingData.texts = this.drawingData.texts.filter(
+      text => !textsToRemove.includes(text.id)
     );
 
     // Redraw the canvas
@@ -759,6 +791,7 @@ export class DrawingEngine {
   public clear(): void {
     this.drawingData.strokes = [];
     this.drawingData.shapes = [];
+    this.drawingData.texts = [];
     this.clearCanvas();
   }
 
@@ -770,6 +803,7 @@ export class DrawingEngine {
       version: this.drawingData.version,
       strokes: [...this.drawingData.strokes],
       shapes: [...this.drawingData.shapes],
+      texts: [...this.drawingData.texts],
     };
   }
 
@@ -781,6 +815,7 @@ export class DrawingEngine {
       version: data.version,
       strokes: [...data.strokes],
       shapes: [...data.shapes],
+      texts: [...(data.texts || [])],
     };
     this.redraw();
   }
@@ -840,6 +875,16 @@ export class DrawingEngine {
       for (const shape of this.drawingData.shapes) {
         if (this.isShapeVisible(shape, visibleBounds)) {
           this.drawShape2D(shape);
+          elementsDrawn++;
+        } else {
+          elementsSkipped++;
+        }
+      }
+
+      // Draw all text elements with culling
+      for (const text of this.drawingData.texts) {
+        if (this.isTextVisible(text, visibleBounds)) {
+          this.drawText(text);
           elementsDrawn++;
         } else {
           elementsSkipped++;
@@ -959,6 +1004,16 @@ export class DrawingEngine {
     for (const shape of this.drawingData.shapes) {
       if (this.isShapeVisible(shape, expandedBounds)) {
         this.drawShape2D(shape);
+        elementsDrawn++;
+      } else {
+        elementsSkipped++;
+      }
+    }
+
+    // Draw all text elements with culling
+    for (const text of this.drawingData.texts) {
+      if (this.isTextVisible(text, expandedBounds)) {
+        this.drawText(text);
         elementsDrawn++;
       } else {
         elementsSkipped++;
@@ -1241,5 +1296,116 @@ export class DrawingEngine {
 
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  /**
+   * Add a text element to the canvas (deprecated - use addTextWithCanvasPoint)
+   */
+  public addText(text: string, position: Point, settings: ToolSettings['text']): void {
+    const canvasPosition = this.screenToCanvas(position);
+
+    const textElement: TextElement = {
+      id: this.generateId(),
+      text,
+      position: canvasPosition,
+      settings: { ...settings },
+      timestamp: Date.now(),
+    };
+
+    this.drawingData.texts.push(textElement);
+    this.redraw();
+  }
+
+  /**
+   * Add a text element to the canvas using pre-transformed canvas coordinates
+   */
+  public addTextWithCanvasPoint(text: string, canvasPosition: Point, settings: ToolSettings['text']): void {
+    const textElement: TextElement = {
+      id: this.generateId(),
+      text,
+      position: canvasPosition,
+      settings: { ...settings },
+      timestamp: Date.now(),
+    };
+
+    this.drawingData.texts.push(textElement);
+    this.redraw();
+  }
+
+  /**
+   * Draw a text element
+   */
+  private drawText(text: TextElement): void {
+    this.context.save();
+
+    // Set font properties
+    let fontStyle = '';
+    if (text.settings.bold && text.settings.italic) {
+      fontStyle = 'bold italic ';
+    } else if (text.settings.bold) {
+      fontStyle = 'bold ';
+    } else if (text.settings.italic) {
+      fontStyle = 'italic ';
+    }
+
+    this.context.font = `${fontStyle}${text.settings.fontSize}px ${text.settings.fontFamily}`;
+    this.context.fillStyle = text.settings.color;
+    this.context.textAlign = 'left';
+    this.context.textBaseline = 'top';
+
+    // Draw the text
+    this.context.fillText(text.text, text.position.x, text.position.y);
+
+    this.context.restore();
+  }
+
+  /**
+   * Check if a text element is visible within the given bounds
+   */
+  private isTextVisible(text: TextElement, bounds: { x: number; y: number; width: number; height: number }): boolean {
+    // Estimate text dimensions (rough approximation)
+    const estimatedWidth = text.text.length * text.settings.fontSize * 0.6;
+    const estimatedHeight = text.settings.fontSize;
+
+    const textBounds = {
+      x: text.position.x,
+      y: text.position.y,
+      width: estimatedWidth,
+      height: estimatedHeight,
+    };
+
+    // Check if text rectangle intersects with visible bounds
+    return !(textBounds.x > bounds.x + bounds.width ||
+             textBounds.x + textBounds.width < bounds.x ||
+             textBounds.y > bounds.y + bounds.height ||
+             textBounds.y + textBounds.height < bounds.y);
+  }
+
+  /**
+   * Check if a text element intersects with the eraser
+   */
+  private textIntersectsWithEraser(text: TextElement, eraserCenter: Point, eraserRadius: number): boolean {
+    // Estimate text dimensions
+    const estimatedWidth = text.text.length * text.settings.fontSize * 0.6;
+    const estimatedHeight = text.settings.fontSize;
+
+    // Check if eraser circle intersects with text rectangle
+    const textBounds = {
+      left: text.position.x,
+      top: text.position.y,
+      right: text.position.x + estimatedWidth,
+      bottom: text.position.y + estimatedHeight,
+    };
+
+    // Find the closest point on the rectangle to the circle center
+    const closestX = Math.max(textBounds.left, Math.min(eraserCenter.x, textBounds.right));
+    const closestY = Math.max(textBounds.top, Math.min(eraserCenter.y, textBounds.bottom));
+
+    // Calculate distance from circle center to this closest point
+    const distanceX = eraserCenter.x - closestX;
+    const distanceY = eraserCenter.y - closestY;
+    const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+    return distanceSquared <= eraserRadius * eraserRadius;
   }
 }

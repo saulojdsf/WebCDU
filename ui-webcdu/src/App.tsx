@@ -422,6 +422,8 @@ function App() {
                 id: e.id,
                 source: e.source,
                 target: e.target,
+                sourceHandle: e.sourceHandle,
+                targetHandle: e.targetHandle,
                 type: e.type,
                 data: e.data,
                 label: e.label,

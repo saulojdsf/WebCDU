@@ -7,6 +7,7 @@ import type {
     DrawingData,
     Stroke,
     Shape,
+    TextElement,
     LayerState
 } from '../lib/drawing-types';
 import { LayerManager } from '../lib/LayerManager';
@@ -27,6 +28,13 @@ const defaultToolSettings: ToolSettings = {
         strokeWidth: 2,
         filled: false,
     },
+    text: {
+        fontSize: 16,
+        fontFamily: 'Arial',
+        color: '#000000',
+        bold: false,
+        italic: false,
+    },
 };
 
 // Initial state
@@ -38,6 +46,7 @@ const initialState: DrawingContextState = {
         version: '1.0.0',
         strokes: [],
         shapes: [],
+        texts: [],
     },
     isVisible: true,
     canvasRef: null,
@@ -56,6 +65,7 @@ type DrawingAction =
     | { type: 'UPDATE_TOOL_SETTINGS'; payload: { tool: DrawingTool; settings: any } }
     | { type: 'ADD_STROKE'; payload: Stroke }
     | { type: 'ADD_SHAPE'; payload: Shape }
+    | { type: 'ADD_TEXT'; payload: TextElement }
     | { type: 'CLEAR_DRAWING' }
     | { type: 'SET_VISIBILITY'; payload: boolean }
     | { type: 'SET_CANVAS_REF'; payload: React.RefObject<HTMLCanvasElement> }
@@ -89,6 +99,14 @@ function drawingReducer(state: DrawingContextState, action: DrawingAction): Draw
                         eraser: { ...state.toolSettings.eraser, ...settings },
                     },
                 };
+            } else if (tool === 'text') {
+                return {
+                    ...state,
+                    toolSettings: {
+                        ...state.toolSettings,
+                        text: { ...state.toolSettings.text, ...settings },
+                    },
+                };
             } else {
                 return {
                     ...state,
@@ -117,6 +135,15 @@ function drawingReducer(state: DrawingContextState, action: DrawingAction): Draw
                 },
             };
 
+        case 'ADD_TEXT':
+            return {
+                ...state,
+                drawingData: {
+                    ...state.drawingData,
+                    texts: [...state.drawingData.texts, action.payload],
+                },
+            };
+
         case 'CLEAR_DRAWING':
             return {
                 ...state,
@@ -124,6 +151,7 @@ function drawingReducer(state: DrawingContextState, action: DrawingAction): Draw
                     ...state.drawingData,
                     strokes: [],
                     shapes: [],
+                    texts: [],
                 },
             };
 
@@ -176,6 +204,10 @@ export function DrawingProvider({ children }: { children: React.ReactNode }) {
 
     const addShape = useCallback((shape: Shape) => {
         dispatch({ type: 'ADD_SHAPE', payload: shape });
+    }, []);
+
+    const addText = useCallback((text: TextElement) => {
+        dispatch({ type: 'ADD_TEXT', payload: text });
     }, []);
 
     const clearDrawing = useCallback(() => {
@@ -247,6 +279,7 @@ export function DrawingProvider({ children }: { children: React.ReactNode }) {
         updateToolSettings,
         addStroke,
         addShape,
+        addText,
         clearDrawing,
         setVisibility: setVisibilityWithLayerManager,
         setCanvasRef: setCanvasRefWithLayerManager,

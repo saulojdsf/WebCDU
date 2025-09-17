@@ -5,6 +5,7 @@ import {
     Square,
     Circle,
     Minus,
+    Type,
     Palette,
     Settings,
     Eye,
@@ -40,6 +41,7 @@ const TOOL_ICONS = {
     rectangle: Square,
     circle: Circle,
     line: Minus,
+    text: Type,
 } as const;
 
 const TOOL_LABELS = {
@@ -48,6 +50,7 @@ const TOOL_LABELS = {
     rectangle: 'Retângulo',
     circle: 'Círculo',
     line: 'Linha',
+    text: 'Texto',
 } as const;
 
 export function DrawingToolbar({ className }: DrawingToolbarProps) {
@@ -84,6 +87,8 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
             updateToolSettings('pen', { size: value[0] });
         } else if (tool === 'eraser') {
             updateToolSettings('eraser', { size: value[0] });
+        } else if (tool === 'text') {
+            updateToolSettings('text', { fontSize: value[0] });
         } else {
             updateToolSettings(tool, { strokeWidth: value[0] });
         }
@@ -92,6 +97,8 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
     const handleColorChange = (tool: DrawingTool, color: string) => {
         if (tool === 'pen') {
             updateToolSettings('pen', { color });
+        } else if (tool === 'text') {
+            updateToolSettings('text', { color });
         } else {
             updateToolSettings(tool, { strokeColor: color });
         }
@@ -134,6 +141,8 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
             return toolSettings.pen.size;
         } else if (currentTool === 'eraser') {
             return toolSettings.eraser.size;
+        } else if (currentTool === 'text') {
+            return toolSettings.text.fontSize;
         } else {
             return toolSettings.shapes.strokeWidth;
         }
@@ -142,6 +151,8 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
     const getCurrentColor = () => {
         if (currentTool === 'pen') {
             return toolSettings.pen.color;
+        } else if (currentTool === 'text') {
+            return toolSettings.text.color;
         } else {
             return toolSettings.shapes.strokeColor;
         }
@@ -197,8 +208,8 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                                 <Slider
                                     value={[getCurrentSize()]}
                                     onValueChange={(value) => handleSizeChange(currentTool, value)}
-                                    max={currentTool === 'eraser' ? 50 : currentTool === 'pen' ? 20 : 10}
-                                    min={1}
+                                    max={currentTool === 'eraser' ? 50 : currentTool === 'pen' ? 20 : currentTool === 'text' ? 72 : 10}
+                                    min={currentTool === 'text' ? 8 : 1}
                                     step={1}
                                     className="w-16"
                                 />
@@ -275,6 +286,57 @@ export function DrawingToolbar({ className }: DrawingToolbarProps) {
                                                     />
                                                 </div>
                                             )}
+                                        </div>
+                                    )}
+
+                                    {/* Text Settings */}
+                                    {currentTool === 'text' && (
+                                        <div className="space-y-3">
+                                            <div className="space-y-2">
+                                                <Label className="text-sm">Tamanho da fonte</Label>
+                                                <Slider
+                                                    value={[toolSettings.text.fontSize]}
+                                                    onValueChange={(value) => updateToolSettings('text', { fontSize: value[0] })}
+                                                    max={72}
+                                                    min={8}
+                                                    step={1}
+                                                    className="w-full"
+                                                />
+                                                <div className="text-xs text-muted-foreground text-center">
+                                                    {toolSettings.text.fontSize}px
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <Label className="text-sm">Família da fonte:</Label>
+                                                <select
+                                                    value={toolSettings.text.fontFamily}
+                                                    onChange={(e) => updateToolSettings('text', { fontFamily: e.target.value })}
+                                                    className="flex-1 p-1 text-xs border rounded"
+                                                >
+                                                    <option value="Arial">Arial</option>
+                                                    <option value="Helvetica">Helvetica</option>
+                                                    <option value="Times New Roman">Times New Roman</option>
+                                                    <option value="Courier New">Courier New</option>
+                                                    <option value="Georgia">Georgia</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-sm">Negrito</Label>
+                                                <Switch
+                                                    checked={toolSettings.text.bold}
+                                                    onCheckedChange={(bold) => updateToolSettings('text', { bold })}
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-sm">Itálico</Label>
+                                                <Switch
+                                                    checked={toolSettings.text.italic}
+                                                    onCheckedChange={(italic) => updateToolSettings('text', { italic })}
+                                                />
+                                            </div>
                                         </div>
                                     )}
 

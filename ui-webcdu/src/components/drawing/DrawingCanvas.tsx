@@ -39,6 +39,7 @@ export function DrawingCanvas({
         layerState,
         setCanvasRef,
         addStroke,
+        addText,
         exportDrawingData,
         importDrawingData
     } = useDrawing();
@@ -175,6 +176,19 @@ export function DrawingCanvas({
         return end;
     }, [isShiftPressed, currentTool]);
 
+    // Handle text input
+    const handleTextInput = useCallback((point: Point) => {
+        const text = prompt('Digite o texto:');
+        if (text && text.trim() && drawingEngineRef.current) {
+            // Transform point to canvas coordinates like shapes do
+            const canvasPoint = drawingEngineRef.current.canvasRelativeToCanvas(point);
+            drawingEngineRef.current.addTextWithCanvasPoint(text.trim(), canvasPoint, toolSettings.text);
+        }
+        // Reset drawing state
+        setIsDrawing(false);
+        setIsInteracting(false);
+    }, [toolSettings.text]);
+
     // Handle mouse down - start drawing
     const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
         // If not in drawing mode, do nothing and let the event propagate
@@ -203,8 +217,11 @@ export function DrawingCanvas({
         } else if (['rectangle', 'circle', 'line'].includes(currentTool)) {
             // For shapes, just store the start point
             setStartPoint(point);
+        } else if (currentTool === 'text') {
+            // For text, prompt user for input
+            handleTextInput(point);
         }
-    }, [isDrawingMode, currentTool, toolSettings, getMousePosition, layerState, onViewportSync]);
+    }, [isDrawingMode, currentTool, toolSettings, getMousePosition, layerState, onViewportSync, handleTextInput]);
 
     // Handle mouse move - continue drawing or show shape preview
     const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {

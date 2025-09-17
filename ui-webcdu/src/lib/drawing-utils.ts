@@ -1,4 +1,4 @@
-import type { Point, DrawingData, Stroke, Shape } from './drawing-types';
+import type { Point, DrawingData, Stroke, Shape, TextElement } from './drawing-types';
 
 /**
  * Utility functions for drawing operations
@@ -175,6 +175,11 @@ export function cloneDrawingData(data: DrawingData): DrawingData {
       ...shape,
       bounds: { ...shape.bounds },
       settings: { ...shape.settings },
+    })),
+    texts: data.texts.map(text => ({
+      ...text,
+      position: { ...text.position },
+      settings: { ...text.settings },
     })),
   };
 }
