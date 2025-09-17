@@ -375,16 +375,13 @@ export const GroupLayer: React.FC<GroupLayerProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        // Keep pointer events disabled for the overall layer so clicks on empty
-        // canvas areas continue to reach ReactFlow. Individual interactive
-        // elements (like the group borders) explicitly enable pointer events.
+        // Allow clicks to pass through to ReactFlow nodes/pane by default.
+        // Interactive children (borders/titles/handles) explicitly enable pointer events.
         pointerEvents: 'none',
-        // The layer must share the stacking context with nodes so the interactive
-        // borders (which sit at z-index 0+) are reachable. Keeping this at 0
-        // ensures the background of the group remains behind nodes (because the
-        // background rectangles have pointer-events:none) while the borders are
-        // still clickable.
-        zIndex: 0,
+        // Ensure this layer renders above nodes so borders/titles/handles are
+        // actually clickable, while the non-interactive backgrounds won't block
+        // node interactions.
+        zIndex: 10,
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
         transformOrigin: '0 0',
     };

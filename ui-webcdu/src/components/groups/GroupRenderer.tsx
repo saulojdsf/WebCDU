@@ -633,7 +633,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         };
     }, [handleResizeMouseMove, handleResizeMouseUp]);
 
-    // Main group rectangle: pointerEvents none
+    // Main group rectangle: keep background non-interactive to avoid blocking nodes
     const groupStyle: React.CSSProperties = {
         position: 'absolute',
         left: group.bounds.x,
@@ -647,7 +647,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         // negative z-index would place the whole group behind the nodes and
         // make it non-interactive. We clamp it to at least 0.
         zIndex: Math.max(group.zIndex, 0),
-        pointerEvents: 'all', // Allow interaction with the group
+        pointerEvents: 'none',
         transition: isDragging ? 'none' : 'border-color 0.2s ease, background-color 0.2s ease, transform 0.1s ease',
         transform: isDragging
             ? (isMultiSelected ? 'scale(1.008)' : 'scale(1.005)') // Larger scale for multi-group drag
@@ -657,7 +657,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         opacity: isDragging ? (isMultiSelected ? 0.75 : 0.8) : 1, // More transparency for multi-group drag
     };
 
-    // Interactive border overlay
+    // Interactive border overlay (visual only; hit zones added separately)
     const borderStyle: React.CSSProperties = {
         position: 'absolute',
         left: 0,
@@ -666,10 +666,12 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
         height: '100%',
         border: `${isDragging ? 4 : isSelected ? 3 : isHovered ? 2.5 : 2}px solid ${colors.borderColor}`,
         borderRadius: `${group.style.borderRadius}px`,
-        pointerEvents: 'all',
+        pointerEvents: 'none',
         cursor: cursorValue,
         boxSizing: 'border-box',
         zIndex: 1,
+        // Ensure this interactive border can receive events even though parent has pointer-events:none
+        // A child with pointer-events:auto restores interactivity for itself.
         background: 'transparent',
         boxShadow: isDragging
             ? `${colors.selectionGlow}, 0 4px 12px rgba(0, 0, 0, 0.15)`
@@ -781,18 +783,27 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                 // Ctrl+Shift+G for ungrouping (handled globally)
             }}
         >
-            {/* Interactive border for selection/context menu */}
+            {/* Visual border (no hitbox) */}
             <div
                 style={borderStyle}
                 aria-hidden="true"
                 role="presentation"
                 className={cursorClassName}
-                onClick={handleBackgroundClick}
-                onMouseDown={handleGroupMouseDown}
-                onContextMenu={handleContextMenu}
                 onMouseEnter={(e) => handleBorderHover(true, e)}
                 onMouseLeave={(e) => handleBorderHover(false, e)}
             />
+
+            {/* Edge hit zones for selection/drag without blocking inner nodes */}
+            <div aria-hidden="true" role="presentation" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2 }}>
+                {/* Top edge */}
+                <div style={{ position: 'absolute', top: -4, left: 0, width: '100%', height: 8, pointerEvents: 'auto', cursor: cursorValue }} onClick={handleBackgroundClick} onMouseDown={handleGroupMouseDown} onContextMenu={handleContextMenu} />
+                {/* Bottom edge */}
+                <div style={{ position: 'absolute', bottom: -4, left: 0, width: '100%', height: 8, pointerEvents: 'auto', cursor: cursorValue }} onClick={handleBackgroundClick} onMouseDown={handleGroupMouseDown} onContextMenu={handleContextMenu} />
+                {/* Left edge */}
+                <div style={{ position: 'absolute', top: 0, left: -4, width: 8, height: '100%', pointerEvents: 'auto', cursor: cursorValue }} onClick={handleBackgroundClick} onMouseDown={handleGroupMouseDown} onContextMenu={handleContextMenu} />
+                {/* Right edge */}
+                <div style={{ position: 'absolute', top: 0, right: -4, width: 8, height: '100%', pointerEvents: 'auto', cursor: cursorValue }} onClick={handleBackgroundClick} onMouseDown={handleGroupMouseDown} onContextMenu={handleContextMenu} />
+            </div>
 
             {/* Hover indicator overlay */}
             <GroupHoverIndicator
@@ -858,7 +869,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={handleTitleKeyDown}
                     onBlur={handleTitleBlur}
-                    style={{ ...inputStyle, pointerEvents: 'all', zIndex: 2 }}
+                    style={{ ...inputStyle, pointerEvents: 'auto', zIndex: 2 }}
                     data-testid={`group-title-input-${group.id}`}
                     aria-label="Edit group title"
                     aria-describedby={`group-title-help-${group.id}`}
@@ -867,7 +878,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
             ) : (
                 <div
                     id={`group-title-${group.id}`}
-                    style={{ ...titleStyle, pointerEvents: 'all', zIndex: 2 }}
+                    style={{ ...titleStyle, pointerEvents: 'auto', zIndex: 2 }}
                     onDoubleClick={handleTitleDoubleClick}
                     onContextMenu={handleContextMenu}
                     role="button"
@@ -926,7 +937,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'nw-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'nw')}
@@ -943,7 +954,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'ne-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'ne')}
@@ -960,7 +971,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'sw-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'sw')}
@@ -977,7 +988,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'se-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'se')}
@@ -997,7 +1008,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'ns-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'n')}
@@ -1015,7 +1026,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'ew-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'e')}
@@ -1033,7 +1044,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'ns-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 's')}
@@ -1051,7 +1062,7 @@ export const GroupRenderer: React.FC<GroupRendererProps> = ({
                             border: `1px solid ${colors.titleBackgroundColor}`,
                             borderRadius: '2px',
                             cursor: 'ew-resize',
-                            pointerEvents: 'all',
+                            pointerEvents: 'auto',
                             zIndex: 3,
                         }}
                         onMouseDown={(e) => handleResizeMouseDown(e, 'w')}
