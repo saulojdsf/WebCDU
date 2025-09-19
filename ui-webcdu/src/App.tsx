@@ -194,6 +194,8 @@ function App() {
         const newEdge = {
             ...connection,
             id: `${connection.source}-${connection.target}`,
+            source: connection.source!,
+            target: connection.target!,
         };
 
         // Add the edge using undo system

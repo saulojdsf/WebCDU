@@ -2,7 +2,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { type Node, type Edge, type ReactFlowInstance } from 'reactflow';
 import { toast } from 'sonner';
-import ELK from 'elkjs/lib/elk.bundled.js';
+import ELK from 'elkjs';
 
 export const useArrangement = (
     nodes: Node[],
