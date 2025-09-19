@@ -2,7 +2,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { type Node, type Edge, type ReactFlowInstance } from 'reactflow';
 import { toast } from 'sonner';
-import ELK from 'elkjs';
+// import ELK from 'elkjs'; // Removed due to web-worker bundling issues
 
 export const useArrangement = (
     nodes: Node[],
@@ -435,7 +435,7 @@ export const useArrangement = (
         toast.info(`${nodeIds.length} node(s) lock state toggled`);
     }, [lockedNodes]);
 
-    const elk = useMemo(() => new ELK(), []);
+    // const elk = useMemo(() => new ELK(), []); // Removed due to web-worker bundling issues
 
     // Group-aware arrangement functionality
     const groupAwareArrangement = useMemo(() => {
@@ -527,7 +527,7 @@ export const useArrangement = (
         handleUndo,
         handleRedo,
         handleToggleNodeLock,
-        elk,
+        // elk, // Removed due to web-worker bundling issues
         // Group-aware methods
         groupAwareArrangement,
         handleGroupAwareArrangementWithStrategy

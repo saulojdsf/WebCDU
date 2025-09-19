@@ -23,14 +23,14 @@ services:
     build:
       context: ./ui-webcdu
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
     container_name: webcdu-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
-    environment:
-      - VITE_API_URL=http://backend:8000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s

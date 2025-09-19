@@ -9,6 +9,7 @@ import { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
 import { useSearchLogic } from '@/hooks/useSearchLogic';
+import { API_BASE_URL } from '@/config/api';
 
 // Arrangement system integration - simplified version
 // Note: Full arrangement system integration requires fixing TypeScript configuration
@@ -687,7 +688,7 @@ function App() {
             formData.append('file', file);
 
             try {
-                const response = await fetch('http://localhost:8000/import', {
+                const response = await fetch(`${API_BASE_URL}/import`, {
                     method: 'POST',
                     body: formData,
                 });
