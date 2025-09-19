@@ -16,6 +16,10 @@ interface Params {
   nodes: Node[];
   copyNodes?: () => void;
   pasteNodes?: () => void;
+  undo?: () => void;
+  redo?: () => void;
+  executeDeleteNodes?: (nodeIds: string[]) => void;
+  executeDeleteEdges?: (edgeIds: string[]) => void;
 }
 
 /**
@@ -36,6 +40,10 @@ export function useGlobalKeyboardShortcuts({
   nodes,
   copyNodes,
   pasteNodes,
+  undo,
+  redo,
+  executeDeleteNodes,
+  executeDeleteEdges,
 }: Params) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -46,7 +54,29 @@ export function useGlobalKeyboardShortcuts({
         active.isContentEditable
       );
 
-      // Handle copy/paste first to ensure they have priority
+      // Handle undo/redo first to ensure they have priority
+      // Undo (Ctrl+Z)
+      if (e.key.toLowerCase() === 'z' && e.ctrlKey && !e.shiftKey && !isInput) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (undo) {
+          undo();
+        }
+        return;
+      }
+
+      // Redo (Ctrl+Shift+Z or Ctrl+Y)
+      if (((e.key.toLowerCase() === 'z' && e.ctrlKey && e.shiftKey) ||
+           (e.key.toLowerCase() === 'y' && e.ctrlKey)) && !isInput) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (redo) {
+          redo();
+        }
+        return;
+      }
+
+      // Handle copy/paste
       // Copy nodes (Ctrl+C)
       if (e.key.toLowerCase() === 'c' && e.ctrlKey && !isInput) {
         console.log('Copy shortcut detected!');
@@ -93,11 +123,21 @@ export function useGlobalKeyboardShortcuts({
       // Delete / Backspace – remove nodes & edges
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput) {
         if (selectedNodes.length) {
-          setNodes(nds => nds.filter(n => !selectedNodes.includes(n.id)));
-          setEdges(eds => eds.filter(e => !selectedNodes.includes(e.source) && !selectedNodes.includes(e.target)));
+          if (executeDeleteNodes) {
+            executeDeleteNodes(selectedNodes);
+          } else {
+            // Fallback to direct manipulation if undo system not available
+            setNodes(nds => nds.filter(n => !selectedNodes.includes(n.id)));
+            setEdges(eds => eds.filter(e => !selectedNodes.includes(e.source) && !selectedNodes.includes(e.target)));
+          }
         }
         if (selectedEdges.length) {
-          setEdges(eds => eds.filter(e => !selectedEdges.includes(e.id)));
+          if (executeDeleteEdges) {
+            executeDeleteEdges(selectedEdges);
+          } else {
+            // Fallback to direct manipulation if undo system not available
+            setEdges(eds => eds.filter(e => !selectedEdges.includes(e.id)));
+          }
         }
         return;
       }
@@ -223,5 +263,9 @@ export function useGlobalKeyboardShortcuts({
     nodes,
     copyNodes,
     pasteNodes,
+    undo,
+    redo,
+    executeDeleteNodes,
+    executeDeleteEdges,
   ]);
 } 

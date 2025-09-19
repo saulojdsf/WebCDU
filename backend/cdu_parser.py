@@ -18,7 +18,7 @@ def extrair_cdu(caminho_arquivo: str, tipo: str) -> List[List[str]]:
         print(f"Erro: Arquivo não encontrado em '{caminho_arquivo}'.")
         return lista_cdu
 
-    with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+    with open(caminho_arquivo, 'r', encoding='utf-8', errors='ignore') as f:
         todas_linhas = f.readlines()
 
     linhas_cdu_atual: List[str] = []
@@ -126,7 +126,7 @@ class Bloco:
         i = linha[4]
         tipo = linha[5:11].strip()
         o = linha[11]
-        stip = linha[12:18].strip()
+        stip = linha[12:18].strip().replace(".", "")
         s = [linha[18]]
         vent = [linha[19:25].strip()]
         vsai = linha[26:32].strip()
@@ -219,7 +219,7 @@ def ler_dcdu_completo(texto: List[str]) -> DCDU:
             else:
                 bloco = None
                 tipo = s[5:11].strip().upper()
-                stipo = s[12:18].strip().upper()
+                stipo = s[12:18].strip().upper().replace(".", "")
                 if not tipo:
                     i += 1
                     continue
@@ -232,17 +232,14 @@ def ler_dcdu_completo(texto: List[str]) -> DCDU:
                         i += 1
                         bloco.adiciona_linha(texto[i])
                 elif tipo in {'DIVSAO','PONTOS','MAX','MIN','MULTPL','SOMA'}:
-                    # consome até novo tipo ou FIMCDU
                     while True:
                         peek = texto[i+1][5:11].strip().upper() if i+1 < len(texto) else ''
                         if peek or texto[i+1].upper().startswith('FIMCDU'):
                             break
                         i += 1
                         bloco.adiciona_linha(texto[i])
-                elif tipo in {'COMPAR','FUNCAO','LOGIC'}:
-                    # casos varietados omitidos para brevidade
-                    pass
-                # Adiciona conforme listas
+                #elif tipo in {'COMPAR','FUNCAO','LOGIC'}:
+                #    pass
                 if tipo == 'ENTRAD':
                     d.entrads.append(bloco)
                 elif tipo == 'EXPORT':
